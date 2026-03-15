@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spell Shot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+<div id="container">
+
+  <!-- Layers (back to front) -->
+  <canvas id="mainCanvas" width="1035" height="596"></canvas>
+  <canvas id="fxCanvas"   width="1035" height="596"></canvas>
+
+  <div id="ui">
+    <!-- LOGO IMAGE -->
+    <img id="logoImg" src="assets/logo.png" alt="Spell Shot" />
+
+    <!-- Settings (top-right) -->
+    <img class="btn" id="btnSettings" src="assets/settings.png"
+         style="top:16px; right:16px; width:168px;" />
+
+    <!-- Right arrow only (for future characters) -->
+    <img class="btn" id="btnRight" src="assets/arrowRight.png"
+         style="top:278px; right:46px; width:78px;" />
+
+    <!-- Cannon Balls -->
+    <img class="btn" id="btnBalls" src="assets/cannonBalls.png"
+         style="top:320px; left:70px; width:270px;" />
+
+    <!-- Cannon Skins -->
+    <img class="btn" id="btnSkins" src="assets/cannonSkins.png"
+         style="top:430px; left:70px; width:270px;" />
+
+    <!-- Play -->
+    <img class="btn" id="btnPlay" src="assets/playButton.png"
+         style="bottom:60px; right:160px; width:285px;" />
+
+    <!-- White flash for PLAY transition -->
+    <div id="flashOverlay"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  CANVAS SETUP
+// ════════════════════════════════════════════════════════════
+const mainCanvas = document.getElementById('mainCanvas');
+const mainCtx    = mainCanvas.getContext('2d');
+mainCtx.imageSmoothingEnabled = false;
+
+const fxCanvas = document.getElementById('fxCanvas');
+const fxCtx    = fxCanvas.getContext('2d');
+fxCtx.imageSmoothingEnabled = false;
+
+const GAME_W = 1035, GAME_H = 596;
+
+// ════════════════════════════════════════════════════════════
+//  ASSETS
+// ════════════════════════════════════════════════════════════
+const bgImg     = new Image(); bgImg.src     = 'assets/background.png';
+const girlieImg = new Image(); girlieImg.src = 'assets/characterGirlie.png';
+
+// ════════════════════════════════════════════════════════════
+//  CHARACTER ROSTER
+//  Add more characters here in the future!
+// ════════════════════════════════════════════════════════════
+const CHARACTERS = [
+  {
+    img:           girlieImg,
+    totalFrames:   5,
+    scale:         0.55,
+    type:          'idle',
+    frameDuration: 300,   // ← increase this number = slower animation
+  },
+];
+
+// ── Player draw position ─────────────────────────────────────
+const PLAYER_SCALE = 0.40;
+const PLAYER_X     = 655;
+const PLAYER_Y     = 200;
+
+// ── Which character is shown ─────────────────────────────────
+let currentCharIdx = 0;
+
+// ── Idle animation state ─────────────────────────────────────
+let idleFrame    = 0;
+let lastIdleTime = 0;
+
+// ── Sprite dimensions (computed on load) ─────────────────────
+let FRAME_W = 0;
+let FRAME_H = 0;
+
+// ── Arrow navigation ─────────────────────────────────────────
+function switchCharacter(dir) {
+  currentCharIdx = (currentCharIdx + dir + CHARACTERS.length) % CHARACTERS.length;
+  idleFrame      = 0;
+  lastIdleTime   = 0;
+  const ch = CHARACTERS[currentCharIdx];
+  FRAME_W = ch.img.naturalWidth  / ch.totalFrames;
+  FRAME_H = ch.img.naturalHeight;
+
+  // Hide left arrow when on first character, show when not
+  const btnLeft = document.getElementById('btnLeft');
+  if (btnLeft) btnLeft.style.display = currentCharIdx === 0 ? 'none' : 'block';
+}
+
+// ════════════════════════════════════════════════════════════
+//  PARTICLE SYSTEM
+// ════════════════════════════════════════════════════════════
+const particles = [];
+
+function spawnClickBurst(x, y, color) {
+  const N = 28;
+  for (let i = 0; i < N; i++) {
+    const angle = (Math.PI * 2 * i) / N + (Math.random() - 0.5) * 0.4;
+    const speed = 2.5 + Math.random() * 8;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      decay: 0.020 + Math.random() * 0.022,
+      radius: 2.5 + Math.random() * 5.5,
+      color,
+      star: false
+    });
+  }
+}
+
+function spawnSparkles(x, y) {
+  for (let i = 0; i < 12; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 6;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      life: 1,
+      decay: 0.018 + Math.random() * 0.012,
+      radius: 4 + Math.random() * 4,
+      color: '#ffffff',
+      star: true
+    });
+  }
+}
+
+const embers = [];
+function spawnEmber() {
+  embers.push({
+    x: 55 + Math.random() * 480,
+    y: 270 + Math.random() * 20,
+    vx: (Math.random() - 0.5) * 1.4,
+    vy: -(0.8 + Math.random() * 2.5),
+    life: 1,
+    decay: 0.008 + Math.random() * 0.012,
+    radius: 2 + Math.random() * 5,
+    hue: 18 + Math.random() * 32
+  });
+}
+
+function tickParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x  += p.vx;
+    p.y  += p.vy;
+    p.vy += 0.20;
+    p.vx *= 0.965;
+    p.life -= p.decay;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = embers.length - 1; i >= 0; i--) {
+    const e = embers[i];
+    e.x  += e.vx + Math.sin(e.life * 8) * 0.3;
+    e.y  += e.vy;
+    e.life -= e.decay;
+    if (e.life <= 0) embers.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  fxCtx.clearRect(0, 0, GAME_W, GAME_H);
+
+  for (const e of embers) {
+    fxCtx.save();
+    fxCtx.globalAlpha = e.life * 0.75;
+    fxCtx.shadowColor = `hsl(${e.hue},100%,60%)`;
+    fxCtx.shadowBlur  = 12;
+    fxCtx.fillStyle   = `hsl(${e.hue},100%,${55 + e.life * 30}%)`;
+    fxCtx.beginPath();
+    fxCtx.arc(e.x, e.y, e.radius * e.life, 0, Math.PI * 2);
+    fxCtx.fill();
+    fxCtx.restore();
+  }
+
+  for (const p of particles) {
+    fxCtx.save();
+    fxCtx.globalAlpha = p.life;
+    fxCtx.shadowColor = p.color;
+    fxCtx.shadowBlur  = 9;
+    if (p.star) {
+      const s = p.radius * p.life;
+      fxCtx.strokeStyle = p.color;
+      fxCtx.lineWidth   = 2.2;
+      fxCtx.lineCap     = 'round';
+      fxCtx.beginPath();
+      fxCtx.moveTo(p.x - s, p.y); fxCtx.lineTo(p.x + s, p.y);
+      fxCtx.moveTo(p.x, p.y - s); fxCtx.lineTo(p.x, p.y + s);
+      const d = s * 0.65;
+      fxCtx.moveTo(p.x - d, p.y - d); fxCtx.lineTo(p.x + d, p.y + d);
+      fxCtx.moveTo(p.x + d, p.y - d); fxCtx.lineTo(p.x - d, p.y + d);
+      fxCtx.stroke();
+    } else {
+      fxCtx.fillStyle = p.color;
+      fxCtx.beginPath();
+      fxCtx.arc(p.x, p.y, p.radius * p.life, 0, Math.PI * 2);
+      fxCtx.fill();
+    }
+    fxCtx.restore();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  SCENE RENDER
+// ════════════════════════════════════════════════════════════
+function drawScene(ts) {
+  mainCtx.clearRect(0, 0, GAME_W, GAME_H);
+
+  // Background
+  mainCtx.drawImage(bgImg, 0, 0, GAME_W, GAME_H);
+
+  // Dark overlay
+  mainCtx.fillStyle = 'rgba(0, 8, 24, 0.52)';
+  mainCtx.fillRect(0, 0, GAME_W, GAME_H);
+
+  // Vignette
+  const vig = mainCtx.createRadialGradient(
+    GAME_W / 2, GAME_H / 2, GAME_H * 0.28,
+    GAME_W / 2, GAME_H / 2, GAME_H * 0.85
+  );
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.55)');
+  mainCtx.fillStyle = vig;
+  mainCtx.fillRect(0, 0, GAME_W, GAME_H);
+
+  // ── Animate current character ────────────────────────────
+  const ch = CHARACTERS[currentCharIdx];
+  if (FRAME_W > 0) {
+    // Advance idle frame
+    if (!lastIdleTime) lastIdleTime = ts;
+    if (ts - lastIdleTime > ch.frameDuration) {
+      idleFrame    = (idleFrame + 1) % ch.totalFrames;
+      lastIdleTime = ts;
+    }
+
+    mainCtx.save();
+    mainCtx.translate(PLAYER_X, PLAYER_Y);
+    mainCtx.scale(PLAYER_SCALE, PLAYER_SCALE);
+    mainCtx.drawImage(
+      ch.img,
+      idleFrame * FRAME_W, 0, FRAME_W, FRAME_H,
+      0, 0, FRAME_W * ch.scale, FRAME_H * ch.scale
+    );
+    mainCtx.restore();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ════════════════════════════════════════════════════════════
+function loop(ts) {
+  drawScene(ts);
+  if (Math.random() < 0.35) spawnEmber();
+  tickParticles();
+  drawParticles();
+  requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════════════════════════════
+//  BUTTON SETUP
+// ════════════════════════════════════════════════════════════
+function getCenter(el) {
+  const cont = document.getElementById('container');
+  const cr   = cont.getBoundingClientRect();
+  const br   = el.getBoundingClientRect();
+  return {
+    x: br.left - cr.left + br.width  / 2,
+    y: br.top  - cr.top  + br.height / 2
+  };
+}
+
+function setupBtn(id, burstColor, callback) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  function onPress() {
+    el.classList.remove('released');
+    el.classList.add('pressing');
+  }
+
+  function onRelease() {
+    el.classList.remove('pressing');
+    void el.offsetWidth;
+    el.classList.add('released');
+    const pos = getCenter(el);
+    spawnClickBurst(pos.x, pos.y, burstColor);
+    spawnSparkles(pos.x, pos.y);
+    if (callback) setTimeout(callback, 230);
+  }
+
+  function onLeave() {
+    el.classList.remove('pressing');
+  }
+
+  el.addEventListener('mousedown',  onPress);
+  el.addEventListener('mouseup',    onRelease);
+  el.addEventListener('mouseleave', onLeave);
+  el.addEventListener('touchstart',  (e) => { e.preventDefault(); onPress();   }, { passive: false });
+  el.addEventListener('touchend',    (e) => { e.preventDefault(); onRelease(); }, { passive: false });
+  el.addEventListener('touchcancel', () => { onLeave(); });
+}
+
+function goToGame() {
+  const flash = document.getElementById('flashOverlay');
+  flash.style.transition = 'opacity 0.06s ease';
+  flash.style.opacity    = '0.9';
+  setTimeout(() => {
+    flash.style.transition = 'opacity 0.45s ease';
+    flash.style.opacity    = '0';
+    setTimeout(() => { window.location.href = 'game.html'; }, 380);
+  }, 90);
+}
+
+// ════════════════════════════════════════════════════════════
+//  ASSET LOADING
+// ════════════════════════════════════════════════════════════
+let loadedCount    = 0;
+const TOTAL_ASSETS = 2; // bgImg + girlieImg
+
+function onAssetLoaded() {
+  loadedCount++;
+  if (loadedCount < TOTAL_ASSETS) return;
+
+  // Set initial frame dimensions
+  const ch = CHARACTERS[currentCharIdx];
+  FRAME_W = ch.img.naturalWidth  / ch.totalFrames;
+  FRAME_H = ch.img.naturalHeight;
+
+  // Wire up buttons
+  setupBtn('btnSettings', '#aaddff');
+  setupBtn('btnSkins',    '#ff9944');
+  setupBtn('btnBalls',    '#55ff99');
+  setupBtn('btnPlay',     '#ffcc00', goToGame);
+  setupBtn('btnRight',    '#ffd966', () => switchCharacter(+1));
+  // btnLeft is not in the HTML since we start at index 0
+
+  requestAnimationFrame(loop);
+}
+
+bgImg.onload     = onAssetLoaded;
+girlieImg.onload = onAssetLoaded;
+
+bgImg.onerror     = () => { loadedCount++; onAssetLoaded(); };
+girlieImg.onerror = () => { loadedCount++; onAssetLoaded(); };
+</script>
+</body>
+</html>

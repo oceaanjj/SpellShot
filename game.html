@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spell Shot</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    // --------------------------------------------------
+    // IMPORTING FILES
+    // --------------------------------------------------
+    const bgImg    = new Image();
+    const imgBody  = new Image();
+    const imgCanon = new Image();
+    const imgWheel = new Image();
+
+    bgImg.src    = "assets/background.png";
+    imgBody.src  = "assets/girlySprite.png";
+    imgCanon.src = "assets/canon.png";
+    imgWheel.src = "assets/wheel.png";
+
+    // --------------------------------------------------
+    // GAME CANVAS SIZE
+    // --------------------------------------------------
+    const GAME_W = 1035;
+    const GAME_H = 596;
+
+    // --------------------------------------------------
+    // ORIGINAL CHARACTER SETTINGS (KEEP THESE)
+    // --------------------------------------------------
+    const FRAMES = 2;
+    const SCALE = 0.55;
+
+    let FRAME_W = 0;
+    let FRAME_H = 0;
+
+    // --------------------------------------------------
+    // WHOLE PLAYER SCALE + POSITION
+    // ito lang ang gamitin para lumiit at gumalaw ang player, wag na galawin yung original settings sa taas
+    // --------------------------------------------------
+    const PLAYER_SCALE = 0.15;
+    const PLAYER_X = 60;
+    const PLAYER_Y = 345;
+
+    // --------------------------------------------------
+    // CANNON SETTINGS (KEEP SAME)
+    // --------------------------------------------------
+    const MOUNT_X = 500;
+    const MOUNT_Y = 750;
+
+    const CANON_PIVOT_X = 100;
+    const CANON_PIVOT_Y = 390;
+
+    const CANON_SCALE = 0.38;
+
+    let cannonAngle = -0.10;
+    const MIN_ANGLE = -Math.PI * 0.10;
+    const MAX_ANGLE =  Math.PI * 0.10;
+    let isDragging = false;
+
+    // blink
+    let blinkFrame = 0;
+    let blinkState = "open";
+    let lastBlinkTime = 0;
+    let nextBlinkDelay = 1800 + Math.random() * 2000;
+
+    // --------------------------------------------------
+    // HELPERS
+    // --------------------------------------------------
+    const WHEEL_SCALE = 1.18;
+
+    function drawWholeFrame(img, frameIndex) {
+      ctx.drawImage(
+        img,
+        frameIndex * FRAME_W, 0, FRAME_W, FRAME_H,
+        0, 0, FRAME_W * SCALE, FRAME_H * SCALE
+      );
+    }
+
+    function drawWheelFrame() {
+      const wheelW = FRAME_W * SCALE * WHEEL_SCALE;
+      const wheelH = FRAME_H * SCALE * WHEEL_SCALE;
+
+      const wheelOffsetX = -18;
+      const wheelOffsetY = -110;
+
+      ctx.drawImage(
+        imgWheel,
+        0, 0, FRAME_W, FRAME_H,
+        wheelOffsetX, wheelOffsetY, wheelW, wheelH
+      );
+    }
+
+    function drawRotatedCanon() {
+      const mountX = MOUNT_X * SCALE;
+      const mountY = MOUNT_Y * SCALE;
+
+      const drawX = CANON_PIVOT_X * CANON_SCALE;
+      const drawY = CANON_PIVOT_Y * CANON_SCALE;
+
+      const canonW = imgCanon.naturalWidth * CANON_SCALE;
+      const canonH = imgCanon.naturalHeight * CANON_SCALE;
+
+      ctx.save();
+      ctx.translate(mountX, mountY);
+      ctx.rotate(cannonAngle);
+
+      ctx.drawImage(
+        imgCanon,
+        -drawX,
+        -drawY,
+        canonW,
+        canonH
+      );
+
+      ctx.restore();
+    }
+
+    function drawPlayer() {
+      ctx.save();
+
+      ctx.translate(PLAYER_X, PLAYER_Y);
+      ctx.scale(PLAYER_SCALE, PLAYER_SCALE);
+
+      drawWholeFrame(imgBody, blinkFrame);
+      drawRotatedCanon();
+      drawWheelFrame();
+
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // background
+      ctx.drawImage(bgImg, 0, 0, GAME_W, GAME_H);
+
+      // player
+      drawPlayer();
+    }
+
+    function animate(ts) {
+      if (!lastBlinkTime) lastBlinkTime = ts;
+
+      const elapsed = ts - lastBlinkTime;
+
+      if (blinkState === "open" && elapsed > nextBlinkDelay) {
+        blinkFrame = 1;
+        blinkState = "closed";
+        lastBlinkTime = ts;
+      } else if (blinkState === "closed" && elapsed > 130) {
+        blinkFrame = 0;
+        blinkState = "open";
+        lastBlinkTime = ts;
+        nextBlinkDelay = 1800 + Math.random() * 2200;
+      }
+
+      render();
+      requestAnimationFrame(animate);
+    }
+
+    function getAngleFromMouse(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+
+      const pivotX =
+        rect.left +
+        PLAYER_X +
+        (MOUNT_X * SCALE) * PLAYER_SCALE;
+
+      const pivotY =
+        rect.top +
+        PLAYER_Y +
+        (MOUNT_Y * SCALE) * PLAYER_SCALE;
+
+      let angle = Math.atan2(clientY - pivotY, clientX - pivotX);
+
+      if (angle < MIN_ANGLE) angle = MIN_ANGLE;
+      if (angle > MAX_ANGLE) angle = MAX_ANGLE;
+
+      return angle;
+    }
+
+    // --------------------------------------------------
+    // INPUT
+    // --------------------------------------------------
+    canvas.addEventListener("mousedown", (e) => {
+      if (e.button === 0) {
+        isDragging = true;
+        cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
+      }
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
+    });
+
+    window.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    canvas.addEventListener("touchstart", (e) => {
+      isDragging = true;
+      const t = e.touches[0];
+      cannonAngle = getAngleFromMouse(t.clientX, t.clientY);
+      e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener("touchmove", (e) => {
+      if (!isDragging) return;
+      const t = e.touches[0];
+      cannonAngle = getAngleFromMouse(t.clientX, t.clientY);
+      e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener("touchend", () => {
+      isDragging = false;
+    });
+
+    // --------------------------------------------------
+    // LOAD
+    // --------------------------------------------------
+    let loaded = 0;
+    function onLoad() {
+      loaded++;
+      if (loaded < 4) return;
+
+      FRAME_W = imgBody.naturalWidth / FRAMES;
+      FRAME_H = imgBody.naturalHeight;
+
+      canvas.width = GAME_W;
+      canvas.height = GAME_H;
+
+      render();
+      requestAnimationFrame(animate);
+    }
+
+    bgImg.onload = onLoad;
+    imgBody.onload = onLoad;
+    imgCanon.onload = onLoad;
+    imgWheel.onload = onLoad;
+  </script>
+</body>
+</html>

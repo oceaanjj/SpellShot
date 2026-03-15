@@ -1,0 +1,110 @@
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── CONTAINER ──────────────────────────────────────── */
+    #container {
+      position: relative;
+      width: 1035px;
+      height: 596px;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    #fxCanvas   { z-index: 5; pointer-events: none; }
+    #mainCanvas { z-index: 1; }
+
+    /* ── UI OVERLAY ─────────────────────────────────────── */
+    #ui {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* ── LOGO ───────────────────────────────────────────── */
+    #logoImg {
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      width: 520px;
+      image-rendering: pixelated;
+      pointer-events: none;
+      z-index: 3;
+      animation: logoFloat 3.2s ease-in-out infinite;
+      filter:
+        drop-shadow(0 0 18px rgba(255, 140, 0, 0.75))
+        drop-shadow(0 0 38px rgba(255, 80,  0, 0.40))
+        drop-shadow(3px 5px 0px rgba(0,   0,  0, 0.60));
+    }
+
+    @keyframes logoFloat {
+      0%,  100% { transform: translateY(0px)  rotate(-0.3deg); }
+      50%        { transform: translateY(-7px) rotate( 0.3deg); }
+    }
+
+    /* ── BUTTONS ────────────────────────────────────────── */
+    .btn {
+      position: absolute;
+      cursor: pointer;
+      image-rendering: pixelated;
+      pointer-events: all;
+      user-select: none;
+      transform-origin: center center;
+      will-change: transform, filter;
+      transition: transform 0.10s cubic-bezier(.22,.61,.36,1),
+                  filter   0.10s ease;
+      filter: drop-shadow(3px 4px 0px rgba(0,0,0,0.55));
+    }
+
+    .btn:hover {
+      transform: scale(1.07) translateY(-3px);
+      filter:
+        brightness(1.22)
+        drop-shadow(0 0 9px rgba(255,210,60,0.90))
+        drop-shadow(3px 4px 0px rgba(0,0,0,0.55));
+    }
+
+    /* pressed-down state */
+    .btn.pressing {
+      transform: scale(0.91) translateY(3px) !important;
+      filter:
+        brightness(1.55)
+        drop-shadow(0 0 16px rgba(255,130,0,1))
+        drop-shadow(2px 2px 0px rgba(0,0,0,0.55)) !important;
+      transition: transform 0.04s ease, filter 0.04s ease;
+    }
+
+    /* spring-bounce on release */
+    @keyframes btnRelease {
+      0%   { transform: scale(0.91) translateY(3px); }
+      45%  { transform: scale(1.13) translateY(-5px); }
+      72%  { transform: scale(0.97) translateY(0px); }
+      100% { transform: scale(1.00) translateY(0px); }
+    }
+    .btn.released {
+      animation: btnRelease 0.32s cubic-bezier(.22,.61,.36,1) forwards;
+    }
+
+    /* ── FLASH OVERLAY ──────────────────────────────────── */
+    #flashOverlay {
+      position: absolute;
+      inset: 0;
+      background: #fff8e0;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+    }  
