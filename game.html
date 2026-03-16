@@ -72,6 +72,19 @@
     let currentWord = "SPELL";
     let wordProgress = [];
 
+    function onWordCompleted() {
+      const tierComplete = TargetWord.completeWord();
+      
+      if (tierComplete) {
+        TargetWord.advanceToNextTier();
+        currentWord = TargetWord.state.word;
+      } else {
+        currentWord = TargetWord.state.word;
+      }
+      
+      generateLetterBlocks();
+    }
+
     // --------------------------------------------------
     // ORIGINAL CHARACTER SETTINGS (KEEP THESE)
     // --------------------------------------------------
@@ -414,6 +427,10 @@
 
       // letter blocks
       drawLetterBlocks();
+
+      if (window.TargetWord) {
+        TargetWord.draw(ctx, letterImages);
+      }
     }
 
     function animate(ts) {
@@ -538,9 +555,22 @@
       canvas.width = GAME_W;
       canvas.height = GAME_H;
 
-      generateLetterBlocks();
-      render();
-      requestAnimationFrame(animate);
+      function startGame() {
+        if (window.TargetWord) {
+          TargetWord.init().then(() => {
+            currentWord = TargetWord.state.word;
+            generateLetterBlocks();
+            render();
+            requestAnimationFrame(animate);
+          });
+        } else {
+          generateLetterBlocks();
+          render();
+          requestAnimationFrame(animate);
+        }
+      }
+
+      setTimeout(startGame, 0);
     }
 
     bgImg.onload = onLoad;
@@ -554,5 +584,7 @@
       letterImages[letter].onerror = onLoad;
     }
   </script>
+
+  <script src="script.js"></script>
 </body>
 </html>
