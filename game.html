@@ -49,6 +49,30 @@
     const GAME_H = 596;
 
     // --------------------------------------------------
+    // LETTER SPRITE IMAGES (A-Z)
+    // --------------------------------------------------
+    const letterImages = {};
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (let letter of alphabet) {
+      letterImages[letter] = new Image();
+      letterImages[letter].src = `assets/letters/${letter}.png`;
+    }
+
+    // --------------------------------------------------
+    // LETTER BLOCKS SYSTEM
+    // --------------------------------------------------
+    const letterBlocks = [];
+    const LETTER_BLOCK_SIZE = 52;
+
+    // --------------------------------------------------
+    // GAME STATE
+    // --------------------------------------------------
+    let currentLevel = 1;
+    // To be updated later:
+    let currentWord = "SPELL";
+    let wordProgress = [];
+
+    // --------------------------------------------------
     // ORIGINAL CHARACTER SETTINGS (KEEP THESE)
     // --------------------------------------------------
     const FRAMES = 2;
@@ -91,6 +115,233 @@
     // HELPERS
     // --------------------------------------------------
     const WHEEL_SCALE = 1.18;
+
+    // LETTER BOX GENERATOR
+    function generateLetterBlocks() {
+      letterBlocks.length = 0;
+      const wordLetters = [...currentWord];
+      const uniqueLettersInWord = [...new Set(wordLetters)];
+
+      const distractors = [];
+      // number of text generator
+      const maxDistractors = Math.min(4, 26 - uniqueLettersInWord.length); 
+      while (distractors.length < maxDistractors) {
+        let letter = alphabet[Math.floor(Math.random() * alphabet.length)];
+        if (!uniqueLettersInWord.includes(letter) && !distractors.includes(letter)) {
+          distractors.push(letter);
+        }
+      }
+
+      const allLetters = [...wordLetters, ...distractors];
+
+      const pivotY = PLAYER_Y + (MOUNT_Y * SCALE) * PLAYER_SCALE;
+      const marginAboveCannon = 60;
+      const defaultMinY = 100; 
+      const defaultMaxY = GAME_H - 120;
+
+      let computedMaxY = Math.min(defaultMaxY, Math.floor(pivotY - marginAboveCannon));
+      if (computedMaxY < defaultMinY + LETTER_BLOCK_SIZE) {
+        computedMaxY = Math.max(defaultMinY + LETTER_BLOCK_SIZE, defaultMaxY);
+      }
+
+      const bandHeight = 100; 
+      const bandMinY = Math.max(defaultMinY, computedMaxY - bandHeight);
+      const bandMaxY = computedMaxY;
+
+      const safeZone = {
+        minX: 320,
+        maxX: GAME_W - 160,
+        minY: bandMinY,
+        maxY: bandMaxY
+      };
+
+      const minDistance = LETTER_BLOCK_SIZE + 20; 
+      const positions = [];
+
+      const maxAttempts = Math.max(allLetters.length * 25, 80);
+      for (let attempt = 0; attempt < maxAttempts && positions.length < allLetters.length; attempt++) {
+        const x = safeZone.minX + Math.random() * (safeZone.maxX - safeZone.minX);
+        const y = safeZone.minY + Math.random() * (safeZone.maxY - safeZone.minY);
+
+        let collides = false;
+        for (let pos of positions) {
+          const dx = x - pos.x;
+          const dy = y - pos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < minDistance) {
+            collides = true;
+            break;
+          }
+        }
+
+        if (!collides) positions.push({ x, y });
+      }
+
+      if (positions.length < allLetters.length) {
+        const extraNeeded = allLetters.length - positions.length;
+        for (let i = 0; i < extraNeeded; i++) {
+          const x = safeZone.minX + Math.random() * (safeZone.maxX - safeZone.minX);
+          const y = Math.max(defaultMinY, Math.min(bandMaxY, bandMinY + Math.random() * bandHeight));
+          positions.push({ x, y });
+        }
+      }
+
+      allLetters.forEach((letter, index) => {
+        if (index < positions.length) {
+          const pos = positions[index];
+          letterBlocks.push({
+            x: pos.x,
+            y: pos.y,
+            width: LETTER_BLOCK_SIZE,
+            height: LETTER_BLOCK_SIZE,
+            letter,
+            isCorrect: currentWord.includes(letter),
+            wordIndex: index < wordLetters.length ? index : -1,
+            flashTime: 0,
+            isDestroyed: false,
+            shakeTimer: 0,
+            originalX: pos.x,
+            color: "#FFD700"
+          });
+        }
+      });
+
+      ensureAllLettersAimable();
+    }
+
+    function ensureAllLettersAimable() {
+      const minDistance = LETTER_BLOCK_SIZE + 30;
+      
+      letterBlocks.forEach((block, blockIndex) => {
+        let colliding = true;
+        let attempts = 0;
+        
+        while (colliding && attempts < 50) {
+          colliding = false;
+          
+          for (let i = 0; i < letterBlocks.length; i++) {
+            if (i === blockIndex) continue;
+            
+            const other = letterBlocks[i];
+            const dx = block.x - other.x;
+            const dy = block.y - other.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < minDistance) {
+              colliding = true;
+              break;
+            }
+          }
+          
+          if (colliding) {
+            block.x = 300 + Math.random() * (GAME_W - 450);
+            block.y = 100 + Math.random() * (GAME_H - 250);
+            attempts++;
+          }
+        }
+      });
+    }
+
+    function ensureWordLettersAccessible() {
+      const cannonX = PLAYER_X + (MOUNT_X * SCALE) * PLAYER_SCALE;
+      const cannonY = PLAYER_Y + (MOUNT_Y * SCALE) * PLAYER_SCALE;
+      
+      letterBlocks.forEach(block => {
+        if (block.wordIndex < 0) return;
+        
+        let isBlocked = true;
+        let attempts = 0;
+        
+        while (isBlocked && attempts < 10) {
+          isBlocked = false;
+          
+          const dx = block.x + block.width/2 - cannonX;
+          const dy = block.y + block.height/2 - cannonY;
+          const distance = Math.sqrt(dx*dx + dy*dy);
+          const steps = Math.floor(distance / 10);
+          
+          for (let i = 1; i < steps; i++) {
+            const checkX = cannonX + (dx * i / steps);
+            const checkY = cannonY + (dy * i / steps);
+            
+            for (let otherBlock of letterBlocks) {
+              if (otherBlock === block) continue;
+              
+              const closestX = Math.max(otherBlock.x, Math.min(checkX, otherBlock.x + otherBlock.width));
+              const closestY = Math.max(otherBlock.y, Math.min(checkY, otherBlock.y + otherBlock.height));
+              
+              const distanceX = checkX - closestX;
+              const distanceY = checkY - closestY;
+              const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+              
+              if (distanceSquared <= BALL_RADIUS * BALL_RADIUS) {
+                isBlocked = true;
+                break;
+              }
+            }
+            
+            if (isBlocked) break;
+          }
+          
+          if (isBlocked) {
+            block.x = 300 + Math.random() * (GAME_W - 450);
+            block.y = 100 + Math.random() * (GAME_H - 250);
+            attempts++;
+          }
+        }
+      });
+    }
+
+    function drawLetterBlocks() {
+      letterBlocks.forEach(block => {
+        if (block.isDestroyed) return;
+        
+        ctx.save();
+        
+        let shakeX = 0, shakeY = 0;
+        if (block.shakeTimer && block.shakeTimer > 0) {
+          block.shakeTimer--;
+          const shakeIntensity = Math.min(block.shakeTimer / 10, 1) * 5;
+          shakeX = (Math.random() - 0.5) * shakeIntensity;
+          shakeY = (Math.random() - 0.5) * shakeIntensity;
+          
+          if (block.shakeTimer <= 0) {
+            block.x = block.originalX;
+          } else {
+            block.x = block.originalX + shakeX;
+          }
+        }
+        
+        if (block.flashTime > 0) {
+          block.flashTime -= 16;
+          const currentTime = Date.now();
+          const flashIntensity = Math.sin(currentTime * 0.02) * 0.5 + 0.5;
+          ctx.globalAlpha = 0.5 + flashIntensity * 0.5;
+        }
+        
+        const letterImg = letterImages[block.letter];
+        if (letterImg && letterImg.complete && letterImg.naturalWidth > 0) {
+          ctx.drawImage(
+            letterImg,
+            block.x, block.y + shakeY, block.width, block.height
+          );
+        } else {
+          ctx.fillStyle = "white";
+          ctx.font = "bold 40px 'Arial', sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(block.letter, block.x + block.width / 2, block.y + block.height / 2 + shakeY);
+        }
+        
+        if (block.flashTime > 0) {
+          ctx.globalAlpha = 0.6;
+          ctx.fillStyle = block.color;
+          ctx.fillRect(block.x, block.y + shakeY, block.width, block.height);
+        }
+        
+        ctx.restore();
+      });
+    }
 
     function drawWholeFrame(img, frameIndex) {
       ctx.drawImage(
@@ -160,6 +411,9 @@
 
       // player
       drawPlayer();
+
+      // letter blocks
+      drawLetterBlocks();
     }
 
     function animate(ts) {
@@ -176,6 +430,16 @@
         blinkState = "open";
         lastBlinkTime = ts;
         nextBlinkDelay = 1800 + Math.random() * 2200;
+      }
+
+      // Update game physics
+      if (!gameOver) {
+        updateCannonBalls();
+        const gameElapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+        const remaining = Math.max(0, timeLeft - gameElapsed);
+        if (remaining <= 0 && !gameOver) {
+          checkGameOverConditions();
+        }
       }
 
       render();
@@ -207,22 +471,26 @@
     // INPUT
     // --------------------------------------------------
     canvas.addEventListener("mousedown", (e) => {
-      if (e.button === 0) {
+      if (e.button === 0 && !gameOver) {
         isDragging = true;
         cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
       }
     });
 
     window.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
+      if (!isDragging || gameOver) return;
       cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
     });
 
-    window.addEventListener("mouseup", () => {
+    window.addEventListener("mouseup", (e) => {
+      if (isDragging && e.button === 0 && !gameOver) {
+        fireCannon();
+      }
       isDragging = false;
     });
 
     canvas.addEventListener("touchstart", (e) => {
+      if (gameOver) return;
       isDragging = true;
       const t = e.touches[0];
       cannonAngle = getAngleFromMouse(t.clientX, t.clientY);
@@ -230,14 +498,29 @@
     }, { passive: false });
 
     window.addEventListener("touchmove", (e) => {
-      if (!isDragging) return;
+      if (!isDragging || gameOver) return;
       const t = e.touches[0];
       cannonAngle = getAngleFromMouse(t.clientX, t.clientY);
       e.preventDefault();
     }, { passive: false });
 
-    window.addEventListener("touchend", () => {
+    window.addEventListener("touchend", (e) => {
+      if (isDragging && !gameOver) {
+        fireCannon();
+      }
       isDragging = false;
+    });
+
+    // Keyboard controls
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !gameOver) {
+        e.preventDefault();
+        fireCannon();
+      }
+      if (e.code === "KeyR" && gameOver) {
+        e.preventDefault();
+        initLevel(1);
+      }
     });
 
     // --------------------------------------------------
@@ -246,7 +529,8 @@
     let loaded = 0;
     function onLoad() {
       loaded++;
-      if (loaded < 4) return;
+      // 4 base images + 26 letter images = 30 total
+      if (loaded < 30) return;
 
       FRAME_W = imgBody.naturalWidth / FRAMES;
       FRAME_H = imgBody.naturalHeight;
@@ -254,6 +538,7 @@
       canvas.width = GAME_W;
       canvas.height = GAME_H;
 
+      generateLetterBlocks();
       render();
       requestAnimationFrame(animate);
     }
@@ -262,6 +547,12 @@
     imgBody.onload = onLoad;
     imgCanon.onload = onLoad;
     imgWheel.onload = onLoad;
+
+    // Load all letter images
+    for (let letter of alphabet) {
+      letterImages[letter].onload = onLoad;
+      letterImages[letter].onerror = onLoad;
+    }
   </script>
 </body>
 </html>
