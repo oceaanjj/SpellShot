@@ -143,11 +143,11 @@
   }
 
   function resetGameProgress() {
-    state.coins = 0;
     state.currentTier = 1;
     state.wordsCompletedInTier = 0;
     state.totalWordsCompletedInTier = 0;
     resetLives();
+    resetAmmo();
     const nextWord = getNextWordInTier(state.currentTier);
     setTargetWord(nextWord);
   }
