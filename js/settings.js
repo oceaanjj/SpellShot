@@ -13,7 +13,7 @@
 
 
 // ── State ──────────────────────────────────────────────────────────────────
-let musicVolume = 0.7;   // 0.0 → 1.0  (70% filled by default, matches mockup)
+let musicVolume = parseFloat(localStorage.getItem('musicVolume') ?? '0.7');  // 0.0 → 1.0  (70% filled by default, matches mockup)
 let sfxVolume   = 0.0;   // 0.0 → 1.0  (0% filled by default, matches mockup)
 let aimGuideOn = localStorage.getItem('aimGuide') !== 'false';  // true = ON button shown
 
@@ -253,7 +253,13 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
   // ╚══════════════════════════════════════════════════════════════════════╝
 
   //                         top      left    width   start  callback
-  const musicSlider = makeSlider('38%', '15%',  '72%',  musicVolume, v => { musicVolume = v; });
+    const musicSlider = makeSlider('38%', '15%', '72%', musicVolume, v => {
+            musicVolume = v;
+            localStorage.setItem('musicVolume', v);
+            if (typeof updateMusicVolume === 'function') updateMusicVolume(); // ← add this
+    });
+
+
   const sfxSlider   = makeSlider('63%', '15%',  '72%',  sfxVolume,   v => { sfxVolume   = v; });
 
   panel.appendChild(musicSlider);
