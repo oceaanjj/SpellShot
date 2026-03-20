@@ -71,6 +71,16 @@
       pointer-events: auto;
     }
 
+    #pauseOverlay #pausePanel,
+    #pauseOverlay .pause-option {
+      pointer-events: none;
+    }
+
+    #pauseOverlay.active #pausePanel,
+    #pauseOverlay.active .pause-option {
+      pointer-events: auto;
+    }
+
     .ui-btn {
       border: none;
       padding: 0;
@@ -281,10 +291,19 @@
       const targetState = window.TargetWord?.state;
       if (!targetState) return null;
 
+      const maxLives = targetState.maxLives ?? 0;
+      const maxAmmo = targetState.maxAmmo ?? 0;
+      const rawLives = typeof targetState.lives === "number" ? targetState.lives : maxLives;
+      const rawAmmo = typeof targetState.ammo === "number" ? targetState.ammo : maxAmmo;
+      const clampedLives = Math.max(0, Math.min(maxLives, rawLives));
+      const clampedAmmo = Math.max(0, Math.min(maxAmmo, rawAmmo));
+      const savedLives = gameOver || clampedLives <= 0 ? maxLives : clampedLives;
+      const savedAmmo = gameOver || clampedAmmo <= 0 ? maxAmmo : clampedAmmo;
+
       return {
         coins: typeof targetState.coins === "number" ? targetState.coins : 0,
-        lives: typeof targetState.lives === "number" ? targetState.lives : targetState.maxLives ?? 0,
-        ammo: typeof targetState.ammo === "number" ? targetState.ammo : targetState.maxAmmo ?? 0,
+        lives: savedLives,
+        ammo: savedAmmo,
         currentTier: typeof targetState.currentTier === "number" ? targetState.currentTier : 1,
         wordsCompletedInTier: typeof targetState.wordsCompletedInTier === "number" ? targetState.wordsCompletedInTier : 0,
         totalWordsCompletedInTier: typeof targetState.totalWordsCompletedInTier === "number" ? targetState.totalWordsCompletedInTier : 0,
@@ -352,12 +371,15 @@
       }
 
       if (typeof saved.lives === "number") {
-        targetState.lives = Math.max(0, Math.min(targetState.maxLives, saved.lives));
+        const maxLives = targetState.maxLives ?? 0;
+        const clampedLives = Math.max(0, Math.min(maxLives, saved.lives));
+        targetState.lives = clampedLives > 0 ? clampedLives : maxLives;
       }
 
       if (typeof saved.ammo === "number") {
         const maxAmmo = targetState.maxAmmo ?? 0;
-        targetState.ammo = Math.max(0, Math.min(maxAmmo, saved.ammo));
+        const clampedAmmo = Math.max(0, Math.min(maxAmmo, saved.ammo));
+        targetState.ammo = clampedAmmo > 0 ? clampedAmmo : maxAmmo;
       }
 
       if (typeof saved.currentTier === "number") {
@@ -1186,7 +1208,6 @@
     function restartGame() {
       if (!window.TargetWord) return;
       hidePauseOverlay();
-      clearSavedGameState();
       TargetWord.resetGameProgress();
       currentWord = TargetWord.state.word;
       cannonBalls.length = 0;
