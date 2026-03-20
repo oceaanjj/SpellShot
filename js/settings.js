@@ -15,7 +15,7 @@
 // ── State ──────────────────────────────────────────────────────────────────
 let musicVolume = 0.7;   // 0.0 → 1.0  (70% filled by default, matches mockup)
 let sfxVolume   = 0.0;   // 0.0 → 1.0  (0% filled by default, matches mockup)
-let aimGuideOn  = true;  // true = ON button shown
+let aimGuideOn = localStorage.getItem('aimGuide') !== 'false';  // true = ON button shown
 
 
 // ── Modal element (built once, reused) ────────────────────────────────────
@@ -268,7 +268,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
   // ║  width  → resize the button (% of panel width)       ║
   // ╚══════════════════════════════════════════════════════╝
   const toggleBtn = document.createElement('img');
-  toggleBtn.src = aimGuideOn ? 'assets/onButton.png' : 'assets/offButton.png';
+  toggleBtn.src = aimGuideOn ? 'assets/offButton.png' : 'assets/onButton.png';
 
   Object.assign(toggleBtn.style, {
     position:   'absolute',
@@ -283,6 +283,8 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
   toggleBtn.addEventListener('click', () => {
     aimGuideOn    = !aimGuideOn;
     toggleBtn.src = aimGuideOn ? 'assets/onButton.png' : 'assets/offButton.png';
+    localStorage.setItem('aimGuide', aimGuideOn);
+
 
     toggleBtn.style.transform = 'scale(0.93)';
     setTimeout(() => { toggleBtn.style.transform = 'scale(1)'; }, 120);
