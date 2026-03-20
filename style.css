@@ -108,3 +108,11 @@
       pointer-events: none;
       z-index: 50;
     }  
+
+    /* Smooth arrow fade during character slide */
+    #btnLeft, #btnRight {
+      transition: opacity 0.18s ease;
+    }
+
+
+    
