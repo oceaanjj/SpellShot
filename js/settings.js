@@ -78,7 +78,7 @@ function buildSettingsModal() {
   // ║  Negative values push it outside the panel edge.     ║
   // ╚══════════════════════════════════════════════════════╝
   const closeBtn = document.createElement('img');
-  closeBtn.src = 'assets/closeButton.png'; // ← your X button asset
+  closeBtn.src = 'assets/button/closeButton.png'; // ← your X button asset
 
   Object.assign(closeBtn.style, {
     position:    'absolute',
@@ -161,7 +161,7 @@ function buildSettingsModal() {
 
     // Slider track image (transparent middle lets yellow show through)
     const track = document.createElement('img');
-    track.src = 'assets/slider.png';
+    track.src = 'assets/button/slider.png';
     Object.assign(track.style, {
       position: 'absolute',
       inset:    '0',
@@ -173,7 +173,7 @@ function buildSettingsModal() {
 
     // Draggable knob image
     const knob = document.createElement('img');
-    knob.src = 'assets/sliderButton.png';
+    knob.src = 'assets/button/sliderButton.png';
     Object.assign(knob.style, {
       position:    'absolute',
       top:         '50%',
@@ -274,7 +274,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
   // ║  width  → resize the button (% of panel width)       ║
   // ╚══════════════════════════════════════════════════════╝
   const toggleBtn = document.createElement('img');
-  toggleBtn.src = aimGuideOn ? 'assets/offButton.png' : 'assets/onButton.png';
+  toggleBtn.src = aimGuideOn ? 'assets/button/offButton.png' : 'assets/button/onButton.png';
 
   Object.assign(toggleBtn.style, {
     position:   'absolute',
@@ -288,7 +288,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
 
   toggleBtn.addEventListener('click', () => {
     aimGuideOn    = !aimGuideOn;
-    toggleBtn.src = aimGuideOn ? 'assets/onButton.png' : 'assets/offButton.png';
+    toggleBtn.src = aimGuideOn ? 'assets/button/onButton.png' : 'assets/button/offButton.png';
     localStorage.setItem('aimGuide', aimGuideOn);
 
 

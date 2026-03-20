@@ -35,19 +35,19 @@ const bgImg = new Image();
 // Characters are inside assets/characters/
 // Everything else is directly in assets/
 bgImg.src     = 'assets/background.png';
-girlieImg.src = 'assets/characters/girlie.png';
-markImg.src   = 'assets/characters/mark.png';
-pattieImg.src = 'assets/characters/pattie.png';
-peterImg.src  = 'assets/characters/peter.png';
+girlieImg.src = 'assets/character/mainMenu/girlie.png';
+markImg.src   = 'assets/character/mainMenu/mark.png';
+pattieImg.src = 'assets/character/mainMenu/pattie.png';
+peterImg.src  = 'assets/character/mainMenu/peter.png';
 
 // -- Locked state images --
 // For now these point to the same image as the normal ones.
 // Later, just change the path to your real locked artwork.
 // Example: girlieLockedImg.src = 'assets/characters/characterGirlieLocked.png';
-girlieLockedImg.src = 'assets/characters/girlie.png';
-markLockedImg.src   = 'assets/characters/mark.png';
-pattieLockedImg.src = 'assets/characters/pattie.png';
-peterLockedImg.src  = 'assets/characters/peter.png';
+girlieLockedImg.src = 'assets/character/mainMenu/girlie.png';
+markLockedImg.src   = 'assets/character/mainMenu/mark.png';
+pattieLockedImg.src = 'assets/character/mainMenu/pattie.png';
+peterLockedImg.src  = 'assets/character/mainMenu/peter.png';
 
 
 // -- Asset loader --
