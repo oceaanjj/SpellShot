@@ -79,7 +79,7 @@ function onAssetLoaded() {
   // setupBtn( elementId, burstColour, callbackFunction )
   // burstColour = colour of the dots that explode out when clicked
   // callback    = what happens after the click (optional)
-  setupBtn('btnSettings', '#aaddff');                          // no action yet
+setupBtn('btnSettings', '#aaddff', openSettings);                    // no action yet
   setupBtn('btnSkins',    '#ff9944');                          // no action yet
   setupBtn('btnBalls',    '#55ff99');                          // no action yet
   setupBtn('btnPlay',     '#ffcc00', goToGame);                // goes to game.html

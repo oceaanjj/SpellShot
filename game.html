@@ -219,6 +219,8 @@
     </div>
   </div>
 
+
+  <script src="js/settings.js"></script>
   <script>
     const canvas = document.getElementById("c");
     const ctx = canvas.getContext("2d");
@@ -1336,6 +1338,8 @@
     }
 
     function drawTrajectoryLine() {
+      if (!getAimGuide()) return; // for on and off ng aim guide
+
       const start = getCannonTipPosition();
       const direction = {
         x: Math.cos(cannonAngle),
