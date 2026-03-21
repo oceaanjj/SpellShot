@@ -41,11 +41,11 @@
   style.textContent = `
     #tutorialSlideWrap {
       position: absolute;
-      bottom: 90px;
+      bottom: 20px;
       right: 24px;
       z-index: 50;
       pointer-events: none;
-      width: 320px;   /* ← resize slide image here */
+      width: 280px;  
     }
 
     #tutorialSlideImg {
@@ -143,7 +143,7 @@
   successOverlay.id = 'tutorialSuccess';
   successOverlay.innerHTML = `
     <div id="tutorialSuccessText">WELL DONE!</div>
-    <img id="tutorialReturnBtn" src="assets/tutorial/returnHomeButton.png" alt="Return Home" />
+    <img id="tutorialReturnBtn" src="assets/button/returnHomeButton.png" alt="Return Home" />
   `;
   host.appendChild(successOverlay);
 
@@ -258,6 +258,7 @@
     }
   }
 
+
   // ── Public hooks — called by tutorial.html ────────────────────────────
 
   // Call this every time the cannon fires
@@ -291,20 +292,32 @@
 
   // ── Success screen — called by tutorial.html's onWordCompleted ────────
   window.showTutorialSuccess = function () {
-    if (tutDone) return;
-    tutDone = true;
-    clearTimeout(slideTimer);
+  if (tutDone) return;
+  tutDone = true;
+  clearTimeout(slideTimer);
 
-    const wrap = document.getElementById('tutorialSlideWrap');
-    if (wrap) wrap.style.display = 'none';
+  // ── ADD THESE ─────────────────────────────────────
+  if (typeof gamePaused !== 'undefined') gamePaused = true;  // freeze game loop
+  if (typeof gameOver   !== 'undefined') gameOver   = false; // prevent game over draw
+  const mapOverlay = document.getElementById('mapOverlay');
+  if (mapOverlay) mapOverlay.style.display = 'none';         // hide timer
+  // ──────────────────────────────────────────────────
 
-    const overlay = document.getElementById('tutorialSuccess');
-    if (overlay) requestAnimationFrame(() => overlay.classList.add('visible'));
-  };
+  const wrap = document.getElementById('tutorialSlideWrap');
+  if (wrap) wrap.style.display = 'none';
+
+  const overlay = document.getElementById('tutorialSuccess');
+  if (overlay) requestAnimationFrame(() => overlay.classList.add('visible'));
+};
 
   // ── Start on load ────────────────────────────────────────────────────
-  window.addEventListener('load', () => {
-    setTimeout(() => showSlide(1), 200);
-  });
+//   window.addEventListener('load', () => {
+//     setTimeout(() => showSlide(1), 200);
+//   });
+
+// Add this instead:
+window.startTutorialSlides = function() {
+  setTimeout(() => showSlide(1), 200);
+};
 
 })();

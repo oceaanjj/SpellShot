@@ -25,9 +25,11 @@
     }
 
     #gameShell {
-      position: relative;
-      width: 1035px;
-      height: 596px;
+        position: relative;
+        width: 1035px;
+        height: 596px;
+        opacity: 0;
+        transition: opacity 0.4s ease;
     }
 
     #gameShell canvas {
@@ -304,7 +306,34 @@
   </style>
 </head>
 <body>
+
+    <div id="loadingScreen" style="
+  position: fixed; inset: 0; z-index: 999;
+  background: #0a0a0e;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.5s ease;
+">
+  <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
+    animation: loadLogoFloat 1.5s ease-in-out infinite;" />
+  <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
+    font-size: 22px; color: #FFD700; letter-spacing: 4px;
+    animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
+</div>
+
   <div id="gameShell">
+    <!-- Loading screen -->
+
+        <style>
+        @keyframes loadLogoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-8px); }
+        }
+        @keyframes loadPulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+        </style>
     <canvas id="c"></canvas>
     <div id="pauseBackdrop"></div>
     <div id="pauseOverlay">
@@ -673,8 +702,10 @@
     }
 
     function goToHome() {
-      window.location.href = "index.html";
-    }
+        document.body.style.transition = 'opacity 0.35s ease';
+        document.body.style.opacity    = '0';
+        setTimeout(() => { window.location.href = 'index.html'; }, 350);
+        }
 
     // function goToSettings() {
     //   window.location.href = "index.html#settings";
@@ -1913,15 +1944,25 @@
       canvas.height = GAME_H;
 
     function startGame() {
-      // Tutorial: no TargetWord init, no saves — just start
-      resetTimerForRound();
-      generateLetterBlocks();
-      render();
-      requestAnimationFrame(animate);
-    }
+        resetTimerForRound();
+        generateLetterBlocks();
 
-      setTimeout(startGame, 0);
-    }
+        const loading = document.getElementById('loadingScreen');
+        if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => { loading.style.display = 'none'; }, 500);
+        }
+        document.getElementById('gameShell').style.opacity = '1';
+
+        if (typeof window.startTutorialSlides === 'function') window.startTutorialSlides();
+        render();
+        requestAnimationFrame(animate);
+        }
+
+        setTimeout(startGame, 0); // ← ADD THIS LINE
+        }
+
+   
 
     bgImg.onload = onLoad;
     mapBridgeImage.onload = onLoad;
@@ -1948,7 +1989,7 @@
     }
 
     // tutorial — no beforeunload save
-    window.addEventListener("resize", positionTopOverlays);
+    // window.addEventListener("resize", positionTopOverlays);
   </script>
 
   <!-- Ball skin bridge — reads equipped skin from localStorage, exposes window.BallSkins -->

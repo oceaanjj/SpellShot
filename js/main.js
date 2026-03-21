@@ -129,5 +129,7 @@ function refreshCoinDisplay() {
 // When you're ready to build the tutorial modal, replace this function
 // body in its own js/tutorial.js file and call openTutorial() from there.
 function openTutorial() {
-  window.location.href = 'tutorial.html';
+  document.body.style.transition = 'opacity 0.35s ease';
+  document.body.style.opacity    = '0';
+  setTimeout(() => { window.location.href = 'tutorial.html'; }, 350);
 }
