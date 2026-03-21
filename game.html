@@ -246,26 +246,60 @@
       position: absolute;
       top: calc(100% + 1rem);
       left: 50%;
-      transform: translateX(-50%);
+      transform: translateX(-50%) translateY(-8px) scale(0.92);
       display: flex;
-      gap: 1rem;
+      gap: 0.5rem;
       justify-content: center;
       align-items: center;
+      pointer-events: none;
       font-family: "PixelFont", sans-serif;
       font-size: 26px;
       letter-spacing: 1.2px;
       color: #fefefe;
-      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s ease, transform 0.1s ease, filter 0.25s ease;
     }
 
-    #targetWordOverlay span {
-      opacity: 0.35;
-      transition: opacity 0.2s ease;
+    #targetWordOverlay.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    #targetWordOverlay .target-letter {
+      width: 48px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.08s ease, transform 0.08s ease;
       text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
     }
 
-    #targetWordOverlay span.active {
+    #targetWordOverlay.visible .target-letter {
+      opacity: 0.35;
+      transform: translateY(0);
+    }
+
+    #targetWordOverlay.visible .target-letter.active {
       opacity: 1;
+    }
+
+    #targetWordOverlay .target-letter img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    #targetWordOverlay .target-letter.fallback {
+      font-size: 26px;
+      letter-spacing: 1.2px;
+    }
+
+    #targetWordOverlay.dimmed {
+      filter: brightness(0.45);
     }
   </style>
 </head>
@@ -334,6 +368,7 @@
     const targetWordOverlay = document.getElementById("targetWordOverlay");
     const floatingPopups = [];
     let overlayDirty = true;
+    let targetWordRevealFrame = null;
 
     bgImg.src = "assets/map1/background/background.png";
     mapBridgeImage.src = "assets/map1/background/bridgeMap.png";
@@ -592,21 +627,59 @@
       const state = TargetWord.state;
       if (!state || !state.word) {
         targetWordOverlay.textContent = "";
+        targetWordOverlay.classList.remove("visible");
+        if (targetWordRevealFrame !== null && typeof cancelAnimationFrame === "function") {
+          cancelAnimationFrame(targetWordRevealFrame);
+        }
+        targetWordRevealFrame = null;
         return;
       }
+
       const letters = state.word.split("");
       const progress = Array.isArray(state.progress) ? state.progress : [];
       const fragment = document.createDocumentFragment();
+
       letters.forEach((letter, index) => {
-        const span = document.createElement("span");
-        span.textContent = letter;
+        const letterSlot = document.createElement("span");
+        letterSlot.classList.add("target-letter");
         if (progress[index]) {
-          span.classList.add("active");
+          letterSlot.classList.add("active");
         }
-        fragment.appendChild(span);
+
+        const normalizedLetter = letter.toUpperCase();
+        const img = document.createElement("img");
+        img.draggable = false;
+        img.decoding = "async";
+        img.alt = letter;
+        img.src = letterImages[normalizedLetter]?.src ?? `assets/map1/letter/${normalizedLetter}.png`;
+        img.addEventListener("error", () => {
+          if (!letterSlot.contains(img)) return;
+          letterSlot.removeChild(img);
+          letterSlot.textContent = letter;
+          letterSlot.classList.add("fallback");
+        });
+
+        letterSlot.appendChild(img);
+        fragment.appendChild(letterSlot);
       });
-      targetWordOverlay.innerHTML = "";
+
+      targetWordOverlay.classList.remove("visible");
+      targetWordOverlay.textContent = "";
       targetWordOverlay.appendChild(fragment);
+
+      if (targetWordRevealFrame !== null && typeof cancelAnimationFrame === "function") {
+        cancelAnimationFrame(targetWordRevealFrame);
+      }
+      targetWordRevealFrame = null;
+
+      if (typeof requestAnimationFrame === "function") {
+        targetWordRevealFrame = requestAnimationFrame(() => {
+          targetWordRevealFrame = null;
+          targetWordOverlay.classList.add("visible");
+        });
+      } else {
+        targetWordOverlay.classList.add("visible");
+      }
     }
 
     function spawnHitPopup(block, coinDelta) {
@@ -1826,6 +1899,9 @@
       drawLetterSuccessFlash();
       drawCannonBalls();
 
+      if (targetWordOverlay) {
+        targetWordOverlay.classList.toggle("dimmed", gameOver);
+      }
       if (window.TargetWord) {
         TargetWord.draw(ctx, letterImages, coinImage, heartImage);
       }

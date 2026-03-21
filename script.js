@@ -98,36 +98,36 @@
     return state.lives > 0;
   }
 
-  function onLetterHit(letter, isInOrder) {
-    letter = (letter || '').toUpperCase();
-    if (!letter) return;
+    function onLetterHit(letter, isInOrder) {
+      letter = (letter || '').toUpperCase();
+      if (!letter) return;
 
-    if (!isInOrder) {
-      loseLife();
-      adjustCoins(-25);
-      useAmmo();
-      return false;
-    }
+      useAmmo(); // Always spend ammo even on ordered hits
 
-    let matchedIndex = -1;
-    for (let i = 0; i < state.word.length; i++) {
-      if (state.word[i] === letter && !state.progress[i]) {
-        matchedIndex = i;
-        break;
+      if (!isInOrder) {
+        loseLife();
+        adjustCoins(-25);
+        return false;
       }
-    }
 
-    if (matchedIndex === -1) {
-      loseLife();
-      adjustCoins(-25);
-      useAmmo();
-      return false;
-    }
+      let matchedIndex = -1;
+      for (let i = 0; i < state.word.length; i++) {
+        if (state.word[i] === letter && !state.progress[i]) {
+          matchedIndex = i;
+          break;
+        }
+      }
 
-    state.progress[matchedIndex] = true;
-    adjustCoins(100);
-    return state.progress.every(Boolean);
-  }
+      if (matchedIndex === -1) {
+        loseLife();
+        adjustCoins(-25);
+        return false;
+      }
+
+      state.progress[matchedIndex] = true;
+      adjustCoins(100);
+      return state.progress.every(Boolean);
+    }
 
   function completeWord() {
     state.wordsCompletedInTier++;
