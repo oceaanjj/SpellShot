@@ -1,15 +1,3 @@
-// =============================================
-//  characters.js
-//  The list of characters + the logic for
-//  switching between them with a slide animation.
-//
-//  To add a new character:
-//    1. Create a new Image() below
-//    2. Add it to the CHARACTERS array
-//    3. Set its .src in main.js
-// =============================================
-
-
 // -- Character images --
 // Each one is a sprite sheet (all frames side by side in one image)
 const girlieImg = new Image();
@@ -18,9 +6,6 @@ const pattieImg = new Image();
 const peterImg  = new Image();
 
 // -- Locked state images --
-// Each character can have a separate image shown when they are locked.
-// For now they use the same image as the normal one.
-// When you have a real locked image later, just change the .src in main.js.
 const girlieLockedImg = new Image();
 const markLockedImg   = new Image();
 const pattieLockedImg = new Image();
@@ -28,17 +13,6 @@ const peterLockedImg  = new Image();
 
 
 // -- Character list --
-// Each character needs:
-//   img           → the sprite sheet shown when unlocked
-//   lockedImg     → the sprite sheet shown when locked (swap this later for a real locked image)
-//   totalFrames   → how many animation frames are in the sprite sheet
-//   scale         → extra size multiplier (1.0 = no change)
-//   frameDuration → how long each frame stays before moving to the next (ms)
-//   unlocked      → true = playable,  false = shows a lock on top
-//
-//  To unlock a character later:
-//    Change  unlocked: false  →  unlocked: true
-//    (or do it in code when the player reaches a certain level)
 const CHARACTERS = [
   { img: girlieImg, lockedImg: girlieLockedImg, totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: true  },
   { img: markImg,   lockedImg: markLockedImg,   totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false },
@@ -53,20 +27,19 @@ let incomingCharIdx = null;  // the character sliding in (null when not sliding)
 
 
 // -- Idle animation state --
-let idleFrame    = 0;   // which frame of the idle animation we're on
-let lastIdleTime = 0;   // when we last changed frames (used to time the animation)
+let idleFrame    = 0;  
+let lastIdleTime = 0;   
 
 
 // -- Slide animation state --
-let isSliding      = false;  // are we currently sliding?
-let slideStartTime = 0;      // when the slide started (so we know how far along it is)
-let slideDirection = 1;      // +1 = sliding right-to-left,  -1 = sliding left-to-right
+let isSliding      = false;  
+let slideStartTime = 0;      
+let slideDirection = 1;  
 
 
 // -- Switch to the next or previous character --
 // dir = +1 means go right (next), -1 means go left (previous)
 function switchCharacter(dir) {
-  // Don't start a new slide if one is already playing
   if (isSliding) return;
 
   const nextIdx = currentCharIdx + dir;
@@ -104,8 +77,6 @@ function updateArrowVisibility() {
 
 
 // -- Enable or disable the arrow buttons --
-// enabled = false → dim them + block clicks (used during slide)
-// enabled = true  → bring them back to normal
 function setArrowsInteractive(enabled) {
   const btnLeft  = document.getElementById('btnLeft');
   const btnRight = document.getElementById('btnRight');

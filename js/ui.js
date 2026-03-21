@@ -72,20 +72,7 @@ function setupBtn(id, burstColor, callback) {
 // -- Go to the game screen --
 // Flashes the screen white then loads game.html
 function goToGame() {
-  const flash = document.getElementById('flashOverlay');
-
-  // Step 1: quickly flash to white
-  flash.style.transition = 'opacity 0.06s ease';
-  flash.style.opacity    = '0.9';
-
-  setTimeout(() => {
-    // Step 2: slowly fade the white away
-    flash.style.transition = 'opacity 0.45s ease';
-    flash.style.opacity    = '0';
-
-    // Step 3: once the fade is done, go to the game
-    setTimeout(() => {
-      window.location.href = 'game.html';
-    }, 380);
-  }, 90);
-}   
+  document.body.style.transition = 'opacity 0.35s ease';
+  document.body.style.opacity    = '0';
+  setTimeout(() => { window.location.href = 'game.html'; }, 350);
+}

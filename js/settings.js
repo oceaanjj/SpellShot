@@ -288,7 +288,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
 
   toggleBtn.addEventListener('click', () => {
     aimGuideOn    = !aimGuideOn;
-    toggleBtn.src = aimGuideOn ? 'assets/button/onButton.png' : 'assets/button/offButton.png';
+    toggleBtn.src = aimGuideOn ? 'assets/button/offButton.png' : 'assets/button/onButton.png';
     localStorage.setItem('aimGuide', aimGuideOn);
 
 

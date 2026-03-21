@@ -79,14 +79,17 @@ function onAssetLoaded() {
   // setupBtn( elementId, burstColour, callbackFunction )
   // burstColour = colour of the dots that explode out when clicked
   // callback    = what happens after the click (optional)
-setupBtn('btnSettings', '#aaddff', openSettings);                    // no action yet
-  setupBtn('btnSkins', '#ff9944', openCannonShop);              // opens cannon skin shop
-  setupBtn('btnBalls',    '#55ff99', openBallShop);            // opens cannon ball skin shop
-  setupBtn('btnPlay',     '#ffcc00', goToGame);                // goes to game.html
+  setupBtn('btnSettings', '#aaddff', openSettings);               // opens settings modal
+  setupBtn('btnSkins',    '#ff9944', openCannonShop);                            // no action yet
+  setupBtn('btnBalls',    '#55ff99', openBallShop);              // opens cannon ball skin shop
+  setupBtn('btnPlay',     '#ffcc00', goToGame);                  // goes to game.html
+  setupBtn('btnTutorial', '#aaffcc', openTutorial);              // opens tutorial modal
   setupBtn('btnRight',    '#ffd966', () => switchCharacter(+1)); // next character
   setupBtn('btnLeft',     '#ffd966', () => switchCharacter(-1)); // previous character
   // ↑ Add future buttons here — one line each
 
+  // -- Read coins from the last game session and show them on screen --
+  refreshCoinDisplay();
 
   // -- Start the game loop --
   startLoop(mainCtx, fxCtx, bgImg);
@@ -104,3 +107,29 @@ setupBtn('btnSettings', '#aaddff', openSettings);                    // no actio
   img.onload  = onAssetLoaded;
   img.onerror = onAssetLoaded;
 });
+
+// -- Read coin total from localStorage and update the coin display --
+// Coins are saved inside the game state by game.html every 2.5 seconds.
+// We just read the latest value here — we never write to it from this file.
+function refreshCoinDisplay() {
+  try {
+    const raw    = localStorage.getItem('spellshot-game-state-v1');
+    const parsed = raw ? JSON.parse(raw) : null;
+    const coins  = parsed?.coins ?? 0;
+    const el     = document.getElementById('coinCount');
+    if (el) el.textContent = coins.toLocaleString(); // e.g. 2000 → "2,000"
+  } catch (e) {
+    console.warn('SpellShot: Could not read coin count', e);
+  }
+}
+
+
+// -- Tutorial placeholder --
+// Wire up the button now; fill in the actual tutorial content later.
+// When you're ready to build the tutorial modal, replace this function
+// body in its own js/tutorial.js file and call openTutorial() from there.
+function openTutorial() {
+  document.body.style.transition = 'opacity 0.35s ease';
+  document.body.style.opacity    = '0';
+  setTimeout(() => { window.location.href = 'tutorial.html'; }, 350);
+}
