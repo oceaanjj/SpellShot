@@ -81,7 +81,7 @@ function onAssetLoaded() {
   // callback    = what happens after the click (optional)
 setupBtn('btnSettings', '#aaddff', openSettings);                    // no action yet
   setupBtn('btnSkins',    '#ff9944');                          // no action yet
-  setupBtn('btnBalls',    '#55ff99');                          // no action yet
+  setupBtn('btnBalls',    '#55ff99', openBallShop);            // opens cannon ball skin shop
   setupBtn('btnPlay',     '#ffcc00', goToGame);                // goes to game.html
   setupBtn('btnRight',    '#ffd966', () => switchCharacter(+1)); // next character
   setupBtn('btnLeft',     '#ffd966', () => switchCharacter(-1)); // previous character

@@ -823,8 +823,12 @@
       window.location.href = "index.html";
     }
 
+    // function goToSettings() {
+    //   window.location.href = "index.html#settings";
+    // }
+
     function goToSettings() {
-      window.location.href = "index.html#settings";
+      openSettings();  // ← opens the modal directly in game.html
     }
 
     function handlePauseAction(action) {
@@ -1623,11 +1627,14 @@
       if (!cannonBalls.length) return;
       ctx.save();
 
+      // Use the player's selected ball skin; fall back to the default ammoImage.
+      const _activeBallImg = (window.BallSkins ? window.BallSkins.getSelectedImg() : null) || ammoImage;
+
       cannonBalls.forEach((ball) => {
         ctx.globalAlpha = 1;
-        if (ammoImage && ammoImage.complete && ammoImage.naturalWidth > 0) {
+        if (_activeBallImg && _activeBallImg.complete && _activeBallImg.naturalWidth > 0) {
           ctx.drawImage(
-            ammoImage,
+            _activeBallImg,
             ball.x - CANNONBALL_DRAW_SIZE / 2,
             ball.y - CANNONBALL_DRAW_SIZE / 2,
             CANNONBALL_DRAW_SIZE,
@@ -1793,12 +1800,15 @@
       const ammoPaddingX = Math.max(12, hudPadding + 120);
       const y = GAME_H - hudPadding - ammoSize + 50;
 
+      // Use the player's selected ball skin; fall back to the default ammoImage.
+      const _hudBallImg = (window.BallSkins ? window.BallSkins.getSelectedImg() : null) || ammoImage;
+
       for (let i = 0; i < maxAmmo; i++) {
         const x = ammoPaddingX + i * (ammoSize + gap);
         const isActive = i < currentAmmo;
         ctx.globalAlpha = isActive ? 1 : 0.25;
-        if (ammoImage && ammoImage.complete && ammoImage.naturalWidth > 0) {
-          ctx.drawImage(ammoImage, x, y, ammoSize, ammoSize);
+        if (_hudBallImg && _hudBallImg.complete && _hudBallImg.naturalWidth > 0) {
+          ctx.drawImage(_hudBallImg, x, y, ammoSize, ammoSize);
         } else {
           ctx.fillStyle = "rgba(30, 30, 30, 0.9)";
           ctx.beginPath();
@@ -2117,7 +2127,8 @@
     window.addEventListener("resize", positionTopOverlays);
   </script>
 
+  <!-- Ball skin bridge — reads equipped skin from localStorage, exposes window.BallSkins -->
+  <script src="js/ballSkins.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-  

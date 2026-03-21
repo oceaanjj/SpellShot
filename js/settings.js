@@ -308,7 +308,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
   });
 
   settingsModal = backdrop;
-  document.getElementById('container').appendChild(settingsModal);
+  (document.getElementById('container') || document.getElementById('gameShell')).appendChild(settingsModal);
 }
 
 
