@@ -30,9 +30,9 @@
       id:           'skull',
       name:         'Skull',
       price:        500,
-      unlockedSlot: 'assets/balls/unlocked/spike.png',
-      lockedSlot:   'assets/balls/locked/spike.png',
-      previewSrc:   'assets/balls/themes/spike.png',
+      unlockedSlot: 'assets/balls/unlocked/skull.png',
+      lockedSlot:   'assets/balls/locked/skull.png',
+      previewSrc:   'assets/balls/themes/skull.png',
     },
     {
       id:           'toxic',
@@ -277,14 +277,12 @@
       userSelect:      'none',
       lineHeight:      '0',
       overflow:        'hidden',
-      // Base state — matches .btn drop-shadow
       filter:          'drop-shadow(3px 4px 0px rgba(0,0,0,0.55))',
       transformOrigin: 'center center',
       willChange:      'transform, filter',
       transition:      'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease',
     });
 
-    // Slot image — full card (stone frame + ball baked in)
     const slotImg = document.createElement('img');
     slotImg.id  = 'ballSlot-' + skin.id;
     slotImg.src = owned
@@ -300,8 +298,6 @@
       maxHeight:      '100%',
     });
 
-    // ── Price badge for locked skins — price.png image only, no extra text ──
-    // Shown only when the skin is not yet owned.
     if (!owned && skin.price > 0) {
       const priceBadge = document.createElement('img');
       priceBadge.id  = 'ballPrice-' + skin.id;
@@ -320,7 +316,6 @@
       card.appendChild(priceBadge);
     }
 
-    // Equipped checkmark — bottom-right corner
     const check = document.createElement('img');
     check.id  = 'ballCheck-' + skin.id;
     check.src = 'assets/balls/check.png';
@@ -339,7 +334,6 @@
     card.appendChild(slotImg);
     card.appendChild(check);
 
-    // Hover — matches .btn:hover: scale up + golden glow
     card.addEventListener('mouseenter', () => {
       card.style.transform = 'scale(1.07) translateY(-3px)';
       card.style.filter    =
@@ -349,7 +343,6 @@
       card.style.zIndex = '10';
     });
 
-    // Press — matches .btn.pressing
     card.addEventListener('mousedown', () => {
       card.style.transform  = 'scale(0.91) translateY(3px)';
       card.style.filter     =
@@ -359,7 +352,6 @@
       card.style.transition = 'transform 0.04s ease, filter 0.04s ease';
     });
 
-    // Release — spring back to hover state
     card.addEventListener('mouseup', () => {
       card.style.transition = 'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease';
       card.style.transform  = 'scale(1.07) translateY(-3px)';
@@ -369,7 +361,6 @@
         'drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
     });
 
-    // Mouse leave — restore resting state
     card.addEventListener('mouseleave', () => {
       card.style.transition = 'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease';
       card.style.transform  = 'scale(1)';
@@ -436,11 +427,9 @@
     ownedIds.push(skinId);
     saveState();
 
-    // Swap locked → unlocked slot image
     const slotImg = document.getElementById('ballSlot-' + skinId);
     if (slotImg) slotImg.src = skin.unlockedSlot;
 
-    // Remove price badge
     const priceBadge = document.getElementById('ballPrice-' + skinId);
     if (priceBadge) priceBadge.remove();
 
