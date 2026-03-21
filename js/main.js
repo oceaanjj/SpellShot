@@ -79,8 +79,8 @@ function onAssetLoaded() {
   // setupBtn( elementId, burstColour, callbackFunction )
   // burstColour = colour of the dots that explode out when clicked
   // callback    = what happens after the click (optional)
-setupBtn('btnSettings', '#aaddff', openSettings);               // opens settings modal
-  setupBtn('btnSkins',    '#ff9944');                            // no action yet
+  setupBtn('btnSettings', '#aaddff', openSettings);               // opens settings modal
+  setupBtn('btnSkins',    '#ff9944', openCannonShop);                            // no action yet
   setupBtn('btnBalls',    '#55ff99', openBallShop);              // opens cannon ball skin shop
   setupBtn('btnPlay',     '#ffcc00', goToGame);                  // goes to game.html
   setupBtn('btnTutorial', '#aaffcc', openTutorial);              // opens tutorial modal
