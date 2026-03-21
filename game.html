@@ -393,36 +393,156 @@
     const borderLeftElem = document.getElementById("borderLeft");
     const borderRightElem = document.getElementById("borderRight");
     const borderBottomElem = document.getElementById("borderBottom");
-    const floatingPopups = [];
-    let overlayDirty = true;
-    const overlayLetterSlots = [];
-    let cachedOverlayWord = "";
-
-    bgImg.src = "assets/map1/background/background.png";
-    mapBridgeImage.src = "assets/map1/background/bridgeMap.png";
     imgBody.src = "assets/girlySprite.png";
     imgCanon.src = "assets/canon.png";
     imgWheel.src = "assets/wheel.png";
     coinImage.src = "assets/coin.png";
     heartImage.src = "assets/lives.png";
     ammoImage.src = "assets/cannonBall.png";
-    timerBoxImage.src = "assets/map1/timerBox.png";
+    const floatingPopups = [];
+    let overlayDirty = true;
+    const overlayLetterSlots = [];
+    let cachedOverlayWord = "";
+
+    //sa timerbox ni map3 waley pa so ginamit ko na muna yung timerbox ni map1
+    const THEMES = [
+      {
+        id: "map1",
+        letterFolder: "assets/map1/letter",
+        background: "assets/map1/background/background.png",
+        bridge: "assets/map1/background/bridgeMap.png",
+        timerBox: "assets/map1/timerBox.png",
+        borders: {
+          left: "assets/map1/border/leftBorder.png",
+          right: "assets/map1/border/rightBorder.png",
+          bottom: "assets/map1/border/bottomBorder.png"
+        }
+      },
+      {
+        id: "map2",
+        letterFolder: "assets/map2/letter",
+        background: "assets/map2/background/background.png",
+        bridge: "assets/map2/background/bridge.png",
+        timerBox: "assets/map2/timerBox.png",
+        borders: {
+          left: "assets/map2/border/leftBorder.png",
+          right: "assets/map2/border/rightBorder.png",
+          bottom: "assets/map2/border/bottomBorder.png"
+        }
+      },
+      {
+        id: "map3",
+        letterFolder: "assets/map3/letter",
+        background: "assets/map3/background/background.png",
+        bridge: "assets/map3/background/bridge.png",
+        timerBox: "assets/map1/timerBox.png",
+        borders: {
+          left: "assets/map3/border/leftBorder.png",
+          right: "assets/map3/border/rightBorder.png",
+          bottom: "assets/map3/border/bottomBorder.png"
+        }
+      }
+    ];
+    let currentThemeId = "";
+
+    const DEFAULT_BORDER_DIMENSIONS = {
+      left: { width: 0, height: 0 },
+      right: { width: 0, height: 0 },
+      bottom: { width: 0, height: 0 }
+    };
+
+    function preloadDefaultBorderDimensions() {
+      const defaultBorders = THEMES[0]?.borders;
+      if (!defaultBorders) return;
+      Object.entries(defaultBorders).forEach(([key, src]) => {
+        if (!src) return;
+        const img = new Image();
+        img.src = src;
+        img.addEventListener(
+          "load",
+          () => {
+            DEFAULT_BORDER_DIMENSIONS[key] = {
+              width: img.naturalWidth,
+              height: img.naturalHeight
+            };
+            updateBorderOverlayPositions();
+          },
+          { once: true }
+        );
+      });
+    }
+
+    preloadDefaultBorderDimensions();
+
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const letterImages = {};
+    for (let letter of alphabet) {
+      letterImages[letter] = new Image();
+    }
+
+    function getThemeForRound(round) {
+      const normalizedRound = Math.max(1, Number(round) || 1);
+      const index = Math.min(Math.floor((normalizedRound - 1) / 5), THEMES.length - 1);
+      return THEMES[index];
+    }
+
+    function setLetterSprites(folder) {
+      if (!folder) return;
+      alphabet.split("").forEach((letter) => {
+        const sprite = letterImages[letter];
+        if (sprite) {
+          sprite.src = `${folder}/${letter}.png`;
+        }
+      });
+    }
+
+    function onImageReady(image, callback) {
+      if (!image) return;
+      const finalize = () => {
+        if (typeof callback === "function") callback();
+      };
+      if (image.complete && image.naturalWidth > 0) {
+        finalize();
+        return;
+      }
+      image.addEventListener("load", finalize, { once: true });
+      image.addEventListener("error", finalize, { once: true });
+    }
+
+    function setBorderImage(element, src) {
+      if (!element || !src) return;
+      element.src = src;
+      onImageReady(element, updateBorderOverlayPositions);
+    }
+
+    function applyTheme(theme) {
+      if (!theme || theme.id === currentThemeId) return;
+      currentThemeId = theme.id;
+      setLetterSprites(theme.letterFolder);
+      bgImg.src = theme.background;
+      mapBridgeImage.src = theme.bridge;
+      const timerSrc = theme.timerBox || THEMES[0].timerBox;
+      timerBoxImage.src = timerSrc;
+      if (timerOverlayImage) {
+        timerOverlayImage.src = timerSrc;
+      }
+      onImageReady(timerBoxImage, refreshTimerOverlay);
+      setBorderImage(borderLeftElem, theme.borders.left);
+      setBorderImage(borderRightElem, theme.borders.right);
+      setBorderImage(borderBottomElem, theme.borders.bottom);
+      markTargetWordDirty();
+    }
+
+    function updateThemeForRound(round) {
+      const theme = getThemeForRound(round);
+      applyTheme(theme);
+    }
 
     // --------------------------------------------------
     // GAME CANVAS SIZE
     // --------------------------------------------------
     const GAME_W = 1035;
     const GAME_H = 596;
-
-    // --------------------------------------------------
-    // LETTER SPRITE IMAGES (A-Z)
-    // --------------------------------------------------
-    const letterImages = {};
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for (let letter of alphabet) {
-      letterImages[letter] = new Image();
-      letterImages[letter].src = `assets/map1/letter/${letter}.png`;
-    }
 
     // --------------------------------------------------
     // LETTER BLOCKS SYSTEM
@@ -434,7 +554,7 @@
     // GAME STATE
     // --------------------------------------------------
     let currentRound = 1;
-    let currentWord = "SPELL";
+    let currentWord = "LOADING";
     let wordProgress = [];
     const TIMER_DURATION_SECONDS = 60;
     const TIMER_BOX_SCALE = 0.105;
@@ -589,6 +709,7 @@
       gameOverReason = "";
       markTargetWordDirty();
       updateTimerOverlayText();
+      updateThemeForRound(currentRound);
     }
 
     function updateBackgroundMovement(ts) {
@@ -720,38 +841,61 @@
       return Math.min(Math.max(value, BORDER_SCALE_MIN), BORDER_SCALE_MAX);
     }
 
+    function getBorderDimensions(key, element) {
+      const reference = DEFAULT_BORDER_DIMENSIONS[key];
+      if (reference && reference.width > 0 && reference.height > 0) {
+        return reference;
+      }
+      if (element && element.naturalWidth > 0) {
+        return {
+          width: element.naturalWidth,
+          height: element.naturalHeight
+        };
+      }
+      return { width: 0, height: 0 };
+    }
+
     function updateBorderOverlayPositions() {
       const topScale = clampBorderScale(BORDER_TOP_SCALE);
       const bottomScale = clampBorderScale(BORDER_BOTTOM_SCALE);
 
-      if (borderLeftElem && borderLeftElem.naturalWidth > 0) {
-        const width = borderLeftElem.naturalWidth * topScale;
-        const height = borderLeftElem.naturalHeight * topScale;
-        borderLeftElem.style.width = `${width}px`;
-        borderLeftElem.style.height = `${height}px`;
-        borderLeftElem.style.left = `${BORDER_TOP_LEFT_X}px`;
-        borderLeftElem.style.top = `${BORDER_TOP_LEFT_Y}px`;
+      if (borderLeftElem) {
+        const dims = getBorderDimensions("left", borderLeftElem);
+        if (dims.width > 0 && dims.height > 0) {
+          const width = dims.width * topScale;
+          const height = dims.height * topScale;
+          borderLeftElem.style.width = `${width}px`;
+          borderLeftElem.style.height = `${height}px`;
+          borderLeftElem.style.left = `${BORDER_TOP_LEFT_X}px`;
+          borderLeftElem.style.top = `${BORDER_TOP_LEFT_Y}px`;
+        }
       }
 
-      if (borderRightElem && borderRightElem.naturalWidth > 0) {
-        const width = borderRightElem.naturalWidth * topScale;
-        const height = borderRightElem.naturalHeight * topScale;
-        const left = GAME_W - width + BORDER_TOP_RIGHT_X;
-        borderRightElem.style.width = `${width}px`;
-        borderRightElem.style.height = `${height}px`;
-        borderRightElem.style.left = `${left}px`;
-        borderRightElem.style.top = `${BORDER_TOP_RIGHT_Y}px`;
+      if (borderRightElem) {
+        const dims = getBorderDimensions("right", borderRightElem);
+        if (dims.width > 0 && dims.height > 0) {
+          const width = dims.width * topScale;
+          const height = dims.height * topScale;
+          const left = GAME_W - width + BORDER_TOP_RIGHT_X;
+          borderRightElem.style.width = `${width}px`;
+          borderRightElem.style.height = `${height}px`;
+          borderRightElem.style.left = `${left}px`;
+          borderRightElem.style.top = `${BORDER_TOP_RIGHT_Y}px`;
+        }
       }
 
-      if (borderBottomElem && borderBottomElem.naturalWidth > 0) {
-        const width = borderBottomElem.naturalWidth * bottomScale;
-        const height = borderBottomElem.naturalHeight * bottomScale;
-        const left = (GAME_W - width) / 2 + BORDER_BOTTOM_X;
-        const top = GAME_H - height + BORDER_BOTTOM_Y;
-        borderBottomElem.style.width = `${width}px`;
-        borderBottomElem.style.height = `${height}px`;
-        borderBottomElem.style.left = `${left}px`;
-        borderBottomElem.style.top = `${top}px`;
+      if (borderBottomElem) {
+        const dims = getBorderDimensions("bottom", borderBottomElem);
+        if (dims.width > 0 && dims.height > 0) {
+          const width = dims.width * bottomScale;
+          const height = dims.height * bottomScale;
+          const left = (GAME_W - width) / 2 + BORDER_BOTTOM_X;
+          const top = GAME_H - height + BORDER_BOTTOM_Y;
+          borderBottomElem.style.width = `${width}px`;
+          borderBottomElem.style.height = `${height}px`;
+          borderBottomElem.style.left = `${left}px`;
+          borderBottomElem.style.top = `${top}px`;
+        }
       }
     }
 
@@ -798,6 +942,7 @@
     }
 
     function onWordCompleted() {
+      updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
       
       if (tierComplete) {
@@ -1491,6 +1636,10 @@
       gameOverReason = reason || "";
       timerExpired = true;
       roundMessageTimer = 0;
+      if (window.TargetWord && typeof window.TargetWord.resetDisplayedCoins === "function") {
+        window.TargetWord.resetDisplayedCoins();
+      }
+      updateThemeForRound(currentRound);
     }
 
     function getGameOverReasonText(reason) {
@@ -1569,12 +1718,12 @@
       ctx.fillText(getGameOverReasonText(gameOverReason), GAME_W / 2, GAME_H / 2 + 10);
 
       ctx.font = "22px PixelFont";
-      const restartText = "Press R to restart from the beginning";
+      const restartText = "Press R to restart";
       const restartWidth = ctx.measureText(restartText).width;
       const restartX = GAME_W / 2 - restartWidth / 2;
       const restartY = GAME_H / 2 + 70;
       const before = "Press ";
-      const after = " to restart from the beginning";
+      const after = " to restart";
       const beforeWidth = ctx.measureText(before).width;
       ctx.textAlign = "left";
       ctx.fillStyle = "#ffffff";
@@ -1596,6 +1745,7 @@
       roundMessage = "";
       roundMessageTimer = 0;
       currentRound = 1;
+      updateThemeForRound(currentRound);
       gameOverReason = "";
       gameOver = false;
       timerExpired = false;
@@ -2209,6 +2359,8 @@
     trackImage(borderLeftElem, { critical: true, callback: updateBorderOverlayPositions });
     trackImage(borderRightElem, { critical: true, callback: updateBorderOverlayPositions });
     trackImage(borderBottomElem, { critical: true, callback: updateBorderOverlayPositions });
+
+    updateThemeForRound(currentRound);
 
     for (let letter of alphabet) {
       trackImage(letterImages[letter]);

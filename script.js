@@ -68,10 +68,15 @@
       return state.coins;
     }
 
-    function getAccumulatedCoins() {
-      const baseline = typeof state.sessionBaselineCoins === "number" ? state.sessionBaselineCoins : 0;
-      return Math.max(0, state.coins - baseline);
-    }
+  function getAccumulatedCoins() {
+    const baseline = typeof state.sessionBaselineCoins === "number" ? state.sessionBaselineCoins : 0;
+    return Math.max(0, state.coins - baseline);
+  }
+
+  function resetDisplayedCoins() {
+    state.sessionBaselineCoins = state.coins;
+    signalTargetWordOverlayUpdate();
+  }
 
   function resetLives() {
     state.lives = state.maxLives;
@@ -161,6 +166,7 @@
     state.totalWordsCompletedInTier = 0;
     resetLives();
     resetAmmo();
+    resetDisplayedCoins();
     const nextWord = getNextWordInTier(state.currentTier);
     setTargetWord(nextWord);
   }
@@ -244,6 +250,7 @@
     hasLives: hasLives,
     adjustCoins: adjustCoins,
     loadNextWordInTier: loadNextWordInTier,
+    resetDisplayedCoins: resetDisplayedCoins,
     state: state
   };
 })();
