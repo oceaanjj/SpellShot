@@ -361,7 +361,7 @@
     </div>
   </div>
 
-
+  <script src="js/cannonSkins.js"></script>
   <script src="js/settings.js"></script>
   <script>
     const canvas = document.getElementById("c");
@@ -1909,20 +1909,32 @@
     }
 
     function drawWheelFrame() {
-      const wheelW = FRAME_W * SCALE * WHEEL_SCALE;
-      const wheelH = FRAME_H * SCALE * WHEEL_SCALE;
+      const _wheel = (window.CannonSkins ? window.CannonSkins.getWheelImg() : null) || imgWheel;
 
-      const wheelOffsetX = -18;
-      const wheelOffsetY = -110;
+      const wheelOffsetX =  270;
+      const wheelOffsetY =  320;
 
-      ctx.drawImage(
-        imgWheel,
-        0, 0, FRAME_W, FRAME_H,
-        wheelOffsetX, wheelOffsetY, wheelW, wheelH
-      );
+      if (_wheel === imgWheel) {
+        const wheelW = FRAME_W * SCALE * WHEEL_SCALE;
+        const wheelH = FRAME_H * SCALE * WHEEL_SCALE;
+        ctx.drawImage(
+          imgWheel,
+          0, 0, FRAME_W, FRAME_H,
+          wheelOffsetX, wheelOffsetY, wheelW, wheelH
+        );
+      } else {
+        const skinWheelW = imgCanon.naturalWidth * CANON_SCALE * 0.72;
+        const skinWheelH = imgCanon.naturalWidth * CANON_SCALE * 0.72; 
+        ctx.drawImage(
+          _wheel,
+          0, 0, _wheel.naturalWidth, _wheel.naturalHeight,
+          wheelOffsetX, wheelOffsetY, skinWheelW, skinWheelH
+        );
+      }
     }
 
     function drawRotatedCanon() {
+      const _barrel = (window.CannonSkins ? window.CannonSkins.getBarrelImg() : null) || imgCanon;
       const mountX = MOUNT_X * SCALE;
       const mountY = MOUNT_Y * SCALE;
 
@@ -1937,11 +1949,9 @@
       ctx.rotate(cannonAngle);
 
       ctx.drawImage(
-        imgCanon,
-        -drawX,
-        -drawY,
-        canonW,
-        canonH
+        _barrel,
+        0, 0, _barrel.naturalWidth, _barrel.naturalHeight,
+        -drawX, -drawY, canonW, canonH
       );
 
       ctx.restore();
@@ -2156,6 +2166,7 @@
       if (window.TargetWord) {
         TargetWord.init().then(() => {
           resetTimerForRound();
+          if (window.CannonSkins) CannonSkins.preloadAll();
           if (savedGameState) {
             applySavedGameState(savedGameState);
           }
