@@ -13,6 +13,14 @@
     ammo: 6
   };
 
+  const HUD_PADDING = 60;
+
+  function signalTargetWordOverlayUpdate() {
+    if (typeof markTargetWordDirty === "function") {
+      markTargetWordDirty();
+    }
+  }
+
   let wordLists = null; 
 
   function loadWordsJson() {
@@ -50,6 +58,7 @@
     state.word = (word || 'SPELL').toUpperCase();
     state.progress = Array(state.word.length).fill(false);
     resetAmmo();
+    signalTargetWordOverlayUpdate();
   }
 
   function adjustCoins(amount) {
@@ -153,25 +162,18 @@
   }
 
   function drawTarget(ctx, letterImages, coinImage, heartImage) {
-    if (!state.word || !letterImages) return;
+    if (!state.word) return;
 
-    const spriteSize = 40;
-    const gap = 2;
-    const padding = 16;
-    const coinSize = 64;
-    const coinSpacing = 12;
-    const heartSize = 32;
-    const heartSpacing = 8;
-    const defaultYOffset = 10;
+    const padding = HUD_PADDING;
+    const coinSize = 40;
+    const coinSpacing = 10;
+    const heartSize = 38;
+    const heartSpacing = 6;
 
     ctx.save();
-
     const hasCoin = coinImage && coinImage.complete && coinImage.naturalWidth > 0;
-    const hasHeartSprite = heartImage && heartImage.complete && heartImage.naturalWidth > 0;
-    const heartRowHeight = state.maxLives > 0 ? heartSize + heartSpacing : 0;
     const coinHeight = hasCoin ? coinSize + coinSpacing : 0;
-    const y = padding + defaultYOffset + coinHeight + heartRowHeight;
-    const heartsBaseY = padding + coinHeight + 6;
+    const heartsBaseY = padding + coinHeight + 4;
 
     if (hasCoin) {
       ctx.globalAlpha = 1;
@@ -180,11 +182,7 @@
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(
-        `${state.coins}`,
-        padding + coinSize + 12,
-        padding + coinSize / 2 + 4
-      );
+      ctx.fillText(`${state.coins}`, padding + coinSize + 10, padding + coinSize / 2 + 4);
     } else {
       ctx.fillStyle = '#ffd207ff';
       ctx.font = 'bold 30px PixelFont';
@@ -194,7 +192,8 @@
     }
 
     if (state.maxLives > 0) {
-        ctx.font = `${heartSize}px PixelFont`;
+      const hasHeartSprite = heartImage && heartImage.complete && heartImage.naturalWidth > 0;
+      ctx.font = `${heartSize}px PixelFont`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
@@ -209,34 +208,9 @@
           ctx.fillText('❤', heartX + heartSize / 2, heartsBaseY + heartSize / 2);
         }
       }
-
       ctx.globalAlpha = 1;
     }
 
-    let x = padding;
-
-    const wordY = y;
-
-    for (let i = 0; i < state.word.length; i++) {
-      const letter = state.word[i];
-      const img = letterImages[letter];
-
-      if (img && img.complete && img.naturalWidth > 0) {
-        ctx.globalAlpha = 0.95;
-        ctx.drawImage(img, x, wordY, spriteSize, spriteSize);
-      } else {
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.font = 'bold 20px PixelFont';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(letter, x + spriteSize / 2, wordY + spriteSize / 2);
-      }
-
-      x += spriteSize + gap;
-    }
-
-    ctx.globalAlpha = 1;
     ctx.restore();
   }
 

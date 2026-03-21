@@ -185,10 +185,87 @@
 
     #pauseUI {
       position: absolute;
-      top: 16px;
-      right: 24px;
+      top: 60px;
+      right: 60px;
       z-index: 16;
       pointer-events: auto;
+    }
+
+    #pauseToggle {
+      transform: scale(0.9);
+      padding-top: 6px;
+      padding-bottom: 6px;
+    }
+
+    #pauseToggle img {
+      width: 48px;
+      height: 48px;
+    }
+
+    #mapOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      pointer-events: none;
+    }
+
+    /* timer overlay remains centered at top */
+
+    #timerOverlay {
+      position: absolute;
+      top: -64px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    #timerOverlay img {
+      display: block;
+      image-rendering: pixelated;
+      height: auto;
+      width: auto;
+    }
+
+    #timerOverlayText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: "PixelFont", sans-serif;
+      font-size: 32px;
+      letter-spacing: 2px;
+      color: #ffef72;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
+
+    #targetWordOverlay {
+      position: absolute;
+      top: calc(100% + 1rem);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      font-family: "PixelFont", sans-serif;
+      font-size: 26px;
+      letter-spacing: 1.2px;
+      color: #fefefe;
+      pointer-events: none;
+    }
+
+    #targetWordOverlay span {
+      opacity: 0.35;
+      transition: opacity 0.2s ease;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+    }
+
+    #targetWordOverlay span.active {
+      opacity: 1;
     }
   </style>
 </head>
@@ -217,6 +294,13 @@
         <img src="assets/pause.png" alt="Pause" />
       </button>
     </div>
+    <div id="mapOverlay">
+      <div id="timerOverlay">
+        <img id="timerOverlayImage" src="assets/map1/timerBox.png" alt="Timer Box" />
+        <span id="timerOverlayText">1:00</span>
+        <div id="targetWordOverlay"></div>
+      </div>
+    </div>
   </div>
 
 
@@ -235,23 +319,31 @@
     // --------------------------------------------------
     // IMPORTING FILES
     // --------------------------------------------------
-    const bgImg    = new Image();
-    const imgBody  = new Image();
+    const bgImg = new Image();
+    const mapBridgeImage = new Image();
+    const imgBody = new Image();
     const imgCanon = new Image();
     const imgWheel = new Image();
     const coinImage = new Image();
     const heartImage = new Image();
     const ammoImage = new Image();
     const timerBoxImage = new Image();
+    const timerOverlay = document.getElementById("timerOverlay");
+    const timerOverlayImage = document.getElementById("timerOverlayImage");
+    const timerOverlayText = document.getElementById("timerOverlayText");
+    const targetWordOverlay = document.getElementById("targetWordOverlay");
+    const floatingPopups = [];
+    let overlayDirty = true;
 
-    bgImg.src    = "assets/background.png";
-    imgBody.src  = "assets/girlySprite.png";
+    bgImg.src = "assets/map1/background/background.png";
+    mapBridgeImage.src = "assets/map1/background/bridgeMap.png";
+    imgBody.src = "assets/girlySprite.png";
     imgCanon.src = "assets/canon.png";
     imgWheel.src = "assets/wheel.png";
     coinImage.src = "assets/coin.png";
     heartImage.src = "assets/lives.png";
     ammoImage.src = "assets/cannonBall.png";
-    timerBoxImage.src = "assets/timerBox.png";
+    timerBoxImage.src = "assets/map1/timerBox.png";
 
     // --------------------------------------------------
     // GAME CANVAS SIZE
@@ -266,7 +358,7 @@
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     for (let letter of alphabet) {
       letterImages[letter] = new Image();
-      letterImages[letter].src = `assets/letters/${letter}.png`;
+      letterImages[letter].src = `assets/map1/letter/${letter}.png`;
     }
 
     // --------------------------------------------------
@@ -282,10 +374,17 @@
     let currentWord = "SPELL";
     let wordProgress = [];
     const TIMER_DURATION_SECONDS = 60;
-    const TIMER_BOX_SCALE = 0.10;
+    const TIMER_BOX_SCALE = 0.105;
+    const TIMER_BOX_TOP = 8;
+    const BACKGROUND_SCROLL_SPEED = 0.012;
+    const HUD_PADDING = 60;
+    const COIN_HIT_REWARD = 100;
+    const COIN_HIT_PENALTY = -25;
     const SAVE_KEY = "spellshot-game-state-v1";
     const AUTO_SAVE_INTERVAL_MS = 2500;
     let autoSaveTimerId = null;
+    let backgroundOffset = 0;
+    let lastBackgroundTimestamp = 0;
 
     function buildSavePayload() {
       const targetState = window.TargetWord?.state;
@@ -405,7 +504,38 @@
 
       gameOver = false;
       gameOverReason = "";
+      markTargetWordDirty();
+      updateTimerOverlayText();
     }
+
+    function updateBackgroundMovement(ts) {
+      if (!ts) return;
+      if (!lastBackgroundTimestamp) {
+        lastBackgroundTimestamp = ts;
+        return;
+      }
+      const delta = ts - lastBackgroundTimestamp;
+      backgroundOffset = (backgroundOffset + delta * BACKGROUND_SCROLL_SPEED) % GAME_W;
+      lastBackgroundTimestamp = ts;
+    }
+
+    function drawScrollingBackground() {
+      if (!bgImg || !bgImg.complete) return;
+      const drawWidth = GAME_W;
+      const drawHeight = GAME_H;
+      const offset = backgroundOffset % drawWidth;
+      ctx.drawImage(bgImg, -offset, 0, drawWidth, drawHeight);
+      ctx.drawImage(bgImg, -offset + drawWidth, 0, drawWidth, drawHeight);
+    }
+
+    function drawBridgeLayer() {
+      if (!mapBridgeImage || !mapBridgeImage.complete) return;
+      const scale = GAME_W / mapBridgeImage.naturalWidth;
+      const bridgeHeight = mapBridgeImage.naturalHeight * scale;
+      const y = Math.max(0, GAME_H - bridgeHeight + 12);
+      ctx.drawImage(mapBridgeImage, 0, y, GAME_W, bridgeHeight);
+    }
+
     let timerRemaining = TIMER_DURATION_SECONDS;
     let lastTimerTimestamp = null;
     let timerExpired = false;
@@ -427,6 +557,100 @@
     const ROUND_HEADER_OFFSET = 18;
     let successFlash = { timer: 0, x: 0, y: 0 };
 
+    const gameShell = document.getElementById("gameShell");
+
+    function refreshTimerOverlay() {
+      if (!timerBoxImage || !timerBoxImage.naturalWidth) return;
+      const boxWidth = timerBoxImage.naturalWidth * TIMER_BOX_SCALE;
+      const boxHeight = timerBoxImage.naturalHeight * TIMER_BOX_SCALE;
+      const x = (GAME_W - boxWidth) / 2;
+      const y = TIMER_BOX_TOP - boxHeight * 0.35;
+      timerBoxBounds = {
+        x,
+        y: Math.max(0, y),
+        width: boxWidth,
+        height: boxHeight
+      };
+
+      if (timerOverlayImage) {
+        timerOverlayImage.style.width = `${boxWidth}px`;
+        timerOverlayImage.style.height = `${boxHeight}px`;
+      }
+    }
+
+    function updateTimerOverlayText() {
+      if (!timerOverlayText) return;
+      timerOverlayText.textContent = getTimerLabel();
+    }
+
+    function markTargetWordDirty() {
+      overlayDirty = true;
+    }
+
+    function updateTargetWordOverlay() {
+      if (!targetWordOverlay || !window.TargetWord) return;
+      const state = TargetWord.state;
+      if (!state || !state.word) {
+        targetWordOverlay.textContent = "";
+        return;
+      }
+      const letters = state.word.split("");
+      const progress = Array.isArray(state.progress) ? state.progress : [];
+      const fragment = document.createDocumentFragment();
+      letters.forEach((letter, index) => {
+        const span = document.createElement("span");
+        span.textContent = letter;
+        if (progress[index]) {
+          span.classList.add("active");
+        }
+        fragment.appendChild(span);
+      });
+      targetWordOverlay.innerHTML = "";
+      targetWordOverlay.appendChild(fragment);
+    }
+
+    function spawnHitPopup(block, coinDelta) {
+      if (!block || !coinDelta) return;
+      const isPositive = coinDelta > 0;
+      floatingPopups.push({
+        x: block.x + block.width - 4,
+        y: block.y - 8,
+        text: `${isPositive ? "+" : "-"}${Math.abs(coinDelta)}`,
+        color: isPositive ? "#ffe066" : "#ff6a6a",
+        life: 48,
+        vy: -0.45,
+        alpha: 1
+      });
+    }
+
+    function updateFloatingPopups() {
+      for (let i = floatingPopups.length - 1; i >= 0; i--) {
+        const popup = floatingPopups[i];
+        popup.y += popup.vy;
+        popup.life--;
+        popup.alpha = Math.max(0, popup.life / 48);
+        if (popup.life <= 0) {
+          floatingPopups.splice(i, 1);
+        }
+      }
+    }
+
+    function drawFloatingPopups() {
+      if (!floatingPopups.length) return;
+      ctx.save();
+      ctx.font = "bold 26px PixelFont";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      floatingPopups.forEach((popup) => {
+        ctx.globalAlpha = popup.alpha;
+        ctx.fillStyle = popup.color;
+        ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
+        ctx.shadowBlur = 6;
+        ctx.fillText(popup.text, popup.x, popup.y);
+      });
+      ctx.restore();
+    }
+
     function onWordCompleted() {
       const tierComplete = TargetWord.completeWord();
       
@@ -437,6 +661,7 @@
       }
       
       currentWord = TargetWord.state.word;
+      markTargetWordDirty();
       resetTimerForRound();
       cannonBalls.length = 0;
       generateLetterBlocks();
@@ -446,6 +671,7 @@
       timerRemaining = TIMER_DURATION_SECONDS;
       lastTimerTimestamp = null;
       timerExpired = false;
+      updateTimerOverlayText();
     }
 
     function handleTimerExpiry() {
@@ -559,6 +785,8 @@
         timerRemaining = 0;
         handleTimerExpiry();
       }
+
+      updateTimerOverlayText();
     }
 
     function getTimerLabel() {
@@ -586,16 +814,16 @@
     // --------------------------------------------------
     const PLAYER_SCALE = 0.15;
     const PLAYER_X = 60;
-    const PLAYER_Y = 345;
+    const PLAYER_Y = 380;
 
     // --------------------------------------------------
     // CANNON SETTINGS (KEEP SAME)
     // --------------------------------------------------
     const MOUNT_X = 500;
-    const MOUNT_Y = 750;
+    const MOUNT_Y = 770;
 
     const CANON_PIVOT_X = 100;
-    const CANON_PIVOT_Y = 390;
+    const CANON_PIVOT_Y = 410;
 
     const CANON_SCALE = 0.38;
 
@@ -1059,6 +1287,8 @@
       const nextLetter = nextIndex >= 0 ? state.word[nextIndex] : null;
       if (nextLetter && block.letter === nextLetter) {
         const wordFinished = TargetWord.onLetterHit(block.letter, true);
+        spawnHitPopup(block, COIN_HIT_REWARD);
+        markTargetWordDirty();
         triggerLetterSuccessFlash(
           block.x + block.width / 2,
           block.y + block.height / 2
@@ -1070,9 +1300,13 @@
         }
       } else if (hasRemainingLetter(block.letter)) {
         TargetWord.onLetterHit(block.letter, false);
+        spawnHitPopup(block, COIN_HIT_PENALTY);
+        markTargetWordDirty();
         queueBlockAnimation(block, null, 20);
       } else {
         TargetWord.onLetterHit(block.letter, false);
+        spawnHitPopup(block, COIN_HIT_PENALTY);
+        markTargetWordDirty();
         block.wrongFlash = 24;
         queueBlockAnimation(block, "fall", 18);
       }
@@ -1474,51 +1708,6 @@
       return null;
     }
 
-    function drawTimerDisplay() {
-      const boxWidth = (timerBoxImage.naturalWidth || 460) * TIMER_BOX_SCALE;
-      const boxHeight = (timerBoxImage.naturalHeight || 240) * TIMER_BOX_SCALE;
-      const x = (GAME_W - boxWidth) / 2;
-      const y = 16;
-
-      ctx.save();
-      ctx.globalAlpha = 1;
-
-      if (timerBoxImage && timerBoxImage.complete && timerBoxImage.naturalWidth > 0) {
-        ctx.drawImage(timerBoxImage, x, y, boxWidth, boxHeight);
-      } else {
-        ctx.fillStyle = "rgba(12, 12, 12, 0.75)";
-        ctx.fillRect(x, y, boxWidth, boxHeight);
-        ctx.strokeStyle = "#f7c155";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(x, y, boxWidth, boxHeight);
-      }
-
-      timerBoxBounds = { x, y, width: boxWidth, height: boxHeight };
-
-      const timerFontSize = Math.floor(boxHeight * 0.35);
-      const prevShadow = {
-        color: ctx.shadowColor,
-        blur: ctx.shadowBlur,
-        offsetX: ctx.shadowOffsetX,
-        offsetY: ctx.shadowOffsetY
-      };
-
-      ctx.font = `bold ${timerFontSize}px PixelFont`;
-      ctx.fillStyle = "#ffef72";
-      ctx.shadowColor = "rgba(255, 239, 114, 0.9)";
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(getTimerLabel(), x + boxWidth / 2, y + boxHeight / 2);
-      ctx.shadowColor = prevShadow.color || "transparent";
-      ctx.shadowBlur = prevShadow.blur || 0;
-      ctx.shadowOffsetX = prevShadow.offsetX || 0;
-      ctx.shadowOffsetY = prevShadow.offsetY || 0;
-      ctx.restore();
-    }
-
     function drawAmmoDisplay() {
       if (!window.TargetWord) return;
       const ammoState = window.TargetWord.state;
@@ -1527,8 +1716,8 @@
       const currentAmmo = ammoState.ammo ?? maxAmmo;
       const ammoSize = 46;
       const gap = 10;
-      const padding = 16;
-      const y = GAME_H - padding - ammoSize;
+       const padding = HUD_PADDING;
+       const y = GAME_H - padding - ammoSize;
 
       for (let i = 0; i < maxAmmo; i++) {
         const x = padding + i * (ammoSize + gap);
@@ -1618,18 +1807,20 @@
 
     function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (overlayDirty) {
+        updateTargetWordOverlay();
+        overlayDirty = false;
+      }
 
-      // background
-      ctx.drawImage(bgImg, 0, 0, GAME_W, GAME_H);
-      drawTimerDisplay();
+      drawScrollingBackground();
+      drawBridgeLayer();
       drawRoundBanner();
 
-      // player
       drawPlayer();
       drawTrajectoryLine();
 
-      // letter blocks
       drawLetterBlocks();
+      drawFloatingPopups();
       drawLetterHitParticles();
       drawLetterSuccessFlash();
       drawCannonBalls();
@@ -1642,6 +1833,7 @@
     }
 
     function animate(ts) {
+      updateBackgroundMovement(ts);
       if (!lastBlinkTime) lastBlinkTime = ts;
 
       const elapsed = ts - lastBlinkTime;
@@ -1663,6 +1855,7 @@
         updateTimer(ts);
         updateBlockAnimations();
         updateLetterHitEffects();
+        updateFloatingPopups();
         if (roundMessageTimer > 0) {
           roundMessageTimer = Math.max(0, roundMessageTimer - 1);
         }
@@ -1778,10 +1971,10 @@
     // LOAD
     // --------------------------------------------------
     let loaded = 0;
-    const TOTAL_IMAGES = 34;
+    const TOTAL_IMAGES = 35;
     function onLoad() {
       loaded++;
-      // 6 base images + 26 letter images = 32 total
+      // 9 base images (background + bridge + character + canon + wheel + coin + heart + ammo + timer) + 26 letter images = 35 total
       if (loaded < TOTAL_IMAGES) return;
 
       FRAME_W = imgBody.naturalWidth / FRAMES;
@@ -1820,6 +2013,8 @@
     }
 
     bgImg.onload = onLoad;
+    mapBridgeImage.onload = onLoad;
+    mapBridgeImage.onerror = onLoad;
     imgBody.onload = onLoad;
     imgCanon.onload = onLoad;
     imgWheel.onload = onLoad;
@@ -1829,7 +2024,10 @@
     heartImage.onerror = onLoad;
     ammoImage.onload = onLoad;
     ammoImage.onerror = onLoad;
-    timerBoxImage.onload = onLoad;
+    timerBoxImage.onload = () => {
+      onLoad();
+      refreshTimerOverlay();
+    };
     timerBoxImage.onerror = onLoad;
 
     // Load all letter images
@@ -1839,8 +2037,10 @@
     }
 
     window.addEventListener("beforeunload", persistGameState);
+    window.addEventListener("resize", positionTopOverlays);
   </script>
 
   <script src="script.js"></script>
 </body>
 </html>
+  
