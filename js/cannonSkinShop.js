@@ -14,7 +14,7 @@
     {
       id:           'gold',
       name:         'Gold',
-      price:        500,
+      price:        1000,
       unlockedSlot: 'assets/cannon/unlocked/gold.png',
       lockedSlot:   'assets/cannon/locked/gold.png',
       previewSrc:   'assets/cannon/themes/gold.png',
@@ -24,7 +24,7 @@
     {
       id:           'ice',
       name:         'Ice',
-      price:        500,
+      price:        1000,
       unlockedSlot: 'assets/cannon/unlocked/ice.png',
       lockedSlot:   'assets/cannon/locked/ice.png',
       previewSrc:   'assets/cannon/themes/ice.png',
@@ -34,7 +34,7 @@
     {
       id:           'lava',
       name:         'Lava',
-      price:        500,
+      price:        1000,
       unlockedSlot: 'assets/cannon/unlocked/lava.png',
       lockedSlot:   'assets/cannon/locked/lava.png',
       previewSrc:   'assets/cannon/themes/lava.png',
@@ -44,7 +44,7 @@
     {
       id:           'punk',
       name:         'Punk',
-      price:        500,
+      price:        1000,
       unlockedSlot: 'assets/cannon/unlocked/punk.png',
       lockedSlot:   'assets/cannon/locked/punk.png',
       previewSrc:   'assets/cannon/themes/punk.png',
@@ -54,7 +54,7 @@
     {
       id:           'stone',
       name:         'Stone',
-      price:        500,
+      price:        1000,
       unlockedSlot: 'assets/cannon/unlocked/stone.png',
       lockedSlot:   'assets/cannon/locked/stone.png',
       previewSrc:   'assets/cannon/themes/stone.png',
@@ -284,7 +284,7 @@
     if (!owned && skin.price > 0) {
       const priceBadge = document.createElement('img');
       priceBadge.id  = 'cannonPrice-' + skin.id;
-      priceBadge.src = 'assets/balls/price.png';
+      priceBadge.src = 'assets/cannon/price.png';
       Object.assign(priceBadge.style, {
         position:       'absolute',
         bottom:         '2px',
@@ -307,8 +307,8 @@
       position:       'absolute',
       bottom:         '3px',
       right:          '3px',
-      width:          '24px',
-      height:         '24px',
+      width:          '35px',
+      height:         '35px',
       imageRendering: 'pixelated',
       display:        equipped ? 'block' : 'none',
       pointerEvents:  'none',
