@@ -8,7 +8,7 @@
       price:        0,
       unlockedSlot: 'assets/balls/unlocked/default.png',
       lockedSlot:   null,
-      previewSrc:   'assets/cannonBall.png',
+      previewSrc:   'assets/balls/themes/default.png',
     },
     {
       id:           'fire',
@@ -30,9 +30,9 @@
       id:           'skull',
       name:         'Skull',
       price:        500,
-      unlockedSlot: 'assets/balls/unlocked/skull.png',
-      lockedSlot:   'assets/balls/locked/skull.png',
-      previewSrc:   'assets/balls/themes/skull.png',
+      unlockedSlot: 'assets/balls/unlocked/spike.png',
+      lockedSlot:   'assets/balls/locked/spike.png',
+      previewSrc:   'assets/balls/themes/spike.png',
     },
     {
       id:           'toxic',
@@ -155,9 +155,9 @@
     modal.id = 'ballShopModal';
     Object.assign(modal.style, {
       position:         'relative',
-      width:            '800px',
-      height:           '580px',
-      backgroundImage:  'url(assets/balls/modalBg.png)',
+      width:            '680px',
+      height:           '460px',
+      backgroundImage:  'url(assets/balls/modalBg-low.png)',
       backgroundSize:   '100% 100%',
       backgroundRepeat: 'no-repeat',
       flexShrink:       '0',
@@ -169,9 +169,9 @@
     closeBtn.src = 'assets/button/closeButton.png';
     Object.assign(closeBtn.style, {
       position:       'absolute',
-      top:            '3%',
-      right:          '2.5%',
-      width:          '6%',
+      top:            '2%',
+      right:          '1%',
+      width:          '10%',
       height:         'auto',
       imageRendering: 'pixelated',
       cursor:         'pointer',
@@ -196,11 +196,11 @@
     previewImg.src = getSkin(selectedId).previewSrc;
     Object.assign(previewImg.style, {
       position:       'absolute',
-      left:           '17%',
-      top:            '30%',
-      width:          '22%',
+      left:           '10%',
+      top:            '28%',
+      width:          '30%',
       height:         'auto',
-      maxHeight:      '25%',
+      maxHeight:      '35%',
       imageRendering: 'pixelated',
       objectFit:      'contain',
     });
@@ -210,7 +210,7 @@
     actionBtn.id = 'ballShopActionBtn';
     Object.assign(actionBtn.style, {
       position:       'absolute',
-      left:           '18%',
+      left:           '15%',
       top:            '65%',
       width:          '20%',
       height:         'auto',
@@ -237,13 +237,13 @@
     Object.assign(grid.style, {
       position:            'absolute',
       left:                '40%',
-      top:                 '18%',
+      top:                 '17%',
       width:               '45%',
       height:              '65%',
       display:             'grid',
       gridTemplateColumns: 'repeat(3, 1fr)',
       gridTemplateRows:    'repeat(3, 1fr)',
-      gap:                 '2%',
+      gap:                 '4%',
       boxSizing:           'border-box',
     });
 
