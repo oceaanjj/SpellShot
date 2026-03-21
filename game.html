@@ -814,7 +814,7 @@
     // --------------------------------------------------
     const PLAYER_SCALE = 0.15;
     const PLAYER_X = 60;
-    const PLAYER_Y = 380;
+    const PLAYER_Y = 480;
 
     // --------------------------------------------------
     // CANNON SETTINGS (KEEP SAME)
@@ -1719,14 +1719,15 @@
       const currentAmmo = ammoState.ammo ?? maxAmmo;
       const ammoSize = 46;
       const gap = 10;
-      const padding = 16;
-      const y = GAME_H - padding - ammoSize;
+      const hudPadding = HUD_PADDING;
+      const ammoPaddingX = Math.max(12, hudPadding + 120);
+      const y = GAME_H - hudPadding - ammoSize + 50;
 
       // Use the player's selected ball skin; fall back to the default ammoImage.
       const _hudBallImg = (window.BallSkins ? window.BallSkins.getSelectedImg() : null) || ammoImage;
 
       for (let i = 0; i < maxAmmo; i++) {
-        const x = padding + i * (ammoSize + gap);
+        const x = ammoPaddingX + i * (ammoSize + gap);
         const isActive = i < currentAmmo;
         ctx.globalAlpha = isActive ? 1 : 0.25;
         if (_hudBallImg && _hudBallImg.complete && _hudBallImg.naturalWidth > 0) {
@@ -1743,7 +1744,7 @@
 
       const ammoLabel = `${currentAmmo}/${maxAmmo}`;
       const totalWidth = Math.max(0, maxAmmo * ammoSize + Math.max(0, maxAmmo - 1) * gap);
-      const labelX = padding + totalWidth + 12;
+      const labelX = ammoPaddingX + totalWidth + 12;
       ctx.font = "bold 22px PixelFont";
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "left";
