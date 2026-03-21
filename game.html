@@ -178,6 +178,10 @@
       height: 46px;
     }
 
+    :root {
+      --hud-padding: 60px;
+    }
+
     .ui-btn.disabled {
       pointer-events: none;
       filter: grayscale(0.9) brightness(0.7);
@@ -185,7 +189,7 @@
 
     #pauseUI {
       position: absolute;
-      top: 60px;
+      top: var(--hud-padding);
       right: 60px;
       z-index: 16;
       pointer-events: auto;
@@ -207,6 +211,22 @@
       inset: 0;
       z-index: 12;
       pointer-events: none;
+    }
+
+    #borderOverlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 13;
+    }
+
+    #borderOverlay img {
+      position: absolute;
+      display: block;
+      image-rendering: pixelated;
+      pointer-events: none;
+      width: auto;
+      height: auto;
     }
 
     /* timer overlay remains centered at top */
@@ -244,11 +264,11 @@
 
     #targetWordOverlay {
       position: absolute;
-      top: calc(100% + 1rem);
+      top: calc(100% + 0.1rem);
       left: 50%;
       transform: translateX(-50%) translateY(-8px) scale(0.92);
       display: flex;
-      gap: 0.5rem;
+      gap: 0;
       justify-content: center;
       align-items: center;
       pointer-events: none;
@@ -271,15 +291,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.08s ease, transform 0.08s ease;
+      opacity: 0.35;
+      transform: none;
+      transition: none;
       text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
     }
 
     #targetWordOverlay.visible .target-letter {
       opacity: 0.35;
-      transform: translateY(0);
     }
 
     #targetWordOverlay.visible .target-letter.active {
@@ -305,6 +324,11 @@
 </head>
 <body>
   <div id="gameShell">
+    <div id="borderOverlay">
+      <img id="borderLeft" src="assets/map1/border/leftBorder.png" alt="Left border" />
+      <img id="borderRight" src="assets/map1/border/rightBorder.png" alt="Right border" />
+      <img id="borderBottom" src="assets/map1/border/bottomBorder.png" alt="Bottom border" />
+    </div>
     <canvas id="c"></canvas>
     <div id="pauseBackdrop"></div>
     <div id="pauseOverlay">
@@ -337,7 +361,7 @@
     </div>
   </div>
 
-
+  <script src="js/cannonSkins.js"></script>
   <script src="js/settings.js"></script>
   <script>
     const canvas = document.getElementById("c");
@@ -366,9 +390,13 @@
     const timerOverlayImage = document.getElementById("timerOverlayImage");
     const timerOverlayText = document.getElementById("timerOverlayText");
     const targetWordOverlay = document.getElementById("targetWordOverlay");
+    const borderLeftElem = document.getElementById("borderLeft");
+    const borderRightElem = document.getElementById("borderRight");
+    const borderBottomElem = document.getElementById("borderBottom");
     const floatingPopups = [];
     let overlayDirty = true;
-    let targetWordRevealFrame = null;
+    const overlayLetterSlots = [];
+    let cachedOverlayWord = "";
 
     bgImg.src = "assets/map1/background/background.png";
     mapBridgeImage.src = "assets/map1/background/bridgeMap.png";
@@ -410,11 +438,30 @@
     let wordProgress = [];
     const TIMER_DURATION_SECONDS = 60;
     const TIMER_BOX_SCALE = 0.105;
-    const TIMER_BOX_TOP = 8;
+    const TIMER_BOX_TOP = -100;
     const BACKGROUND_SCROLL_SPEED = 0.012;
-    const HUD_PADDING = 60;
+    const HUD_PADDING = (() => {
+      const computed = getComputedStyle(document.documentElement).getPropertyValue("--hud-padding");
+      const parsed = parseInt(computed, 10);
+      return Number.isFinite(parsed) ? parsed : 60;
+    })();
     const COIN_HIT_REWARD = 100;
-    const COIN_HIT_PENALTY = -25;
+
+    const BORDER_SCALE_MIN = 0.8;
+    const BORDER_SCALE_MAX = 1.2;
+
+    const BORDER_TOP_SCALE = .50;
+    const BORDER_BOTTOM_SCALE = 0.85;
+
+    const BORDER_TOP_LEFT_X = -50;
+    const BORDER_TOP_LEFT_Y = -75;
+
+    const BORDER_TOP_RIGHT_X = 50;
+    const BORDER_TOP_RIGHT_Y = -75;
+
+    const BORDER_BOTTOM_X = 0;
+    const BORDER_BOTTOM_Y = 50;
+
     const SAVE_KEY = "spellshot-game-state-v1";
     const AUTO_SAVE_INTERVAL_MS = 2500;
     let autoSaveTimerId = null;
@@ -502,6 +549,7 @@
 
       if (typeof saved.coins === "number") {
         targetState.coins = Math.max(0, saved.coins);
+        targetState.sessionBaselineCoins = targetState.coins;
       }
 
       if (typeof saved.lives === "number") {
@@ -622,63 +670,88 @@
       overlayDirty = true;
     }
 
+    function createOverlayLetterSlot(letter) {
+      const slot = document.createElement("div");
+      slot.className = "target-letter";
+      const value = String(letter ?? "").toUpperCase();
+      const sprite = letterImages[value];
+      if (sprite && sprite.src) {
+        const img = document.createElement("img");
+        img.src = sprite.src;
+        img.alt = value;
+        slot.appendChild(img);
+      } else {
+        slot.textContent = value || "?";
+        slot.classList.add("fallback");
+      }
+      return { element: slot };
+    }
+
     function updateTargetWordOverlay() {
       if (!targetWordOverlay || !window.TargetWord) return;
       const state = TargetWord.state;
       if (!state || !state.word) {
         targetWordOverlay.textContent = "";
         targetWordOverlay.classList.remove("visible");
-        if (targetWordRevealFrame !== null && typeof cancelAnimationFrame === "function") {
-          cancelAnimationFrame(targetWordRevealFrame);
-        }
-        targetWordRevealFrame = null;
         return;
       }
 
       const letters = state.word.split("");
       const progress = Array.isArray(state.progress) ? state.progress : [];
-      const fragment = document.createDocumentFragment();
 
-      letters.forEach((letter, index) => {
-        const letterSlot = document.createElement("span");
-        letterSlot.classList.add("target-letter");
-        if (progress[index]) {
-          letterSlot.classList.add("active");
-        }
-
-        const normalizedLetter = letter.toUpperCase();
-        const img = document.createElement("img");
-        img.draggable = false;
-        img.decoding = "async";
-        img.alt = letter;
-        img.src = letterImages[normalizedLetter]?.src ?? `assets/map1/letter/${normalizedLetter}.png`;
-        img.addEventListener("error", () => {
-          if (!letterSlot.contains(img)) return;
-          letterSlot.removeChild(img);
-          letterSlot.textContent = letter;
-          letterSlot.classList.add("fallback");
+      if (state.word.toUpperCase() !== cachedOverlayWord || letters.length !== overlayLetterSlots.length) {
+        overlayLetterSlots.length = 0;
+        targetWordOverlay.textContent = "";
+        letters.forEach((letter) => {
+          const slot = createOverlayLetterSlot(letter);
+          overlayLetterSlots.push(slot);
+          targetWordOverlay.appendChild(slot.element);
         });
-
-        letterSlot.appendChild(img);
-        fragment.appendChild(letterSlot);
-      });
-
-      targetWordOverlay.classList.remove("visible");
-      targetWordOverlay.textContent = "";
-      targetWordOverlay.appendChild(fragment);
-
-      if (targetWordRevealFrame !== null && typeof cancelAnimationFrame === "function") {
-        cancelAnimationFrame(targetWordRevealFrame);
+        cachedOverlayWord = state.word.toUpperCase();
       }
-      targetWordRevealFrame = null;
 
-      if (typeof requestAnimationFrame === "function") {
-        targetWordRevealFrame = requestAnimationFrame(() => {
-          targetWordRevealFrame = null;
-          targetWordOverlay.classList.add("visible");
-        });
-      } else {
-        targetWordOverlay.classList.add("visible");
+      overlayLetterSlots.forEach((slot, index) => {
+        slot.element.classList.toggle("active", Boolean(progress[index]));
+      });
+      targetWordOverlay.classList.add("visible");
+    }
+
+    function clampBorderScale(value) {
+      return Math.min(Math.max(value, BORDER_SCALE_MIN), BORDER_SCALE_MAX);
+    }
+
+    function updateBorderOverlayPositions() {
+      const topScale = clampBorderScale(BORDER_TOP_SCALE);
+      const bottomScale = clampBorderScale(BORDER_BOTTOM_SCALE);
+
+      if (borderLeftElem && borderLeftElem.naturalWidth > 0) {
+        const width = borderLeftElem.naturalWidth * topScale;
+        const height = borderLeftElem.naturalHeight * topScale;
+        borderLeftElem.style.width = `${width}px`;
+        borderLeftElem.style.height = `${height}px`;
+        borderLeftElem.style.left = `${BORDER_TOP_LEFT_X}px`;
+        borderLeftElem.style.top = `${BORDER_TOP_LEFT_Y}px`;
+      }
+
+      if (borderRightElem && borderRightElem.naturalWidth > 0) {
+        const width = borderRightElem.naturalWidth * topScale;
+        const height = borderRightElem.naturalHeight * topScale;
+        const left = GAME_W - width + BORDER_TOP_RIGHT_X;
+        borderRightElem.style.width = `${width}px`;
+        borderRightElem.style.height = `${height}px`;
+        borderRightElem.style.left = `${left}px`;
+        borderRightElem.style.top = `${BORDER_TOP_RIGHT_Y}px`;
+      }
+
+      if (borderBottomElem && borderBottomElem.naturalWidth > 0) {
+        const width = borderBottomElem.naturalWidth * bottomScale;
+        const height = borderBottomElem.naturalHeight * bottomScale;
+        const left = (GAME_W - width) / 2 + BORDER_BOTTOM_X;
+        const top = GAME_H - height + BORDER_BOTTOM_Y;
+        borderBottomElem.style.width = `${width}px`;
+        borderBottomElem.style.height = `${height}px`;
+        borderBottomElem.style.left = `${left}px`;
+        borderBottomElem.style.top = `${top}px`;
       }
     }
 
@@ -1377,12 +1450,10 @@
         }
       } else if (hasRemainingLetter(block.letter)) {
         TargetWord.onLetterHit(block.letter, false);
-        spawnHitPopup(block, COIN_HIT_PENALTY);
         markTargetWordDirty();
         queueBlockAnimation(block, null, 20);
       } else {
         TargetWord.onLetterHit(block.letter, false);
-        spawnHitPopup(block, COIN_HIT_PENALTY);
         markTargetWordDirty();
         block.wrongFlash = 24;
         queueBlockAnimation(block, "fall", 18);
@@ -1436,7 +1507,7 @@
     }
 
     function showRoundCompletedBanner() {
-      roundMessage = `Round ${currentRound} Complete`;
+      roundMessage = `Level ${currentRound} Complete`;
       roundMessageTimer = ROUND_MESSAGE_DURATION;
       currentRound++;
       persistGameState();
@@ -1838,20 +1909,32 @@
     }
 
     function drawWheelFrame() {
-      const wheelW = FRAME_W * SCALE * WHEEL_SCALE;
-      const wheelH = FRAME_H * SCALE * WHEEL_SCALE;
+      const _wheel = (window.CannonSkins ? window.CannonSkins.getWheelImg() : null) || imgWheel;
 
-      const wheelOffsetX = -18;
-      const wheelOffsetY = -110;
+      const wheelOffsetX =  270;
+      const wheelOffsetY =  320;
 
-      ctx.drawImage(
-        imgWheel,
-        0, 0, FRAME_W, FRAME_H,
-        wheelOffsetX, wheelOffsetY, wheelW, wheelH
-      );
+      if (_wheel === imgWheel) {
+        const wheelW = FRAME_W * SCALE * WHEEL_SCALE;
+        const wheelH = FRAME_H * SCALE * WHEEL_SCALE;
+        ctx.drawImage(
+          imgWheel,
+          0, 0, FRAME_W, FRAME_H,
+          wheelOffsetX, wheelOffsetY, wheelW, wheelH
+        );
+      } else {
+        const skinWheelW = imgCanon.naturalWidth * CANON_SCALE * 0.72;
+        const skinWheelH = imgCanon.naturalWidth * CANON_SCALE * 0.72; 
+        ctx.drawImage(
+          _wheel,
+          0, 0, _wheel.naturalWidth, _wheel.naturalHeight,
+          wheelOffsetX, wheelOffsetY, skinWheelW, skinWheelH
+        );
+      }
     }
 
     function drawRotatedCanon() {
+      const _barrel = (window.CannonSkins ? window.CannonSkins.getBarrelImg() : null) || imgCanon;
       const mountX = MOUNT_X * SCALE;
       const mountY = MOUNT_Y * SCALE;
 
@@ -1866,11 +1949,9 @@
       ctx.rotate(cannonAngle);
 
       ctx.drawImage(
-        imgCanon,
-        -drawX,
-        -drawY,
-        canonW,
-        canonH
+        _barrel,
+        0, 0, _barrel.naturalWidth, _barrel.naturalHeight,
+        -drawX, -drawY, canonW, canonH
       );
 
       ctx.restore();
@@ -1909,14 +1990,14 @@
       drawLetterSuccessFlash();
       drawCannonBalls();
 
-      if (targetWordOverlay) {
-        targetWordOverlay.classList.toggle("dimmed", gameOver);
-      }
-      if (window.TargetWord) {
-        TargetWord.draw(ctx, letterImages, coinImage, heartImage);
-      }
-      drawAmmoDisplay();
-      drawGameOverOverlay();
+    if (targetWordOverlay) {
+      targetWordOverlay.classList.toggle("dimmed", gameOver);
+    }
+    if (window.TargetWord) {
+      TargetWord.draw(ctx, letterImages, coinImage, heartImage);
+    }
+    drawAmmoDisplay();
+    drawGameOverOverlay();
     }
 
     function animate(ts) {
@@ -2055,20 +2136,20 @@
     hidePauseOverlay();
 
     // --------------------------------------------------
-    // LOAD
+    // LOAD / PRELOADING
     // --------------------------------------------------
-    let loaded = 0;
-    const TOTAL_IMAGES = 35;
-    function onLoad() {
-      loaded++;
-      // 9 base images (background + bridge + character + canon + wheel + coin + heart + ammo + timer) + 26 letter images = 35 total
-      if (loaded < TOTAL_IMAGES) return;
+    const CRITICAL_IMAGE_COUNT = 12; // background, bridge, character, canon, wheel, HUD coins/hearts/ammo/timer plus the three border pieces
+    const OPTIONAL_IMAGE_COUNT = alphabet.length;
+    let criticalLoaded = 0;
+    let optionalLoaded = 0;
+    let criticalAssetsReady = false;
 
+    function finalizeCriticalAssets() {
       FRAME_W = imgBody.naturalWidth / FRAMES;
       FRAME_H = imgBody.naturalHeight;
-
       canvas.width = GAME_W;
       canvas.height = GAME_H;
+    }
 
     function startGame() {
       const savedGameState = loadSavedGameState();
@@ -2085,6 +2166,7 @@
       if (window.TargetWord) {
         TargetWord.init().then(() => {
           resetTimerForRound();
+          if (window.CannonSkins) CannonSkins.preloadAll();
           if (savedGameState) {
             applySavedGameState(savedGameState);
           }
@@ -2096,33 +2178,54 @@
       }
     }
 
-      setTimeout(startGame, 0);
+    function handleAssetCompletion(isCritical) {
+      if (isCritical) {
+        criticalLoaded++;
+        if (!criticalAssetsReady && criticalLoaded >= CRITICAL_IMAGE_COUNT) {
+          criticalAssetsReady = true;
+          finalizeCriticalAssets();
+          setTimeout(startGame, 0);
+        }
+      } else {
+        optionalLoaded++;
+        if (optionalLoaded >= OPTIONAL_IMAGE_COUNT) {
+          markTargetWordDirty();
+        }
+      }
     }
 
-    bgImg.onload = onLoad;
-    mapBridgeImage.onload = onLoad;
-    mapBridgeImage.onerror = onLoad;
-    imgBody.onload = onLoad;
-    imgCanon.onload = onLoad;
-    imgWheel.onload = onLoad;
-    coinImage.onload = onLoad;
-    coinImage.onerror = onLoad;
-    heartImage.onload = onLoad;
-    heartImage.onerror = onLoad;
-    ammoImage.onload = onLoad;
-    ammoImage.onerror = onLoad;
-    timerBoxImage.onload = () => {
-      onLoad();
-      refreshTimerOverlay();
-    };
-    timerBoxImage.onerror = onLoad;
+    function trackImage(image, { critical = false, callback } = {}) {
+      if (!image) return;
+      const complete = () => {
+        if (typeof callback === "function") callback();
+        handleAssetCompletion(critical);
+      };
+      if (image.complete) {
+        complete();
+        return;
+      }
+      image.addEventListener("load", complete, { once: true });
+      image.addEventListener("error", complete, { once: true });
+    }
 
-    // Load all letter images
+    trackImage(bgImg, { critical: true });
+    trackImage(mapBridgeImage, { critical: true });
+    trackImage(imgBody, { critical: true });
+    trackImage(imgCanon, { critical: true });
+    trackImage(imgWheel, { critical: true });
+    trackImage(coinImage, { critical: true });
+    trackImage(heartImage, { critical: true });
+    trackImage(ammoImage, { critical: true });
+    trackImage(timerBoxImage, { critical: true, callback: refreshTimerOverlay });
+    trackImage(borderLeftElem, { critical: true, callback: updateBorderOverlayPositions });
+    trackImage(borderRightElem, { critical: true, callback: updateBorderOverlayPositions });
+    trackImage(borderBottomElem, { critical: true, callback: updateBorderOverlayPositions });
+
     for (let letter of alphabet) {
-      letterImages[letter].onload = onLoad;
-      letterImages[letter].onerror = onLoad;
+      trackImage(letterImages[letter]);
     }
 
+    updateBorderOverlayPositions();
     window.addEventListener("beforeunload", persistGameState);
     window.addEventListener("resize", positionTopOverlays);
   </script>

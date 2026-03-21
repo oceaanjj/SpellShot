@@ -1,86 +1,71 @@
 (function () {
-
-  // SKIN DEFINITIONS 
+  // ── SKIN DEFINITIONS ─────────────────────────────────────────────────────
   const SKINS = [
     {
       id:           'default',
       name:         'Default',
       price:        0,
-      unlockedSlot: 'assets/balls/unlocked/default.png',
+      unlockedSlot: 'assets/cannon/unlocked/default.png',
       lockedSlot:   null,
-      previewSrc:   'assets/balls/themes/default.png',
+      previewSrc:   'assets/cannon/themes/default.png',
+      barrelSrc:    'assets/canon.png',
+      wheelSrc:     'assets/wheel.png',
     },
     {
-      id:           'fire',
-      name:         'Fire',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/fire.png',
-      lockedSlot:   'assets/balls/locked/fire.png',
-      previewSrc:   'assets/balls/themes/fire.png',
+      id:           'gold',
+      name:         'Gold',
+      price:        1000,
+      unlockedSlot: 'assets/cannon/unlocked/gold.png',
+      lockedSlot:   'assets/cannon/locked/gold.png',
+      previewSrc:   'assets/cannon/themes/gold.png',
+      barrelSrc:    'assets/cannon/cannon/gold.png',
+      wheelSrc:     'assets/cannon/wheel/gold.png',
     },
     {
-      id:           'spike',
-      name:         'Spike',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/spike.png',
-      lockedSlot:   'assets/balls/locked/spike.png',
-      previewSrc:   'assets/balls/themes/spike.png',
+      id:           'ice',
+      name:         'Ice',
+      price:        1000,
+      unlockedSlot: 'assets/cannon/unlocked/ice.png',
+      lockedSlot:   'assets/cannon/locked/ice.png',
+      previewSrc:   'assets/cannon/themes/ice.png',
+      barrelSrc:    'assets/cannon/cannon/ice.png',
+      wheelSrc:     'assets/cannon/wheel/ice.png',
     },
     {
-      id:           'skull',
-      name:         'Skull',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/skull.png',
-      lockedSlot:   'assets/balls/locked/skull.png',
-      previewSrc:   'assets/balls/themes/skull.png',
+      id:           'lava',
+      name:         'Lava',
+      price:        1000,
+      unlockedSlot: 'assets/cannon/unlocked/lava.png',
+      lockedSlot:   'assets/cannon/locked/lava.png',
+      previewSrc:   'assets/cannon/themes/lava.png',
+      barrelSrc:    'assets/cannon/cannon/lava.png',
+      wheelSrc:     'assets/cannon/wheel/lava.png',
     },
     {
-      id:           'toxic',
-      name:         'Toxic',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/toxic.png',
-      lockedSlot:   'assets/balls/locked/toxic.png',
-      previewSrc:   'assets/balls/themes/toxic.png',
+      id:           'punk',
+      name:         'Punk',
+      price:        1000,
+      unlockedSlot: 'assets/cannon/unlocked/punk.png',
+      lockedSlot:   'assets/cannon/locked/punk.png',
+      previewSrc:   'assets/cannon/themes/punk.png',
+      barrelSrc:    'assets/cannon/cannon/punk.png',
+      wheelSrc:     'assets/cannon/wheel/punk.png',
     },
     {
-      id:           'shadow',
-      name:         'Shadow',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/shadow.png',
-      lockedSlot:   'assets/balls/locked/shadow.png',
-      previewSrc:   'assets/balls/themes/shadow.png',
-    },
-    {
-      id:           'pink',
-      name:         'Pink',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/pink.png',
-      lockedSlot:   'assets/balls/locked/pink.png',
-      previewSrc:   'assets/balls/themes/pink.png',
-    },
-    {
-      id:           'star',
-      name:         'Star',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/star.png',
-      lockedSlot:   'assets/balls/locked/star.png',
-      previewSrc:   'assets/balls/themes/star.png',
-    },
-    {
-      id:           'void',
-      name:         'Void',
-      price:        500,
-      unlockedSlot: 'assets/balls/unlocked/void.png',
-      lockedSlot:   'assets/balls/locked/void.png',
-      previewSrc:   'assets/balls/themes/void.png',
+      id:           'stone',
+      name:         'Stone',
+      price:        1000,
+      unlockedSlot: 'assets/cannon/unlocked/stone.png',
+      lockedSlot:   'assets/cannon/locked/stone.png',
+      previewSrc:   'assets/cannon/themes/stone.png',
+      barrelSrc:    'assets/cannon/cannon/stone.png',
+      wheelSrc:     'assets/cannon/wheel/stone.png',
     },
   ];
 
-  // --------------------------------------------------
-  // PERSISTENCE
-  // --------------------------------------------------
-  const KEY_EQUIPPED = 'spellshot-ball-skin';
-  const KEY_OWNED    = 'spellshot-ball-owned';
+  // ── PERSISTENCE ──────────────────────────────────────────────────────────
+  const KEY_EQUIPPED = 'spellshot-cannon-skin';
+  const KEY_OWNED    = 'spellshot-cannon-owned';
 
   let equippedId = localStorage.getItem(KEY_EQUIPPED) || 'default';
   let ownedIds   = JSON.parse(localStorage.getItem(KEY_OWNED) || '["default"]');
@@ -98,7 +83,7 @@
     return SKINS.find(s => s.id === id) || SKINS[0];
   }
 
-  // COINS — reads TargetWord if in-game, else localStorage
+  // ── COINS ────────────────────────────────────────────────────────────────
   function getCoins() {
     const coins = window.TargetWord?.state?.coins;
     if (typeof coins === 'number') return coins;
@@ -122,21 +107,18 @@
     } catch { /* ignore */ }
   }
 
-  // PUBLIC API
-  window.getEquippedBallSrc = function () {
-    return getSkin(equippedId).previewSrc;
-  };
+  // ── PUBLIC API ───────────────────────────────────────────────────────────
+  window.getEquippedCannonSrc = function () { return getSkin(equippedId).previewSrc; };
+  window.getEquippedCannonId  = function () { return equippedId; };
+  window.openCannonShop       = openShop;
 
-  window.openBallShop = openShop;
-
-  // OPEN MODAL
+  // ── OPEN MODAL ───────────────────────────────────────────────────────────
   function openShop() {
-    if (document.getElementById('ballShopBackdrop')) return;
+    if (document.getElementById('cannonShopBackdrop')) return;
     selectedId = equippedId;
 
-    // Backdrop
     const backdrop = document.createElement('div');
-    backdrop.id = 'ballShopBackdrop';
+    backdrop.id = 'cannonShopBackdrop';
     Object.assign(backdrop.style, {
       position:        'absolute',
       inset:           '0',
@@ -150,14 +132,13 @@
       if (e.target === backdrop) closeShop();
     });
 
-    // ── Modal ──
     const modal = document.createElement('div');
-    modal.id = 'ballShopModal';
+    modal.id = 'cannonShopModal';
     Object.assign(modal.style, {
       position:         'relative',
       width:            '680px',
       height:           '460px',
-      backgroundImage:  'url(assets/balls/modalBg-low.png)',
+      backgroundImage:  'url(assets/cannon/modalBg.png)',
       backgroundSize:   '100% 100%',
       backgroundRepeat: 'no-repeat',
       flexShrink:       '0',
@@ -190,29 +171,29 @@
       closeBtn.style.filter    = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))';
     });
 
-    // ── Preview image ──
+    // ── Preview image  (left panel, large landscape cannon) ──
     const previewImg = document.createElement('img');
-    previewImg.id  = 'ballShopPreview';
+    previewImg.id  = 'cannonShopPreview';
     previewImg.src = getSkin(selectedId).previewSrc;
     Object.assign(previewImg.style, {
       position:       'absolute',
-      left:           '10%',
-      top:            '28%',
-      width:          '30%',
+      left:           '12%',
+      top:            '32%',
+      width:          '28%',      
       height:         'auto',
-      maxHeight:      '35%',
+      maxHeight:      '30%',
       imageRendering: 'pixelated',
       objectFit:      'contain',
     });
 
-    // ── Action button image ──
+    // ── Action button ──
     const actionBtn = document.createElement('img');
-    actionBtn.id = 'ballShopActionBtn';
+    actionBtn.id = 'cannonShopActionBtn';
     Object.assign(actionBtn.style, {
       position:       'absolute',
       left:           '15%',
       top:            '65%',
-      width:          '20%',
+      width:          '20%',       
       height:         'auto',
       imageRendering: 'pixelated',
       cursor:         'pointer',
@@ -232,18 +213,18 @@
       actionBtn.style.filter    = 'drop-shadow(1px 2px 3px rgba(0,0,0,0.7))';
     });
 
-    // ── 3×3 card grid ──
+    // ── 2-col × 3-row grid (right panel) ──
     const grid = document.createElement('div');
     Object.assign(grid.style, {
       position:            'absolute',
-      left:                '40%',
-      top:                 '17%',
-      width:               '45%',
-      height:              '65%',
+      left:                '43%',
+      top:                 '15%',
+      width:               '43%',
+      height:              '69%',
       display:             'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
+      gridTemplateColumns: 'repeat(2, 1fr)', 
       gridTemplateRows:    'repeat(3, 1fr)',
-      gap:                 '4%',
+      gap:                 '1%',
       boxSizing:           'border-box',
     });
 
@@ -261,13 +242,13 @@
     refreshActionBtn();
   }
 
-  // BUILD ONE CARD
+  // ── BUILD ONE CARD ────────────────────────────────────────────────────────
   function buildCard(skin, grid) {
     const owned    = isOwned(skin.id);
     const equipped = isEquipped(skin.id);
 
     const card = document.createElement('div');
-    card.id             = 'ballCard-' + skin.id;
+    card.id             = 'cannonCard-' + skin.id;
     card.dataset.skinId = skin.id;
     Object.assign(card.style, {
       position:        'relative',
@@ -283,8 +264,9 @@
       transition:      'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease',
     });
 
+    // Slot image
     const slotImg = document.createElement('img');
-    slotImg.id  = 'ballSlot-' + skin.id;
+    slotImg.id  = 'cannonSlot-' + skin.id;
     slotImg.src = owned
       ? skin.unlockedSlot
       : (skin.lockedSlot || skin.unlockedSlot);
@@ -298,10 +280,11 @@
       maxHeight:      '100%',
     });
 
+    // Price badge — locked skins only
     if (!owned && skin.price > 0) {
       const priceBadge = document.createElement('img');
-      priceBadge.id  = 'ballPrice-' + skin.id;
-      priceBadge.src = 'assets/balls/price.png';
+      priceBadge.id  = 'cannonPrice-' + skin.id;
+      priceBadge.src = 'assets/cannon/price.png';
       Object.assign(priceBadge.style, {
         position:       'absolute',
         bottom:         '2px',
@@ -316,8 +299,9 @@
       card.appendChild(priceBadge);
     }
 
+    // Equipped checkmark
     const check = document.createElement('img');
-    check.id  = 'ballCheck-' + skin.id;
+    check.id  = 'cannonCheck-' + skin.id;
     check.src = 'assets/balls/check.png';
     Object.assign(check.style, {
       position:       'absolute',
@@ -337,30 +321,21 @@
     card.addEventListener('mouseenter', () => {
       card.style.transform = 'scale(1.07) translateY(-3px)';
       card.style.filter    =
-        'brightness(1.22) ' +
-        'drop-shadow(0 0 9px rgba(255,210,60,0.90)) ' +
-        'drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
+        'brightness(1.22) drop-shadow(0 0 9px rgba(255,210,60,0.90)) drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
       card.style.zIndex = '10';
     });
-
     card.addEventListener('mousedown', () => {
       card.style.transform  = 'scale(0.91) translateY(3px)';
       card.style.filter     =
-        'brightness(1.55) ' +
-        'drop-shadow(0 0 16px rgba(255,130,0,1)) ' +
-        'drop-shadow(2px 2px 0px rgba(0,0,0,0.55))';
+        'brightness(1.55) drop-shadow(0 0 16px rgba(255,130,0,1)) drop-shadow(2px 2px 0px rgba(0,0,0,0.55))';
       card.style.transition = 'transform 0.04s ease, filter 0.04s ease';
     });
-
     card.addEventListener('mouseup', () => {
       card.style.transition = 'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease';
       card.style.transform  = 'scale(1.07) translateY(-3px)';
       card.style.filter     =
-        'brightness(1.22) ' +
-        'drop-shadow(0 0 9px rgba(255,210,60,0.90)) ' +
-        'drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
+        'brightness(1.22) drop-shadow(0 0 9px rgba(255,210,60,0.90)) drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
     });
-
     card.addEventListener('mouseleave', () => {
       card.style.transition = 'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease';
       card.style.transform  = 'scale(1)';
@@ -369,35 +344,31 @@
     });
 
     card.addEventListener('click', () => onCardClick(skin.id));
-
     grid.appendChild(card);
   }
 
-  // INTERACTIONS
+  // ── INTERACTIONS ─────────────────────────────────────────────────────────
   function onCardClick(skinId) {
     selectedId = skinId;
-    const preview = document.getElementById('ballShopPreview');
+    const preview = document.getElementById('cannonShopPreview');
     if (preview) preview.src = getSkin(skinId).previewSrc;
     refreshActionBtn();
   }
 
   function refreshActionBtn() {
-    const btn  = document.getElementById('ballShopActionBtn');
+    const btn = document.getElementById('cannonShopActionBtn');
     if (!btn) return;
-
     btn.onclick = null;
 
     if (isEquipped(selectedId)) {
       btn.src              = 'assets/button/equippedButton.png';
       btn.dataset.disabled = 'true';
       btn.style.cursor     = 'default';
-
     } else if (isOwned(selectedId)) {
       btn.src              = 'assets/button/equipButton.png';
       btn.dataset.disabled = 'false';
       btn.style.cursor     = 'pointer';
       btn.onclick          = () => equipSkin(selectedId);
-
     } else {
       btn.src              = 'assets/button/buyButton.png';
       btn.dataset.disabled = 'false';
@@ -416,29 +387,23 @@
   function buySkin(skinId) {
     const skin  = getSkin(skinId);
     const coins = getCoins();
-
-    // STRICT check — must have enough coins
-    if (coins < skin.price) {
-      flashBtn();
-      return;
-    }
+    if (coins < skin.price) { flashBtn(); return; }
 
     spendCoins(skin.price);
     ownedIds.push(skinId);
     saveState();
-    if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
 
-    const slotImg = document.getElementById('ballSlot-' + skinId);
+    const slotImg = document.getElementById('cannonSlot-' + skinId);
     if (slotImg) slotImg.src = skin.unlockedSlot;
 
-    const priceBadge = document.getElementById('ballPrice-' + skinId);
+    const priceBadge = document.getElementById('cannonPrice-' + skinId);
     if (priceBadge) priceBadge.remove();
 
     equipSkin(skinId);
   }
 
   function flashBtn() {
-    const btn = document.getElementById('ballShopActionBtn');
+    const btn = document.getElementById('cannonShopActionBtn');
     if (!btn) return;
     const shakes = ['-6px', '6px', '-4px', '4px', '0px'];
     let i = 0;
@@ -458,14 +423,14 @@
 
   function updateAllChecks() {
     SKINS.forEach(s => {
-      const c = document.getElementById('ballCheck-' + s.id);
+      const c = document.getElementById('cannonCheck-' + s.id);
       if (c) c.style.display = isEquipped(s.id) ? 'block' : 'none';
     });
   }
 
-  // CLOSE
+  // ── CLOSE ────────────────────────────────────────────────────────────────
   function closeShop() {
-    const el = document.getElementById('ballShopBackdrop');
+    const el = document.getElementById('cannonShopBackdrop');
     if (el) el.remove();
   }
 

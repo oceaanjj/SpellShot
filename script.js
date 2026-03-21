@@ -12,6 +12,7 @@
     maxAmmo: 6,
     ammo: 6
   };
+  state.sessionBaselineCoins = state.coins;
 
   const HUD_PADDING = 60;
 
@@ -61,11 +62,16 @@
     signalTargetWordOverlayUpdate();
   }
 
-  function adjustCoins(amount) {
-    if (!amount) return state.coins;
-    state.coins = Math.max(0, state.coins + amount);
-    return state.coins;
-  }
+    function adjustCoins(amount) {
+      if (!amount) return state.coins;
+      state.coins = Math.max(0, state.coins + amount);
+      return state.coins;
+    }
+
+    function getAccumulatedCoins() {
+      const baseline = typeof state.sessionBaselineCoins === "number" ? state.sessionBaselineCoins : 0;
+      return Math.max(0, state.coins - baseline);
+    }
 
   function resetLives() {
     state.lives = state.maxLives;
@@ -106,7 +112,6 @@
 
       if (!isInOrder) {
         loseLife();
-        adjustCoins(-25);
         return false;
       }
 
@@ -120,7 +125,6 @@
 
       if (matchedIndex === -1) {
         loseLife();
-        adjustCoins(-25);
         return false;
       }
 
@@ -165,30 +169,33 @@
     if (!state.word) return;
 
     const padding = HUD_PADDING;
-    const coinSize = 40;
+    const coinWidth = 60;
+    const coinHeight = 50;
     const coinSpacing = 10;
-    const heartSize = 38;
-    const heartSpacing = 6;
+    const heartSize = 40;
+    const heartSpacing = 2;
 
     ctx.save();
     const hasCoin = coinImage && coinImage.complete && coinImage.naturalWidth > 0;
-    const coinHeight = hasCoin ? coinSize + coinSpacing : 0;
-    const heartsBaseY = padding + coinHeight + 4;
+    const coinLayoutHeight = hasCoin ? coinHeight + coinSpacing : 0;
+    const heartsBaseY = padding + coinLayoutHeight + 4;
+
+    const displayedCoins = getAccumulatedCoins();
 
     if (hasCoin) {
       ctx.globalAlpha = 1;
-      ctx.drawImage(coinImage, padding, padding, coinSize, coinSize);
+      ctx.drawImage(coinImage, padding, padding, coinWidth, coinHeight);
       ctx.fillStyle = '#ffd207ff';
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${state.coins}`, padding + coinSize + 10, padding + coinSize / 2 + 4);
+      ctx.fillText(`${displayedCoins}`, padding + coinWidth + 10, padding + coinHeight / 2 + 4);
     } else {
       ctx.fillStyle = '#ffd207ff';
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${state.coins}`, padding, padding + 18);
+      ctx.fillText(`${displayedCoins}`, padding, padding + 18);
     }
 
     if (state.maxLives > 0) {
