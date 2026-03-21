@@ -18,6 +18,14 @@
     <!-- LOGO IMAGE -->
     <img id="logoImg" src="assets/logo.png" alt="Spell Shot" />
 
+     <div id="coinDisplay" style="position:absolute; top:25px; left:70%; transform:translateX(-50%);
+         display:flex; align-items:center; gap:8px; z-index:10; pointer-events:none;">
+      <img src="assets/coin.png" style="width:32px; height:25px;" />
+      <span id="coinCount"
+            style="font-family:'PixelFont',sans-serif; font-size:28px;
+                   color:#FFD700; text-shadow:2px 2px 0 #000;">0</span>
+    </div>
+
     <!-- Settings (top-right) -->
     <img class="btn" id="btnSettings" src="assets/button/settings.png"
          style="top:16px; right:16px; width:168px;" />
@@ -30,15 +38,19 @@
 
     <!-- Cannon Balls -->
     <img class="btn" id="btnBalls" src="assets/button/cannonBalls.png"
-         style="top:320px; left:70px; width:270px;" />
+         style="top:350px; left:70px; width:270px;" />
 
     <!-- Cannon Skins -->
     <img class="btn" id="btnSkins" src="assets/button/cannonSkins.png"
-         style="top:430px; left:70px; width:270px;" />
+         style="top:460px; left:70px; width:270px;" />
 
     <!-- Play -->
     <img class="btn" id="btnPlay" src="assets/button/playButton.png"
-         style="bottom:60px; right:160px; width:285px;" />
+         style="bottom:100px; right:180px; width:260px;" />
+
+     <!-- Tutorial -->
+    <img class="btn" id="btnTutorial" src="assets/button/tutorialButton.png"
+         style="bottom:45px; right:230px; width:160px;" />
 
          
 

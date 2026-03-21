@@ -435,6 +435,7 @@
     spendCoins(skin.price);
     ownedIds.push(skinId);
     saveState();
+    if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
 
     // Swap locked → unlocked slot image
     const slotImg = document.getElementById('ballSlot-' + skinId);
