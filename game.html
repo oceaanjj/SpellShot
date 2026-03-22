@@ -952,6 +952,7 @@
     }
 
     function onWordCompleted() {
+      stopTickingSfx();
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
       

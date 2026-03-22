@@ -78,7 +78,7 @@ function goToSettings() {
 function handlePauseAction(action) {
   switch (action) {
     case 'resume':  hidePauseOverlay(); break;
-    case 'setting': hidePauseOverlay(); goToSettings(); break;
+    case 'setting': goToSettings(); break;
     case 'home':    hidePauseOverlay(); goToHome(); break;
   }
 }
