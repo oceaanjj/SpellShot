@@ -7,7 +7,7 @@
   <style>
     @font-face {
       font-family: "PixelFont";
-      src: url("assets/font/Pixel_Font.otf") format("opentype");
+      src: url("assets/font/PressStart2P-Regular.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -353,7 +353,7 @@
       <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
         animation: loadLogoFloat 1.5s ease-in-out infinite;" />
       <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
-        font-size: 22px; color: #FFD700; letter-spacing: 4px;
+        font-size: 15px; color: #FFD700; letter-spacing: 4px;
         animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
     </div>
 
@@ -408,7 +408,7 @@
     ctx.imageSmoothingEnabled = false;
 
 
-    ctx.font = "16px PixelFont";
+    ctx.font = "10px PixelFont";
 
     // --------------------------------------------------
     // IMPORTING FILES
@@ -1038,7 +1038,7 @@
     function drawFloatingPopups() {
       if (!floatingPopups.length) return;
       ctx.save();
-      ctx.font = "bold 26px PixelFont";
+      ctx.font = "bold 15px PixelFont";
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       floatingPopups.forEach((popup) => {
@@ -1499,7 +1499,7 @@
           );
         } else {
           ctx.fillStyle = "white";
-          ctx.font = "bold 40px PixelFont";
+          ctx.font = "bold 20px PixelFont";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(
@@ -1719,7 +1719,7 @@
           ? timerBoxBounds.y + timerBoxBounds.height + ROUND_HEADER_OFFSET
           : 110;
       ctx.save();
-      ctx.font = "bold 28px PixelFont";
+      ctx.font = "bold 18px PixelFont";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#7efc7f";
@@ -1736,7 +1736,7 @@
       ctx.fillRect(0, 0, GAME_W, GAME_H);
       ctx.textBaseline = "middle";
 
-      ctx.font = "bold 68px PixelFont";
+      ctx.font = "bold 40px PixelFont";
       ctx.fillStyle = "#ff4f4f";
       ctx.shadowColor = "rgba(255, 79, 79, 0.85)";
       ctx.shadowBlur = 16;
@@ -1760,12 +1760,12 @@
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
 
-      ctx.font = "28px PixelFont";
+      ctx.font = "15px PixelFont";
       ctx.fillStyle = "#f8f7f0";
       ctx.textAlign = "center";
       ctx.fillText(getGameOverReasonText(gameOverReason), GAME_W / 2, GAME_H / 2 + 10);
 
-      ctx.font = "22px PixelFont";
+      ctx.font = "15px PixelFont";
       const restartText = "Press R to restart";
       const restartWidth = ctx.measureText(restartText).width;
       const restartX = GAME_W / 2 - restartWidth / 2;
@@ -2104,7 +2104,7 @@
       const ammoLabel = `${currentAmmo}/${maxAmmo}`;
       const totalWidth = Math.max(0, maxAmmo * ammoSize + Math.max(0, maxAmmo - 1) * gap);
       const labelX = ammoPaddingX + totalWidth + 12;
-      ctx.font = "bold 22px PixelFont";
+      ctx.font = "bold 18px PixelFont";
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";

@@ -198,7 +198,7 @@
       ctx.fillText(`${displayedCoins}`, padding + coinWidth + 10, padding + coinHeight / 2 + 4);
     } else {
       ctx.fillStyle = '#ffd207ff';
-      ctx.font = 'bold 30px PixelFont';
+      ctx.font = 'bold 10px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(`${displayedCoins}`, padding, padding + 18);
@@ -206,7 +206,7 @@
 
     if (state.maxLives > 0) {
       const hasHeartSprite = heartImage && heartImage.complete && heartImage.naturalWidth > 0;
-      ctx.font = `${heartSize}px PixelFont`;
+      ctx.font = `24px PixelFont`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
