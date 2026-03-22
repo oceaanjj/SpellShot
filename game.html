@@ -28,6 +28,17 @@
       position: relative;
       width: 1035px;
       height: 596px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    @keyframes loadLogoFloat {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-8px); }
+    }
+    @keyframes loadPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
     }
 
     #gameShell canvas {
@@ -332,6 +343,21 @@
   </style>
 </head>
 <body>
+  <div id="loadingScreen" style="
+      position: fixed; inset: 0; z-index: 999;
+      background: #0a0a0e;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity 0.5s ease;
+    ">
+      <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
+        animation: loadLogoFloat 1.5s ease-in-out infinite;" />
+      <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
+        font-size: 22px; color: #FFD700; letter-spacing: 4px;
+        animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
+    </div>
+
+  ...
   <div id="gameShell">
     <div id="borderOverlay">
       <img id="borderLeft" src="assets/map1/border/leftBorder.png" alt="Left border" />
@@ -845,6 +871,7 @@
     let successFlash = { timer: 0, x: 0, y: 0 };
 
     const gameShell = document.getElementById("gameShell");
+    const loadStartTime = Date.now();
 
     function refreshTimerOverlay() {
       if (!timerBoxImage || !timerBoxImage.naturalWidth) return;
@@ -1600,24 +1627,32 @@
           onWordCompleted();
         }
       } else if (hasRemainingLetter(block.letter)) {
-        TargetWord.onLetterHit(block.letter, false);
+        // TargetWord.onLetterHit(block.letter, false);
+       if (window.TargetWord?.state) {
+          window.TargetWord.state.lives = Math.max(0, window.TargetWord.state.lives - 1);
+        }
         markTargetWordDirty();
         queueBlockAnimation(block, null, 20);
+        checkGameOverForPlayer();
       } else {
-        TargetWord.onLetterHit(block.letter, false);
+        // TargetWord.onLetterHit(block.letter, false);
+       if (window.TargetWord?.state) {
+          window.TargetWord.state.lives = Math.max(0, window.TargetWord.state.lives - 1);
+        }
         markTargetWordDirty();
         block.wrongFlash = 24;
         queueBlockAnimation(block, "fall", 18);
+        checkGameOverForPlayer();
       }
       checkGameOverForPlayer();
     }
 
     function handleMissedShot() {
-      if (gameOver) return;
-      if (window.TargetWord && typeof TargetWord.recordMiss === "function") {
-        TargetWord.recordMiss();
-        checkGameOverForPlayer();
-      }
+      // if (gameOver) return;
+      // if (window.TargetWord && typeof TargetWord.recordMiss === "function") {
+      //   TargetWord.recordMiss();
+      //   checkGameOverForPlayer();
+      // }
     }
 
     function checkGameOverForPlayer() {
@@ -1636,9 +1671,13 @@
     }
 
     function handleGameOver(reason) {
-      initPause();
+      hidePauseOverlay();
       if (gameOver) return;
       gameOver = true;
+
+      const pauseUI = document.getElementById('pauseUI');
+      if (pauseUI) pauseUI.style.display = 'none';
+
       if (typeof bgMusic !== 'undefined') bgMusic.pause();
       playGameOverSfx();
       stopTickingSfx();
@@ -1748,8 +1787,14 @@
     function restartGame() {
       if (!window.TargetWord) return;
       stopTickingSfx();
-      initPause();
-      if (typeof bgMusic !== 'undefined') bgMusic.play().catch(() => {});
+      hidePauseOverlay();
+
+      const pauseUI = document.getElementById('pauseUI');
+      if (pauseUI) pauseUI.style.display = '';
+
+      if (typeof bgMusic !== 'undefined') 
+      bgMusic.currentTime = 0;
+      bgMusic.play().catch(() => {});
       TargetWord.resetGameProgress();
       currentWord = TargetWord.state.word;
       cannonBalls.length = 0;
@@ -1788,7 +1833,10 @@
     function fireCannon() {
       if (gameOver || gamePaused) return;
       const ammoState = window.TargetWord?.state;
-      if (ammoState && ammoState.ammo <= 0) return;
+      if (ammoState) {
+        ammoState.ammo = Math.max(0, ammoState.ammo - 1);
+        checkGameOverForPlayer();
+      }
 
       playFireSfx();
 
@@ -2328,8 +2376,23 @@
         generateLetterBlocks();
         persistGameState();
         startAutoSave();
-        render();
-        requestAnimationFrame(animate);
+
+        // Fade out loading, fade in game
+        const loading = document.getElementById('loadingScreen');
+        const revealGame = () => {
+          if (loading) {
+            loading.style.opacity = '0';
+            setTimeout(() => { loading.style.display = 'none'; }, 500);
+          }
+          document.getElementById('gameShell').style.opacity = '1';
+          render();
+          requestAnimationFrame(animate);
+        };
+
+        // Enforce minimum 1.5s loading screen display
+        const elapsed  = Date.now() - loadStartTime;
+        const remaining = Math.max(0, 1500 - elapsed);
+        setTimeout(revealGame, remaining);
       }
 
       if (window.TargetWord) {
