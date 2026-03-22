@@ -97,6 +97,7 @@
   function setTargetWord(word) {
     state.word = (word || 'SPELL').toUpperCase();
     state.progress = Array(state.word.length).fill(false);
+    state.maxAmmo = state.word.length + 2;
     resetAmmo();
     signalTargetWordOverlayUpdate();
   }

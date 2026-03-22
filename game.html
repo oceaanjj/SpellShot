@@ -57,6 +57,33 @@
       }
     }
 
+    @keyframes slideUpIn {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    #roundCompleteOverlay.active .overlay-stack {
+      animation: slideUpIn 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    }
+
+    #allCompleteOverlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 15;
+      background: rgba(0,0,0,0.75);
+    }
+    #allCompleteOverlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #allCompleteOverlay.active .ui-btn {
+      pointer-events: auto;
+    }
     #gameShell canvas {
       position: absolute;
       inset: 0;
@@ -648,6 +675,25 @@
         </div>
       </div>
     </div>
+
+    <div id="allCompleteOverlay">
+      <div class="overlay-stack">
+        <p class="overlay-reason" style="color:#ffe066; font-size:14px; letter-spacing:2px;">
+          ALL LEVELS COMPLETE!
+        </p>
+        <p class="overlay-instruction" style="margin-top:8px;">
+          You finished all 15 levels!
+        </p>
+        <div class="round-complete-actions">
+          <button id="allCompleteHome" class="ui-btn" type="button">
+            <img class="btn overlay-icon" src="assets/home.png" alt="Home" />
+          </button> 
+          <button id="allCompleteRetry" class="ui-btn" type="button">
+            <img class="btn overlay-icon" src="assets/button/retryButton.png" alt="Play Again" />
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/cannonSkins.js"></script>
@@ -953,7 +999,39 @@
     let currentRound = 1;
     let currentWord = "LOADING";
     let wordProgress = [];
-    const TIMER_DURATION_SECONDS = 60;
+    let TIMER_DURATION_SECONDS = 60;
+
+    const LEVEL_CONFIG = [
+      null,                         
+      { words: 1, seconds: 30  },  
+      { words: 1, seconds: 30  },   
+      { words: 2, seconds: 60  },  
+      { words: 2, seconds: 60  },   
+      { words: 2, seconds: 60  },  
+      { words: 3, seconds: 90  },   
+      { words: 3, seconds: 90  },  
+      { words: 3, seconds: 90  },   
+      { words: 3, seconds: 90  },   
+      { words: 3, seconds: 90  },   
+      { words: 4, seconds: 120 },   
+      { words: 4, seconds: 120 },   
+      { words: 4, seconds: 120 },  
+      { words: 4, seconds: 120 },   
+      { words: 1, seconds: 120 },   
+    ];
+    let wordsRequiredForLevel = 1;
+    let wordsCompletedThisLevel = 0;
+
+function applyLevelConfig(round) {
+  const config = LEVEL_CONFIG[round] ?? { words: 1, seconds: 60 };
+  TIMER_DURATION_SECONDS = config.seconds;
+  wordsRequiredForLevel  = config.words;
+  wordsCompletedThisLevel = 0;
+}
+
+
+
+
     const TIMER_BOX_SCALE = 0.105;
     const TIMER_BOX_TOP = -100;
     const BACKGROUND_SCROLL_SPEED = 0.012;
@@ -1365,6 +1443,21 @@
 
     function onWordCompleted() {
       stopTickingSfx();
+      wordsCompletedThisLevel++;
+
+      if (wordsCompletedThisLevel < wordsRequiredForLevel) {
+        // More words needed — load next word silently, no overlay
+        TargetWord.loadNextWordInTier();
+        currentWord = TargetWord.state.word;
+        markTargetWordDirty();
+        cannonBalls.length = 0;
+        // resetTimerForRound();
+        generateLetterBlocks();
+        return;
+      }
+
+      // All words for this level done — show level complete
+      wordsCompletedThisLevel = 0;
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
       currentWord = TargetWord.state.word;
@@ -1373,7 +1466,12 @@
       pendingRoundCompletion = { tierComplete, roundNumber: currentRound };
       ensureNextRoundUnlocked();
       persistGameState();
-      showRoundCompleteOverlay();
+
+      if (currentRound >= 15) {
+        showAllLevelsCompleteOverlay(); // ← all done!
+      } else {
+        showRoundCompleteOverlay();
+      }
     }
 
     function resetTimerForRound() {
@@ -2053,9 +2151,14 @@
       if (typeof setPauseToggleEnabled === "function") {
         setPauseToggleEnabled(false);
       }
+
+      autoContinueTimer = setTimeout(() => {
+        continueAfterRoundCompletion();
+      }, 5000);
     }
 
     function hideRoundCompleteOverlay() {
+      clearTimeout(autoContinueTimer);
       if (!roundCompleteOverlay) return;
       clearOverlayBackdrop();
       roundCompleteOverlay.classList.remove("active");
@@ -2065,6 +2168,17 @@
         setPauseToggleEnabled(!gameOver && !roundCompleteActive);
       }
     }
+
+    function showAllLevelsCompleteOverlay() {
+      const el = document.getElementById('allCompleteOverlay');
+      if (!el) return;
+      el.classList.add('active');
+      roundCompleteActive = true;
+      pauseUIButton?.classList.add('hidden');
+      if (typeof setPauseToggleEnabled === 'function') setPauseToggleEnabled(false);
+    }
+
+
 
     function continueAfterRoundCompletion() {
       if (!pendingRoundCompletion || !window.TargetWord) return;
@@ -2083,6 +2197,7 @@
       
       currentRound = Math.min(15, completedRound + 1);
       highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+      applyLevelConfig(currentRound);
       updateThemeForRound(currentRound);
       currentWord = window.TargetWord?.state?.word || currentWord;
       markTargetWordDirty();
@@ -2772,6 +2887,58 @@
     // pauseBackdrop?.addEventListener("click", hidePauseOverlay);
 
     initPause();
+
+    
+    const allCompleteHome  = document.getElementById('allCompleteHome');
+const allCompleteRetry = document.getElementById('allCompleteRetry');
+
+if (allCompleteHome) {
+  addUIButtonPressEffects(allCompleteHome);
+  allCompleteHome.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    playClickSfx();
+    goToMainMenu();
+  });
+}
+
+if (allCompleteRetry) {
+  addUIButtonPressEffects(allCompleteRetry);
+  allCompleteRetry.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    playClickSfx();
+
+    const el = document.getElementById('allCompleteOverlay');
+    if (el) el.classList.remove('active');
+
+    currentRound = 1;
+    applyLevelConfig(1);
+    updateThemeForRound(1);
+    wordsCompletedThisLevel = 0;
+    highestUnlockedRound = Math.max(highestUnlockedRound, 1);
+
+    TargetWord.resetGameProgress();
+    currentWord = TargetWord.state.word;
+    markTargetWordDirty();
+    cannonBalls.length = 0;
+
+    gameOver = false;
+    roundCompleteActive = false;
+
+    pauseUIButton?.classList.remove('hidden');
+    if (typeof setPauseToggleEnabled === 'function') setPauseToggleEnabled(true);
+
+    resetTimerForRound();
+    generateLetterBlocks();
+    persistGameState();
+
+    if (typeof bgMusic !== 'undefined') {
+      bgMusic.currentTime = 0;
+      bgMusic.play().catch(() => {});
+    }
+  });
+}
     if (retryOverlayButton) {
       addUIButtonPressEffects(retryOverlayButton);
       retryOverlayButton.addEventListener("click", (e) => {
@@ -2835,6 +3002,7 @@
       } else {
         highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       }
+      applyLevelConfig(currentRound);
     }
 
     function startGame() {
