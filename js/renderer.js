@@ -15,6 +15,29 @@ let FRAME_W = 0;  // width of a single animation frame
 let FRAME_H = 0;  // height of the sprite sheet
 
 
+// -- Draw a character name below the character --
+// x    → horizontal centre of the character on screen
+// y    → vertical position (bottom of character + a little padding)
+function drawCharacterName(mainCtx, name, x, y) {
+  mainCtx.save();
+  mainCtx.font         = 'bold 18px PixelFont';
+  mainCtx.textAlign    = 'center';
+  mainCtx.textBaseline = 'top';
+
+  // Dark brown stroke for readability
+  mainCtx.strokeStyle = '#3B1A00';
+  mainCtx.lineWidth   = 7;
+  mainCtx.lineJoin    = 'round';
+  mainCtx.strokeText(name, x, y);
+
+  // Gold fill — matches the coin counter style
+  mainCtx.fillStyle = '#FFD700';
+  mainCtx.fillText(name, x, y);
+
+  mainCtx.restore();
+}
+
+
 // -- Draw everything for one frame --
 // mainCtx → the main canvas context
 // bgImg   → the background image
@@ -61,7 +84,7 @@ function drawScene(mainCtx, bgImg, ts) {
   }
 
 
-  // -- Helper: draw one character --
+  // -- Helper: draw one character + its name --
   // character  → which character to draw
   // xOffset    → how far to shift it left or right (used for slide animation)
   // alpha      → opacity, 0 = invisible, 1 = fully visible (used for fade effect)
@@ -84,6 +107,19 @@ function drawScene(mainCtx, bgImg, ts) {
     );
 
     mainCtx.restore();
+
+    // -- Draw name below the character --
+    // Compute the screen-space centre and bottom of the character
+    const charScreenW = fw * character.scale * PLAYER_SCALE;
+    const charScreenH = fh * character.scale * PLAYER_SCALE;
+    const nameCentreX = 725;
+    const nameY       = PLAYER_Y + charScreenH + 10; 
+
+    // Apply the same alpha fade as the character
+    mainCtx.save();
+    mainCtx.globalAlpha = alpha;
+    drawCharacterName(mainCtx, character.name, nameCentreX, nameY);
+    mainCtx.restore();
   };
 
 
@@ -104,10 +140,10 @@ function drawScene(mainCtx, bgImg, ts) {
     const offsetIn = slideDirection * (1 - ease) * 180;  // starts offscreen, moves to centre
     const alphaIn  = ease;                                // fades from 0 → 1
 
-    // Draw outgoing character
+    // Draw outgoing character + name
     drawCharacter(CHARACTERS[currentCharIdx],  offsetOut, alphaOut);
 
-    // Draw incoming character
+    // Draw incoming character + name
     drawCharacter(CHARACTERS[incomingCharIdx], offsetIn,  alphaIn);
 
     // Once the animation is done (t reached 1), clean everything up
@@ -126,7 +162,7 @@ function drawScene(mainCtx, bgImg, ts) {
     }
 
   } else {
-    // No slide happening — draw the current character normally
+    // No slide happening — draw the current character + name normally
     drawCharacter(ch, 0, 1);
   }
 }
