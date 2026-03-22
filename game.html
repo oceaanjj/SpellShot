@@ -3014,6 +3014,9 @@ if (allCompleteRetry) {
         persistGameState();
         startAutoSave();
 
+        roundMessage = `Level ${currentRound}`;  // ← add this
+        roundMessageTimer = ROUND_MESSAGE_DURATION;
+
         // Fade out loading, fade in game
         const loading = document.getElementById('loadingScreen');
         const revealGame = () => {
