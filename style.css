@@ -1,8 +1,15 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  @font-face {
+    @font-face {
       font-family: "PixelFont";
       src: url("assets/font/PressStart2P-Regular.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "Thaleah";
+      src: url("assets/font/ThaleahFat.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
