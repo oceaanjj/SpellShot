@@ -8,7 +8,7 @@
   <style>
     @font-face {
       font-family: "PixelFont";
-      src: url("assets/font/Pixel_Font.otf") format("opentype");
+      src: url("assets/font/PressStart2P-Regular.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -662,7 +662,7 @@
     ctx.imageSmoothingEnabled = false;
 
 
-    ctx.font = "16px PixelFont";
+    ctx.font = "10px PixelFont";
 
     // --------------------------------------------------
     // IMPORTING FILES
@@ -1350,7 +1350,7 @@
     function drawFloatingPopups() {
       if (!floatingPopups.length) return;
       ctx.save();
-      ctx.font = "bold 26px PixelFont";
+      ctx.font = "bold 15px PixelFont";
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       floatingPopups.forEach((popup) => {
@@ -1806,7 +1806,7 @@
           );
         } else {
           ctx.fillStyle = "white";
-          ctx.font = "bold 40px PixelFont";
+          ctx.font = "bold 20px PixelFont";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(
@@ -2138,7 +2138,7 @@
           ? timerBoxBounds.y + timerBoxBounds.height + ROUND_HEADER_OFFSET
           : 110;
       ctx.save();
-      ctx.font = "bold 28px PixelFont";
+      ctx.font = "bold 18px PixelFont";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#7efc7f";
@@ -2524,7 +2524,7 @@
       const ammoLabel = `${currentAmmo}/${maxAmmo}`;
       const totalWidth = Math.max(0, maxAmmo * ammoSize + Math.max(0, maxAmmo - 1) * gap);
       const labelX = ammoPaddingX + totalWidth + 12;
-      ctx.font = "bold 22px PixelFont";
+      ctx.font = "bold 18px PixelFont";
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";

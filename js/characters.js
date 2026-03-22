@@ -14,10 +14,10 @@ const peterLockedImg  = new Image();
 
 // -- Character list --
 const CHARACTERS = [
-  { img: girlieImg, lockedImg: girlieLockedImg, totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: true  },
-  { img: markImg,   lockedImg: markLockedImg,   totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false },
-  { img: pattieImg, lockedImg: pattieLockedImg, totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false },
-  { img: peterImg,  lockedImg: peterLockedImg,  totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false },
+  { img: girlieImg, lockedImg: girlieLockedImg, totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: true,  name: 'GIRLIE', sound: 'sounds/character/girlie.mp3' },
+  { img: markImg,   lockedImg: markLockedImg,   totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false, name: 'PATTIE',   sound: 'sounds/character/pattie.mp3'   },
+  { img: pattieImg, lockedImg: pattieLockedImg, totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false, name: 'MARK', sound: 'sounds/character/mark.mp3' },
+  { img: peterImg,  lockedImg: peterLockedImg,  totalFrames: 5, scale: 1.0, frameDuration: 300, unlocked: false, name: 'PETER',  sound: 'sounds/character/peter.mp3'  },
 ];
 
 
@@ -35,6 +35,7 @@ let lastIdleTime = 0;
 let isSliding      = false;  
 let slideStartTime = 0;      
 let slideDirection = 1;  
+
 
 
 // -- Switch to the next or previous character --
@@ -56,6 +57,8 @@ function switchCharacter(dir) {
   // Reset idle so the new character starts on frame 0
   idleFrame    = 0;
   lastIdleTime = 0;
+
+  playCharacterSfx(nextIdx);
 
   // Dim the arrows so the player can't spam click during the slide
   setArrowsInteractive(false);
@@ -86,4 +89,32 @@ function setArrowsInteractive(enabled) {
     btn.style.opacity       = enabled ? '1'    : '0.25';
     btn.style.pointerEvents = enabled ? 'auto' : 'none';
   });
+}
+
+function playCharacterSfx(idx) {
+  const char = CHARACTERS[idx];
+  if (!char?.sound) return;
+  const sfx = new Audio(char.sound);
+  sfx.volume = (typeof getSfxVolume === 'function') ? getSfxVolume() : 1;
+  sfx.play().catch(() => {});
+}
+
+
+function drawCharacterName(ctx, name, x, y) {
+  ctx.save();
+  ctx.font         = 'bold 32px PixelFont';
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'top';
+
+  // Dark brown stroke
+  ctx.strokeStyle = '#3B1A00';
+  ctx.lineWidth   = 7;
+  ctx.lineJoin    = 'round';
+  ctx.strokeText(name, x, y);
+
+  // Gold fill — same as coin display
+  ctx.fillStyle = '#FFD700';
+  ctx.fillText(name, x, y);
+
+  ctx.restore();
 }
