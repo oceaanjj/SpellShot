@@ -329,6 +329,72 @@
     #timerOverlayText.urgent {
       animation: timerPulse 0.5s ease-in-out infinite;
     }
+    #gameOverOverlay,
+    #roundCompleteOverlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.72);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    #gameOverOverlay {
+      z-index: 21;
+    }
+
+    #roundCompleteOverlay {
+      z-index: 22;
+      background: rgba(0, 0, 0, 0.48);
+    }
+
+    #gameOverOverlay.active,
+    #roundCompleteOverlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .overlay-stack img {
+      width: min(320px, 80vw);
+      height: auto;
+      image-rendering: pixelated;
+    }
+
+    .overlay-reason {
+      font-size: 24px;
+      letter-spacing: 1px;
+      color: #fefefe;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+
+    .game-over-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .game-over-actions .ui-btn img {
+      width: 100px;
+      height: auto;
+      image-rendering: pixelated;
+    }
+
+    #pauseUI.hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -366,6 +432,34 @@
         <img id="timerOverlayImage" src="assets/map1/timerBox.png" alt="Timer Box" />
         <span id="timerOverlayText">1:00</span>
         <div id="targetWordOverlay"></div>
+      </div>
+    </div>
+    <div id="gameOverOverlay">
+      <div class="overlay-stack">
+        <img src="assets/gameOver.png" alt="Game Over" />
+        <p id="gameOverReason" class="overlay-reason"></p>
+        <div class="game-over-actions">
+          <button id="gameOverRetry" class="ui-btn" type="button" aria-label="Retry level">
+            <img src="assets/button/retryButton.png" alt="Retry" />
+          </button>
+          <button id="gameOverExit" class="ui-btn" type="button" aria-label="Back to levels">
+            <img src="assets/button/returnHomeButton.png" alt="Back" />
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="roundCompleteOverlay">
+      <div class="overlay-stack">
+        <img src="assets/gameOver.png" alt="Round Complete" />
+        <p id="roundCompleteReason" class="overlay-reason">Round Complete</p>
+        <div class="game-over-actions">
+          <button id="roundCompleteBack" class="ui-btn" type="button" aria-label="Back to levels">
+            <img src="assets/button/returnHomeButton.png" alt="Back" />
+          </button>
+          <button id="roundCompleteNext" class="ui-btn" type="button" aria-label="Next level">
+            <img src="assets/button/retryButton.png" alt="Next" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -476,6 +570,27 @@
     const borderLeftElem = document.getElementById("borderLeft");
     const borderRightElem = document.getElementById("borderRight");
     const borderBottomElem = document.getElementById("borderBottom");
+    const gameOverOverlay = document.getElementById("gameOverOverlay");
+    const gameOverReasonText = document.getElementById("gameOverReason");
+    const retryOverlayButton = document.getElementById("gameOverRetry");
+    const exitOverlayButton = document.getElementById("gameOverExit");
+    const roundCompleteOverlay = document.getElementById("roundCompleteOverlay");
+    const roundCompleteReasonText = document.getElementById("roundCompleteReason");
+    const roundCompleteNextBtn = document.getElementById("roundCompleteNext");
+    const roundCompleteBackBtn = document.getElementById("roundCompleteBack");
+    const pauseUIButton = document.getElementById("pauseUI");
+    const LEVEL_SELECTION_KEY = "spellshot-selected-level";
+    let requestedRound = parseRequestedRound();
+    let highestUnlockedRound = 1;
+
+    function parseRequestedRound() {
+      const raw = sessionStorage.getItem(LEVEL_SELECTION_KEY);
+      if (!raw) return null;
+      sessionStorage.removeItem(LEVEL_SELECTION_KEY);
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed) || parsed < 1) return null;
+      return Math.min(15, Math.max(1, Math.floor(parsed)));
+    }
     imgBody.src = getSelectedCharacterSpritePath();
     imgCanon.src = "assets/canon.png";
     imgWheel.src = "assets/wheel.png";
@@ -636,7 +751,7 @@
     // --------------------------------------------------
     // GAME STATE
     // --------------------------------------------------
-    let currentRound = 1;
+    let currentRound = 15;
     let currentWord = "LOADING";
     let wordProgress = [];
     const TIMER_DURATION_SECONDS = 60;
@@ -684,6 +799,7 @@
       const savedLives = gameOver || clampedLives <= 0 ? maxLives : clampedLives;
       const savedAmmo = gameOver || clampedAmmo <= 0 ? maxAmmo : clampedAmmo;
 
+      highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       return {
         coins: typeof targetState.coins === "number" ? targetState.coins : 0,
         lives: savedLives,
@@ -694,6 +810,7 @@
         currentWord: targetState.word,
         progress: Array.isArray(targetState.progress) ? targetState.progress : [],
         currentRound,
+        maxUnlockedRound: highestUnlockedRound,
         timerRemaining,
         timerExpired
       };
@@ -783,6 +900,12 @@
         currentRound = Math.max(1, saved.currentRound);
       }
 
+      if (typeof saved.maxUnlockedRound === "number") {
+        highestUnlockedRound = Math.max(1, saved.maxUnlockedRound);
+      } else {
+        highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+      }
+
       if (typeof saved.timerRemaining === "number") {
         timerRemaining = Math.max(0, Math.min(TIMER_DURATION_SECONDS, saved.timerRemaining));
         timerExpired = false;
@@ -828,6 +951,8 @@
     let timerExpired = false;
     let gameOver = false;
     let gamePaused = false;
+    let roundCompleteActive = false;
+    let pendingRoundCompletion = null;
     let roundMessage = "";
     let roundMessageTimer = 0;
     const ROUND_MESSAGE_DURATION = 150;
@@ -1028,18 +1153,11 @@
       stopTickingSfx();
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
-      
-      if (tierComplete) {
-        TargetWord.advanceToNextTier();
-      } else {
-        TargetWord.loadNextWordInTier();
-      }
-      
       currentWord = TargetWord.state.word;
       markTargetWordDirty();
-      resetTimerForRound();
       cannonBalls.length = 0;
-      generateLetterBlocks();
+      pendingRoundCompletion = { tierComplete, roundNumber: currentRound };
+      showRoundCompleteOverlay();
     }
 
     function resetTimerForRound() {
@@ -1596,7 +1714,6 @@
         );
         queueBlockAnimation(block, "jump", 22);
         if (wordFinished) {
-          showRoundCompletedBanner();
           onWordCompleted();
         }
       } else if (hasRemainingLetter(block.letter)) {
@@ -1649,6 +1766,95 @@
         window.TargetWord.resetDisplayedCoins();
       }
       updateThemeForRound(currentRound);
+      updateGameOverOverlay();
+      showGameOverOverlay();
+    }
+
+    function updateGameOverOverlay() {
+      if (!gameOverOverlay) return;
+      if (gameOverReasonText) {
+        gameOverReasonText.textContent = getGameOverReasonText(gameOverReason);
+      }
+    }
+
+    function showGameOverOverlay() {
+      if (!gameOverOverlay) return;
+      gameOverOverlay.classList.add("active");
+      pauseUIButton?.classList.add("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(false);
+      }
+    }
+
+    function hideGameOverOverlay() {
+      if (!gameOverOverlay) return;
+      gameOverOverlay.classList.remove("active");
+      pauseUIButton?.classList.remove("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(!gameOver);
+      }
+    }
+
+    function updateRoundCompleteOverlay() {
+      if (!roundCompleteOverlay) return;
+      const roundNumber = pendingRoundCompletion?.roundNumber ?? currentRound;
+      if (roundCompleteReasonText) {
+        roundCompleteReasonText.textContent = `Round ${roundNumber} Complete`;
+      }
+    }
+
+    function showRoundCompleteOverlay() {
+      if (!roundCompleteOverlay) return;
+      updateRoundCompleteOverlay();
+      roundCompleteOverlay.classList.add("active");
+      roundCompleteActive = true;
+      pauseUIButton?.classList.add("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(false);
+      }
+    }
+
+    function hideRoundCompleteOverlay() {
+      if (!roundCompleteOverlay) return;
+      roundCompleteOverlay.classList.remove("active");
+      roundCompleteActive = false;
+      pauseUIButton?.classList.remove("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(!gameOver && !roundCompleteActive);
+      }
+    }
+
+    function continueAfterRoundCompletion() {
+      if (!pendingRoundCompletion || !window.TargetWord) return;
+      const completionState = pendingRoundCompletion;
+      pendingRoundCompletion = null;
+      const { tierComplete, roundNumber: completedRound = currentRound } = completionState;
+      if (tierComplete) {
+        TargetWord.advanceToNextTier();
+      } else {
+        TargetWord.loadNextWordInTier();
+      }
+      currentRound = Math.min(15, completedRound + 1);
+      highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+      updateThemeForRound(currentRound);
+      currentWord = window.TargetWord?.state?.word || currentWord;
+      markTargetWordDirty();
+      cannonBalls.length = 0;
+      roundMessage = `Level ${currentRound} Ready`;
+      roundMessageTimer = ROUND_MESSAGE_DURATION;
+      resetTimerForRound();
+      generateLetterBlocks();
+      persistGameState();
+      hideRoundCompleteOverlay();
+      if (typeof bgMusic !== "undefined") bgMusic.play().catch(() => {});
+    }
+
+    function goToLevelSelection() {
+      document.body.style.transition = "opacity 0.35s ease";
+      document.body.style.opacity = "0";
+      setTimeout(() => {
+        window.location.href = "level.html";
+      }, 320);
     }
 
     function getGameOverReasonText(reason) {
@@ -1662,13 +1868,6 @@
         default:
           return "You Lose!";
       }
-    }
-
-    function showRoundCompletedBanner() {
-      roundMessage = `Level ${currentRound} Complete`;
-      roundMessageTimer = ROUND_MESSAGE_DURATION;
-      currentRound++;
-      persistGameState();
     }
 
     function drawRoundBanner() {
@@ -1690,61 +1889,6 @@
       ctx.restore();
     }
 
-    function drawGameOverOverlay() {
-      if (!gameOver) return;
-      ctx.save();
-      ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
-      ctx.fillRect(0, 0, GAME_W, GAME_H);
-      ctx.textBaseline = "middle";
-
-      ctx.font = "bold 68px PixelFont";
-      ctx.fillStyle = "#ff4f4f";
-      ctx.shadowColor = "rgba(255, 79, 79, 0.85)";
-      ctx.shadowBlur = 16;
-      const title = "GAME OVER";
-      const letterSpacing = 14;
-      const letters = title.split("");
-      const letterWidths = letters.map((ltr) => ctx.measureText(ltr).width);
-      const totalWidth =
-        letterWidths.reduce((sum, width) => sum + width, 0) + letterSpacing * (letters.length - 1);
-      let cursorX = GAME_W / 2 - totalWidth / 2;
-      const titleY = GAME_H / 2 - 60;
-      for (let i = 0; i < letters.length; i++) {
-        if (letters[i] === " ") {
-          cursorX += letterWidths[i] + letterSpacing;
-          continue;
-        }
-        ctx.fillText(letters[i], cursorX, titleY);
-        cursorX += letterWidths[i] + letterSpacing;
-      }
-
-      ctx.shadowColor = "transparent";
-      ctx.shadowBlur = 0;
-
-      ctx.font = "28px PixelFont";
-      ctx.fillStyle = "#f8f7f0";
-      ctx.textAlign = "center";
-      ctx.fillText(getGameOverReasonText(gameOverReason), GAME_W / 2, GAME_H / 2 + 10);
-
-      ctx.font = "22px PixelFont";
-      const restartText = "Press R to restart";
-      const restartWidth = ctx.measureText(restartText).width;
-      const restartX = GAME_W / 2 - restartWidth / 2;
-      const restartY = GAME_H / 2 + 70;
-      const before = "Press ";
-      const after = " to restart";
-      const beforeWidth = ctx.measureText(before).width;
-      ctx.textAlign = "left";
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(before, restartX, restartY);
-      ctx.fillStyle = "#7bf55d";
-      ctx.fillText("R", restartX + beforeWidth, restartY);
-      const rWidth = ctx.measureText("R").width;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(after, restartX + beforeWidth + rWidth, restartY);
-      ctx.restore();
-    }
-
     function restartGame() {
       if (!window.TargetWord) return;
       stopTickingSfx();
@@ -1755,7 +1899,7 @@
       cannonBalls.length = 0;
       roundMessage = "";
       roundMessageTimer = 0;
-      currentRound = 1;
+      highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       updateThemeForRound(currentRound);
       gameOverReason = "";
       gameOver = false;
@@ -1763,6 +1907,7 @@
       resetTimerForRound();
       generateLetterBlocks();
       persistGameState();
+      hideGameOverOverlay();
     }
 
     function checkGameOverConditions() {
@@ -2166,7 +2311,6 @@
       TargetWord.draw(ctx, letterImages, coinImage, heartImage);
     }
     drawAmmoDisplay();
-    drawGameOverOverlay();
     }
 
     function animate(ts) {
@@ -2186,7 +2330,7 @@
         nextBlinkDelay = 1800 + Math.random() * 2200;
       }
 
-      const canProgress = !gameOver && !gamePaused;
+      const canProgress = !gameOver && !gamePaused && !roundCompleteActive;
       if (canProgress) {
         updateCannonBalls();
         updateTimer(ts);
@@ -2303,6 +2447,36 @@
     // pauseBackdrop?.addEventListener("click", hidePauseOverlay);
 
     initPause();
+    if (retryOverlayButton) {
+      addUIButtonPressEffects(retryOverlayButton);
+      retryOverlayButton.addEventListener("click", () => {
+        playClickSfx();
+        restartGame();
+      });
+    }
+    if (exitOverlayButton) {
+      addUIButtonPressEffects(exitOverlayButton);
+      exitOverlayButton.addEventListener("click", () => {
+        playClickSfx();
+        goToLevelSelection();
+      });
+    }
+    if (roundCompleteNextBtn) {
+      addUIButtonPressEffects(roundCompleteNextBtn);
+      roundCompleteNextBtn.addEventListener("click", () => {
+        playClickSfx();
+        continueAfterRoundCompletion();
+      });
+    }
+    if (roundCompleteBackBtn) {
+      addUIButtonPressEffects(roundCompleteBackBtn);
+      roundCompleteBackBtn.addEventListener("click", () => {
+        playClickSfx();
+        pendingRoundCompletion = null;
+        hideRoundCompleteOverlay();
+        goToLevelSelection();
+      });
+    }
 
     // --------------------------------------------------
     // LOAD / PRELOADING
@@ -2318,6 +2492,16 @@
       FRAME_H = imgBody.naturalHeight;
       canvas.width = GAME_W;
       canvas.height = GAME_H;
+    }
+
+    function applyRequestedRound() {
+      if (typeof requestedRound === "number") {
+        currentRound = Math.max(1, requestedRound);
+        highestUnlockedRound = Math.max(highestUnlockedRound, requestedRound);
+        updateThemeForRound(currentRound);
+      } else {
+        highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+      }
     }
 
     function startGame() {
@@ -2339,10 +2523,12 @@
           if (savedGameState) {
             applySavedGameState(savedGameState);
           }
+          applyRequestedRound();
           finalizeStart();
         });
       } else {
         resetTimerForRound();
+        applyRequestedRound();
         finalizeStart();
       }
     }
@@ -2390,7 +2576,6 @@
     trackImage(borderRightElem, { critical: true, callback: updateBorderOverlayPositions });
     trackImage(borderBottomElem, { critical: true, callback: updateBorderOverlayPositions });
 
-    updateThemeForRound(currentRound);
 
     for (let letter of alphabet) {
       trackImage(letterImages[letter]);
