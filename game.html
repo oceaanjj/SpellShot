@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,12 +34,27 @@
     }
 
     @keyframes loadLogoFloat {
-      0%, 100% { transform: translateY(0px); }
-      50%       { transform: translateY(-8px); }
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
     }
+
     @keyframes loadPulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.3; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
     }
 
     #gameShell canvas {
@@ -57,7 +73,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.28s ease;
-      z-index: 14;
+      z-index: 18;
     }
 
     #pauseBackdrop.active {
@@ -74,7 +90,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.28s ease;
-      z-index: 15;
+      z-index: 20;
     }
 
     #pauseOverlay.active {
@@ -106,36 +122,43 @@
       pointer-events: auto;
       transform-origin: center center;
       will-change: transform, filter;
-      transition: transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease;
+      transition: transform 0.10s cubic-bezier(.22, .61, .36, 1), filter 0.10s ease;
       filter: drop-shadow(3px 4px 0px rgba(0, 0, 0, 0.55));
     }
 
     .ui-btn:hover {
       transform: scale(1.07) translateY(-3px);
       filter:
-        brightness(1.22)
-        drop-shadow(0 0 9px rgba(255, 210, 60, 0.90))
-        drop-shadow(3px 4px 0px rgba(0, 0, 0, 0.55));
+        brightness(1.22) drop-shadow(0 0 9px rgba(255, 210, 60, 0.90)) drop-shadow(3px 4px 0px rgba(0, 0, 0, 0.55));
     }
 
     .ui-btn.pressing {
       transform: scale(0.91) translateY(3px) !important;
       filter:
-        brightness(1.55)
-        drop-shadow(0 0 16px rgba(255, 130, 0, 1))
-        drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.55)) !important;
+        brightness(1.55) drop-shadow(0 0 16px rgba(255, 130, 0, 1)) drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.55)) !important;
       transition: transform 0.04s ease, filter 0.04s ease;
     }
 
     @keyframes btnRelease {
-      0% { transform: scale(0.91) translateY(3px); }
-      45% { transform: scale(1.13) translateY(-5px); }
-      72% { transform: scale(0.97) translateY(0px); }
-      100% { transform: scale(1.00) translateY(0px); }
+      0% {
+        transform: scale(0.91) translateY(3px);
+      }
+
+      45% {
+        transform: scale(1.13) translateY(-5px);
+      }
+
+      72% {
+        transform: scale(0.97) translateY(0px);
+      }
+
+      100% {
+        transform: scale(1.00) translateY(0px);
+      }
     }
 
     .ui-btn.released {
-      animation: btnRelease 0.32s cubic-bezier(.22,.61,.36,1) forwards;
+      animation: btnRelease 0.32s cubic-bezier(.22, .61, .36, 1) forwards;
     }
 
     .ui-btn img {
@@ -228,7 +251,7 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 13;
+      z-index: 16;
     }
 
     #borderOverlay img {
@@ -263,10 +286,10 @@
     #timerOverlayText {
       position: absolute;
       top: 50%;
-      left: 50%;
+      left: 52%;
       transform: translate(-50%, -50%);
       font-family: "PixelFont", sans-serif;
-      font-size: 32px;
+      font-size: 12px;
       letter-spacing: 2px;
       color: #ffef72;
       text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
@@ -333,15 +356,213 @@
     }
 
     @keyframes timerPulse {
-      0%, 100% { transform: translate(-50%, -50%) scale(1);    }
-      50%       { transform: translate(-50%, -50%) scale(1.15); }
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.15);
+      }
     }
 
     #timerOverlayText.urgent {
       animation: timerPulse 0.5s ease-in-out infinite;
     }
+
+    #overlayBackdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 8;
+    }
+
+    #overlayBackdrop.active {
+      opacity: 1;
+    }
+
+    #overlayBackdrop.round {
+      background: rgba(0, 0, 0, 0.48);
+    }
+
+    #gameOverOverlay,
+    #roundCompleteOverlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      background: transparent;
+    }
+
+    #gameOverOverlay {
+      z-index: 22;
+    }
+
+    #roundCompleteOverlay {
+      z-index: 24;
+    }
+
+    #gameOverOverlay.active,
+    #roundCompleteOverlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .overlay-stack img {
+      width: min(320px, 80vw);
+      height: auto;
+      image-rendering: pixelated;
+    }
+
+    #gameOverOverlay .overlay-stack {
+      gap: 1.5rem;
+      transform: scale(1.2);
+    }
+
+    #gameOverOverlay .overlay-stack img {
+      width: min(420px, 88vw);
+    }
+
+    .game-over-actions .ui-btn,
+    .round-complete-actions .ui-btn {
+      width: fit-content;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+      pointer-events: none;
+    }
+    
+    /* Game Over buttons - constrain to image size */
+    .game-over-actions .ui-btn {
+      width: 130px !important;
+      height: 130px !important;
+      margin: 0;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .game-over-actions {
+      margin-top: 1px;
+    }
+
+    #gameOverOverlay.active .game-over-actions .ui-btn,
+    #roundCompleteOverlay.active .round-complete-actions .ui-btn {
+      pointer-events: auto;
+    }
+
+    .game-over-actions .overlay-icon,
+    .round-complete-actions .overlay-icon {
+      position: static !important;
+      width: 64px;
+      max-height: 64px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      display: block;
+      image-rendering: pixelated;
+    }
+    
+    /* Override for game-over buttons only */
+    .game-over-actions .overlay-icon {
+      width: 130px !important;
+      height: 130px !important;
+      max-height: 130px !important;
+    }
+
+    #roundCompleteOverlay .overlay-stack {
+      gap: 0.75rem;
+      max-width: 480px;
+      transform: scale(1.15);
+    }
+
+    #roundCompleteOverlay .overlay-instruction {
+      font-size: 10px;
+      letter-spacing: 1.25px;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+    }
+
+    #roundCompleteOverlay .overlay-instruction.overlay-subtext {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    #roundCompleteOverlay .overlay-reason {
+      font-size: 32px;
+      letter-spacing: 2px;
+      color: #7efc7f;
+      text-shadow: 0 0 16px rgba(126, 252, 127, 0.9);
+    }
+
+    #gameOverOverlay .overlay-reason {
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      color: #fefefe;
+    }
+
+    .overlay-reason {
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+
+    .game-over-actions {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      font-size: 0;
+      position: relative;
+    }
+    
+    .game-over-actions .ui-btn {
+      position: relative;
+      width: 80px !important;
+      height: 80px !important;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .round-complete-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      font-size: 0;
+    }
+
+    .round-complete-actions .overlay-icon {
+      width: 80px;
+      max-height: 80px;
+    }
+
+    #pauseUI.hidden {
+      display: none;
+    }
   </style>
 </head>
+
 <body>
   <div id="loadingScreen" style="
       position: fixed; inset: 0; z-index: 999;
@@ -350,15 +571,16 @@
       align-items: center; justify-content: center;
       transition: opacity 0.5s ease;
     ">
-      <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
+    <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
         animation: loadLogoFloat 1.5s ease-in-out infinite;" />
-      <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
-        font-size: 15px; color: #FFD700; letter-spacing: 4px;
+    <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
+        font-size: 22px; color: #FFD700; letter-spacing: 4px;
         animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
-    </div>
+  </div>
 
   ...
   <div id="gameShell">
+    <div id="overlayBackdrop"></div>
     <div id="borderOverlay">
       <img id="borderLeft" src="assets/map1/border/leftBorder.png" alt="Left border" />
       <img id="borderRight" src="assets/map1/border/rightBorder.png" alt="Right border" />
@@ -367,16 +589,19 @@
     <canvas id="c"></canvas>
     <div id="pauseBackdrop"></div>
     <div id="pauseOverlay">
-    <div id="pausePanel">
+      <div id="pausePanel">
         <div class="pause-panel-title">Paused</div>
         <div class="pause-icon-row">
-          <button class="pause-option ui-btn" type="button" data-pause-action="resume" role="menuitem" aria-label="Resume gameplay">
+          <button class="pause-option ui-btn" type="button" data-pause-action="resume" role="menuitem"
+            aria-label="Resume gameplay">
             <img src="assets/resume.png" alt="Resume" />
           </button>
-          <button class="pause-option ui-btn" type="button" data-pause-action="setting" role="menuitem" aria-label="Open settings">
+          <button class="pause-option ui-btn" type="button" data-pause-action="setting" role="menuitem"
+            aria-label="Open settings">
             <img src="assets/setting.png" alt="Setting" />
           </button>
-          <button class="pause-option ui-btn" type="button" data-pause-action="home" role="menuitem" aria-label="Go to home">
+          <button class="pause-option ui-btn" type="button" data-pause-action="home" role="menuitem"
+            aria-label="Go to home">
             <img src="assets/home.png" alt="Home" />
           </button>
         </div>
@@ -394,13 +619,42 @@
         <div id="targetWordOverlay"></div>
       </div>
     </div>
+    <div id="gameOverOverlay">
+      <div class="overlay-stack">
+        <img src="assets/gameOver.png" alt="Game Over" />
+        <p id="gameOverReason" class="overlay-reason"></p>
+        <div class="game-over-actions">
+          <button id="gameOverRetry" class="ui-btn" type="button" aria-label="Retry level">
+            <img class="btn overlay-icon" src="assets/button/retryButton.png" alt="Retry level" />
+          </button>
+          <button id="gameOverExit" class="ui-btn" type="button" aria-label="Back to levels">
+            <img class="btn overlay-icon" src="assets/button/returnHomeButton.png" alt="Back to levels" />
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="roundCompleteOverlay">
+      <div class="overlay-stack">
+        <p id="roundCompleteReason" class="overlay-reason">Round Complete</p>
+        <p id="roundCompleteInstruction" class="overlay-instruction"></p>
+        <p class="overlay-instruction overlay-subtext">Use the home icon to leave.</p>
+        <div class="round-complete-actions">
+          <button id="roundCompleteBack" class="ui-btn" type="button" aria-label="Return to main menu">
+            <img class="btn overlay-icon" src="assets/home.png" alt="Return home" />
+          </button>
+          <button id="roundCompleteNext" class="ui-btn" type="button" aria-label="Continue to next round">
+            <img class="btn overlay-icon" src="assets/resume.png" alt="Resume next round" />
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/cannonSkins.js"></script>
-  <script src="js/sfx.js"></script> 
+  <script src="js/sfx.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/music.js"></script>
-  <script src="js/pause.js"></script> 
+  <script src="js/pause.js"></script>
 
   <script>
     const canvas = document.getElementById("c");
@@ -434,7 +688,7 @@
       ],
       "pattieSprite.png": [
         { width: 1919, center: 1026.5 },
-        { width: 1919, center: 1026.5},
+        { width: 1919, center: 1026.5 },
       ],
       "peterSprite.png": [
         { width: 1539, center: 769.5 },
@@ -502,6 +756,40 @@
     const borderLeftElem = document.getElementById("borderLeft");
     const borderRightElem = document.getElementById("borderRight");
     const borderBottomElem = document.getElementById("borderBottom");
+    const gameOverOverlay = document.getElementById("gameOverOverlay");
+    const gameOverReasonText = document.getElementById("gameOverReason");
+    const retryOverlayButton = document.getElementById("gameOverRetry");
+    const exitOverlayButton = document.getElementById("gameOverExit");
+    const roundCompleteOverlay = document.getElementById("roundCompleteOverlay");
+    const roundCompleteReasonText = document.getElementById("roundCompleteReason");
+    const roundCompleteInstructionText = document.getElementById("roundCompleteInstruction");
+    const roundCompleteNextBtn = document.getElementById("roundCompleteNext");
+    const roundCompleteBackBtn = document.getElementById("roundCompleteBack");
+    const pauseUIButton = document.getElementById("pauseUI");
+    const overlayBackdrop = document.getElementById("overlayBackdrop");
+    const LEVEL_SELECTION_KEY = "spellshot-selected-level";
+    let requestedRound = parseRequestedRound();
+    let highestUnlockedRound = 1;
+
+    function setOverlayBackdrop(mode = "game") {
+      if (!overlayBackdrop) return;
+      overlayBackdrop.classList.add("active");
+      overlayBackdrop.classList.toggle("round", mode === "round");
+    }
+
+    function clearOverlayBackdrop() {
+      if (!overlayBackdrop) return;
+      overlayBackdrop.classList.remove("active", "round");
+    }
+
+    function parseRequestedRound() {
+      const raw = sessionStorage.getItem(LEVEL_SELECTION_KEY);
+      if (!raw) return null;
+      sessionStorage.removeItem(LEVEL_SELECTION_KEY);
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed) || parsed < 1) return null;
+      return Math.min(15, Math.max(1, Math.floor(parsed)));
+    }
     imgBody.src = getSelectedCharacterSpritePath();
     imgCanon.src = "assets/canon.png";
     imgWheel.src = "assets/wheel.png";
@@ -710,6 +998,7 @@
       const savedLives = gameOver || clampedLives <= 0 ? maxLives : clampedLives;
       const savedAmmo = gameOver || clampedAmmo <= 0 ? maxAmmo : clampedAmmo;
 
+      highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       return {
         coins: typeof targetState.coins === "number" ? targetState.coins : 0,
         lives: savedLives,
@@ -720,6 +1009,7 @@
         currentWord: targetState.word,
         progress: Array.isArray(targetState.progress) ? targetState.progress : [],
         currentRound,
+        maxUnlockedRound: highestUnlockedRound,
         timerRemaining,
         timerExpired
       };
@@ -733,6 +1023,12 @@
       } catch (error) {
         console.warn("SpellShot: Unable to persist game state", error);
       }
+    }
+
+    function ensureNextRoundUnlocked() {
+      const completedRound = Math.min(15, (pendingRoundCompletion?.roundNumber ?? currentRound));
+      const nextRound = Math.min(15, completedRound + 1);
+      highestUnlockedRound = Math.max(highestUnlockedRound, nextRound);
     }
 
     function loadSavedGameState() {
@@ -765,16 +1061,24 @@
       const targetState = TargetWord.state;
       if (!targetState) return;
 
-      if (saved.currentWord) {
-        TargetWord.setTargetWord(saved.currentWord);
+      const savedProgressComplete =
+        Array.isArray(saved.progress) &&
+        saved.progress.length > 0 &&
+        saved.progress.every(Boolean);
+
+      // Don't restore old word - init() already selected a fresh one
+      if (savedProgressComplete) {
+        TargetWord.loadNextWordInTier();
       }
 
       const wordLength = targetState.word ? targetState.word.length : 0;
-      if (Array.isArray(saved.progress) && saved.progress.length === wordLength) {
-        targetState.progress = saved.progress.map(Boolean);
-      } else if (wordLength > 0) {
+      if (wordLength > 0) {
+        // Always reset progress to all false - never restore partial progress
         targetState.progress = Array(wordLength).fill(false);
       }
+
+      currentWord = targetState.word;
+      markTargetWordDirty();
 
       if (typeof saved.coins === "number") {
         targetState.coins = Math.max(0, saved.coins);
@@ -807,6 +1111,12 @@
 
       if (typeof saved.currentRound === "number") {
         currentRound = Math.max(1, saved.currentRound);
+      }
+
+      if (typeof saved.maxUnlockedRound === "number") {
+        highestUnlockedRound = Math.max(1, saved.maxUnlockedRound);
+      } else {
+        highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       }
 
       if (typeof saved.timerRemaining === "number") {
@@ -854,6 +1164,8 @@
     let timerExpired = false;
     let gameOver = false;
     let gamePaused = false;
+    let roundCompleteActive = false;
+    let pendingRoundCompletion = null;
     let roundMessage = "";
     let roundMessageTimer = 0;
     const ROUND_MESSAGE_DURATION = 150;
@@ -862,7 +1174,7 @@
     const TRAJECTORY_MAX_DISTANCE = 2200;
     const BALL_SPEED = 18;
     const BALL_RADIUS = 12;
-    const BOUNCE_LIMIT = 1;
+    const BOUNCE_LIMIT = 2;
     const CANNONBALL_DRAW_SIZE = 34;
     const cannonBalls = [];
     const letterHitParticles = [];
@@ -1055,18 +1367,13 @@
       stopTickingSfx();
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
-      
-      if (tierComplete) {
-        TargetWord.advanceToNextTier();
-      } else {
-        TargetWord.loadNextWordInTier();
-      }
-      
       currentWord = TargetWord.state.word;
       markTargetWordDirty();
-      resetTimerForRound();
       cannonBalls.length = 0;
-      generateLetterBlocks();
+      pendingRoundCompletion = { tierComplete, roundNumber: currentRound };
+      ensureNextRoundUnlocked();
+      persistGameState();
+      showRoundCompleteOverlay();
     }
 
     function resetTimerForRound() {
@@ -1178,7 +1485,7 @@
 
       const distractors = [];
       // number of text generator
-      const maxDistractors = Math.min(4, 26 - uniqueLettersInWord.length); 
+      const maxDistractors = Math.min(4, 26 - uniqueLettersInWord.length);
       while (distractors.length < maxDistractors) {
         let letter = alphabet[Math.floor(Math.random() * alphabet.length)];
         if (!uniqueLettersInWord.includes(letter) && !distractors.includes(letter)) {
@@ -1190,7 +1497,7 @@
 
       const pivotY = PLAYER_Y + (MOUNT_Y * SCALE) * PLAYER_SCALE;
       const marginAboveCannon = 60;
-      const defaultMinY = 100; 
+      const defaultMinY = 100;
       const defaultMaxY = GAME_H - 120;
 
       let computedMaxY = Math.min(defaultMaxY, Math.floor(pivotY - marginAboveCannon));
@@ -1198,7 +1505,7 @@
         computedMaxY = Math.max(defaultMinY + LETTER_BLOCK_SIZE, defaultMaxY);
       }
 
-      const bandHeight = 100; 
+      const bandHeight = 100;
       const bandMinY = Math.max(defaultMinY, computedMaxY - bandHeight);
       const bandMaxY = computedMaxY;
 
@@ -1209,7 +1516,7 @@
         maxY: bandMaxY
       };
 
-      const minDistance = LETTER_BLOCK_SIZE + 20; 
+      const minDistance = LETTER_BLOCK_SIZE + 20;
       const positions = [];
 
       const maxAttempts = Math.max(allLetters.length * 25, 80);
@@ -1243,31 +1550,31 @@
       allLetters.forEach((letter, index) => {
         if (index < positions.length) {
           const pos = positions[index];
-        letterBlocks.push({
-          x: pos.x,
-          y: pos.y,
-          width: LETTER_BLOCK_SIZE,
-          height: LETTER_BLOCK_SIZE,
-          letter,
-          isCorrect: currentWord.includes(letter),
-          wordIndex: index < wordLetters.length ? index : -1,
-          flashTime: 0,
-          isDestroyed: false,
-          shakeTimer: 0,
-          color: "#FFD700",
-          isActive: true,
-          cooldownTimer: 0,
-          animationQueued: null,
-          animationState: null,
-          fallVelocity: 0,
-          vx: 0,
-          opacity: 1,
-          jumpTimer: 0,
-          jumpDuration: 0,
-          jumpHeight: 0,
-          jumpOffset: 0,
-          wrongFlash: 0
-        });
+          letterBlocks.push({
+            x: pos.x,
+            y: pos.y,
+            width: LETTER_BLOCK_SIZE,
+            height: LETTER_BLOCK_SIZE,
+            letter,
+            isCorrect: currentWord.includes(letter),
+            wordIndex: index < wordLetters.length ? index : -1,
+            flashTime: 0,
+            isDestroyed: false,
+            shakeTimer: 0,
+            color: "#FFD700",
+            isActive: true,
+            cooldownTimer: 0,
+            animationQueued: null,
+            animationState: null,
+            fallVelocity: 0,
+            vx: 0,
+            opacity: 1,
+            jumpTimer: 0,
+            jumpDuration: 0,
+            jumpHeight: 0,
+            jumpOffset: 0,
+            wrongFlash: 0
+          });
         }
       });
 
@@ -1276,28 +1583,28 @@
 
     function ensureAllLettersAimable() {
       const minDistance = LETTER_BLOCK_SIZE + 30;
-      
+
       letterBlocks.forEach((block, blockIndex) => {
         let colliding = true;
         let attempts = 0;
-        
+
         while (colliding && attempts < 50) {
           colliding = false;
-          
+
           for (let i = 0; i < letterBlocks.length; i++) {
             if (i === blockIndex) continue;
-            
+
             const other = letterBlocks[i];
             const dx = block.x - other.x;
             const dy = block.y - other.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
+
             if (distance < minDistance) {
               colliding = true;
               break;
             }
           }
-          
+
           if (colliding) {
             block.x = 300 + Math.random() * (GAME_W - 450);
             block.y = 100 + Math.random() * (GAME_H - 250);
@@ -1310,44 +1617,44 @@
     function ensureWordLettersAccessible() {
       const cannonX = PLAYER_X + (MOUNT_X * SCALE) * PLAYER_SCALE;
       const cannonY = PLAYER_Y + (MOUNT_Y * SCALE) * PLAYER_SCALE;
-      
+
       letterBlocks.forEach(block => {
         if (block.wordIndex < 0) return;
-        
+
         let isBlocked = true;
         let attempts = 0;
-        
+
         while (isBlocked && attempts < 10) {
           isBlocked = false;
-          
-          const dx = block.x + block.width/2 - cannonX;
-          const dy = block.y + block.height/2 - cannonY;
-          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          const dx = block.x + block.width / 2 - cannonX;
+          const dy = block.y + block.height / 2 - cannonY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
           const steps = Math.floor(distance / 10);
-          
+
           for (let i = 1; i < steps; i++) {
             const checkX = cannonX + (dx * i / steps);
             const checkY = cannonY + (dy * i / steps);
-            
+
             for (let otherBlock of letterBlocks) {
               if (otherBlock === block) continue;
-              
+
               const closestX = Math.max(otherBlock.x, Math.min(checkX, otherBlock.x + otherBlock.width));
               const closestY = Math.max(otherBlock.y, Math.min(checkY, otherBlock.y + otherBlock.height));
-              
+
               const distanceX = checkX - closestX;
               const distanceY = checkY - closestY;
               const distanceSquared = distanceX * distanceX + distanceY * distanceY;
-              
+
               if (distanceSquared <= BALL_RADIUS * BALL_RADIUS) {
                 isBlocked = true;
                 break;
               }
             }
-            
+
             if (isBlocked) break;
           }
-          
+
           if (isBlocked) {
             block.x = 300 + Math.random() * (GAME_W - 450);
             block.y = 100 + Math.random() * (GAME_H - 250);
@@ -1608,6 +1915,11 @@
       const state = TargetWord.state;
       if (!state) return;
 
+      // Reduce ammo on collision (only once per block hit)
+      if (state.ammo > 0) {
+        state.ammo = Math.max(0, state.ammo - 1);
+      }
+
       block.isActive = false;
 
       const nextIndex = state.progress.findIndex(flag => !flag);
@@ -1623,12 +1935,12 @@
         );
         queueBlockAnimation(block, "jump", 22);
         if (wordFinished) {
-          showRoundCompletedBanner();
           onWordCompleted();
+          return;
         }
       } else if (hasRemainingLetter(block.letter)) {
         // TargetWord.onLetterHit(block.letter, false);
-       if (window.TargetWord?.state) {
+        if (window.TargetWord?.state) {
           window.TargetWord.state.lives = Math.max(0, window.TargetWord.state.lives - 1);
         }
         markTargetWordDirty();
@@ -1636,7 +1948,7 @@
         checkGameOverForPlayer();
       } else {
         // TargetWord.onLetterHit(block.letter, false);
-       if (window.TargetWord?.state) {
+        if (window.TargetWord?.state) {
           window.TargetWord.state.lives = Math.max(0, window.TargetWord.state.lives - 1);
         }
         markTargetWordDirty();
@@ -1648,11 +1960,11 @@
     }
 
     function handleMissedShot() {
-      // if (gameOver) return;
-      // if (window.TargetWord && typeof TargetWord.recordMiss === "function") {
-      //   TargetWord.recordMiss();
-      //   checkGameOverForPlayer();
-      // }
+      if (gameOver) return;
+      if (window.TargetWord && typeof TargetWord.recordMiss === "function") {
+        TargetWord.recordMiss();
+        checkGameOverForPlayer();
+      }
     }
 
     function checkGameOverForPlayer() {
@@ -1688,6 +2000,120 @@
         window.TargetWord.resetDisplayedCoins();
       }
       updateThemeForRound(currentRound);
+      updateGameOverOverlay();
+      showGameOverOverlay();
+    }
+
+    function updateGameOverOverlay() {
+      if (!gameOverOverlay) return;
+      if (gameOverReasonText) {
+        gameOverReasonText.textContent = getGameOverReasonText(gameOverReason);
+      }
+    }
+
+    function showGameOverOverlay() {
+      if (!gameOverOverlay) return;
+      setOverlayBackdrop("game");
+      gameOverOverlay.classList.add("active");
+      pauseUIButton?.classList.add("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(false);
+      }
+    }
+
+    function hideGameOverOverlay() {
+      if (!gameOverOverlay) return;
+      clearOverlayBackdrop();
+      gameOverOverlay.classList.remove("active");
+      pauseUIButton?.classList.remove("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(!gameOver);
+      }
+    }
+
+    function updateRoundCompleteOverlay() {
+      if (!roundCompleteOverlay) return;
+      const roundNumber = pendingRoundCompletion?.roundNumber ?? currentRound;
+      if (roundCompleteReasonText) {
+        roundCompleteReasonText.textContent = `Round ${roundNumber} Complete`;
+      }
+      if (roundCompleteInstructionText) {
+        const nextRound = Math.min(15, roundNumber + 1);
+        roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${nextRound}.`;
+      }
+    }
+
+    function showRoundCompleteOverlay() {
+      if (!roundCompleteOverlay) return;
+      updateRoundCompleteOverlay();
+      setOverlayBackdrop("round");
+      roundCompleteOverlay.classList.add("active");
+      roundCompleteActive = true;
+      pauseUIButton?.classList.add("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(false);
+      }
+    }
+
+    function hideRoundCompleteOverlay() {
+      if (!roundCompleteOverlay) return;
+      clearOverlayBackdrop();
+      roundCompleteOverlay.classList.remove("active");
+      roundCompleteActive = false;
+      pauseUIButton?.classList.remove("hidden");
+      if (typeof setPauseToggleEnabled === "function") {
+        setPauseToggleEnabled(!gameOver && !roundCompleteActive);
+      }
+    }
+
+    function continueAfterRoundCompletion() {
+      if (!pendingRoundCompletion || !window.TargetWord) return;
+      const completionState = pendingRoundCompletion;
+      pendingRoundCompletion = null;
+      const { tierComplete, roundNumber: completedRound = currentRound } = completionState;
+      if (tierComplete) {
+        TargetWord.advanceToNextTier();
+      } else {
+        TargetWord.loadNextWordInTier();
+      }
+      
+      // Reset lives and ammo for new round
+      TargetWord.resetLives();
+      TargetWord.resetAmmo();
+      
+      currentRound = Math.min(15, completedRound + 1);
+      highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+      updateThemeForRound(currentRound);
+      currentWord = window.TargetWord?.state?.word || currentWord;
+      markTargetWordDirty();
+      cannonBalls.length = 0;
+      roundMessage = `Level ${currentRound} Ready`;
+      roundMessageTimer = ROUND_MESSAGE_DURATION;
+      resetTimerForRound();
+      generateLetterBlocks();
+      persistGameState();
+      hideRoundCompleteOverlay();
+      if (typeof bgMusic !== "undefined") bgMusic.play().catch(() => { });
+    }
+
+    function goToLevelSelection() {
+      persistGameState();
+      clearOverlayBackdrop();
+      document.body.style.transition = "opacity 0.35s ease";
+      document.body.style.opacity = "0";
+      setTimeout(() => {
+        window.location.href = "level.html";
+      }, 320);
+    }
+
+    function goToMainMenu() {
+      persistGameState();
+      clearOverlayBackdrop();
+      document.body.style.transition = "opacity 0.35s ease";
+      document.body.style.opacity = "0";
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 320);
     }
 
     function getGameOverReasonText(reason) {
@@ -1701,13 +2127,6 @@
         default:
           return "You Lose!";
       }
-    }
-
-    function showRoundCompletedBanner() {
-      roundMessage = `Level ${currentRound} Complete`;
-      roundMessageTimer = ROUND_MESSAGE_DURATION;
-      currentRound++;
-      persistGameState();
     }
 
     function drawRoundBanner() {
@@ -1729,59 +2148,21 @@
       ctx.restore();
     }
 
-    function drawGameOverOverlay() {
-      if (!gameOver) return;
-      ctx.save();
-      ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
-      ctx.fillRect(0, 0, GAME_W, GAME_H);
-      ctx.textBaseline = "middle";
-
-      ctx.font = "bold 40px PixelFont";
-      ctx.fillStyle = "#ff4f4f";
-      ctx.shadowColor = "rgba(255, 79, 79, 0.85)";
-      ctx.shadowBlur = 16;
-      const title = "GAME OVER";
-      const letterSpacing = 14;
-      const letters = title.split("");
-      const letterWidths = letters.map((ltr) => ctx.measureText(ltr).width);
-      const totalWidth =
-        letterWidths.reduce((sum, width) => sum + width, 0) + letterSpacing * (letters.length - 1);
-      let cursorX = GAME_W / 2 - totalWidth / 2;
-      const titleY = GAME_H / 2 - 60;
-      for (let i = 0; i < letters.length; i++) {
-        if (letters[i] === " ") {
-          cursorX += letterWidths[i] + letterSpacing;
-          continue;
-        }
-        ctx.fillText(letters[i], cursorX, titleY);
-        cursorX += letterWidths[i] + letterSpacing;
-      }
-
-      ctx.shadowColor = "transparent";
-      ctx.shadowBlur = 0;
-
-      ctx.font = "15px PixelFont";
-      ctx.fillStyle = "#f8f7f0";
-      ctx.textAlign = "center";
-      ctx.fillText(getGameOverReasonText(gameOverReason), GAME_W / 2, GAME_H / 2 + 10);
-
-      ctx.font = "15px PixelFont";
-      const restartText = "Press R to restart";
-      const restartWidth = ctx.measureText(restartText).width;
-      const restartX = GAME_W / 2 - restartWidth / 2;
-      const restartY = GAME_H / 2 + 70;
-      const before = "Press ";
-      const after = " to restart";
-      const beforeWidth = ctx.measureText(before).width;
-      ctx.textAlign = "left";
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(before, restartX, restartY);
-      ctx.fillStyle = "#7bf55d";
-      ctx.fillText("R", restartX + beforeWidth, restartY);
-      const rWidth = ctx.measureText("R").width;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(after, restartX + beforeWidth + rWidth, restartY);
-      ctx.restore();
+    function resetTargetWordForRetry() {
+      if (!window.TargetWord) return;
+      
+      console.log('🔄 Retry: Loading new word, current tier:', TargetWord.state.currentTier);
+      
+      // Load a NEW word for retry, not the same one
+      TargetWord.loadNextWordInTier();
+      
+      console.log('🔄 Retry: New word:', TargetWord.state.word);
+      
+      // Reset lives and ammo for fresh attempt
+      TargetWord.resetLives();
+      TargetWord.resetAmmo();
+      TargetWord.resetDisplayedCoins();
+      wordProgress = [];
     }
 
     function restartGame() {
@@ -1792,15 +2173,16 @@
       const pauseUI = document.getElementById('pauseUI');
       if (pauseUI) pauseUI.style.display = '';
 
-      if (typeof bgMusic !== 'undefined') 
-      bgMusic.currentTime = 0;
-      bgMusic.play().catch(() => {});
-      TargetWord.resetGameProgress();
+      if (typeof bgMusic !== 'undefined')
+        bgMusic.currentTime = 0;
+      bgMusic.play().catch(() => { });
+      resetTargetWordForRetry();
       currentWord = TargetWord.state.word;
+      markTargetWordDirty();
       cannonBalls.length = 0;
       roundMessage = "";
       roundMessageTimer = 0;
-      currentRound = 1;
+      highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       updateThemeForRound(currentRound);
       gameOverReason = "";
       gameOver = false;
@@ -1808,6 +2190,7 @@
       resetTimerForRound();
       generateLetterBlocks();
       persistGameState();
+      hideGameOverOverlay();
     }
 
     function checkGameOverConditions() {
@@ -1831,12 +2214,7 @@
     }
 
     function fireCannon() {
-      if (gameOver || gamePaused) return;
-      const ammoState = window.TargetWord?.state;
-      if (ammoState) {
-        ammoState.ammo = Math.max(0, ammoState.ammo - 1);
-        checkGameOverForPlayer();
-      }
+      if (gameOver || gamePaused || roundCompleteActive) return;
 
       playFireSfx();
 
@@ -1864,11 +2242,21 @@
         ball.y += ball.vy;
 
         if (ball.bounced < BOUNCE_LIMIT) {
+          // Top/bottom bounce
           if (ball.y <= BALL_RADIUS && ball.vy < 0) {
             ball.vy *= -1;
             ball.bounced++;
           } else if (ball.y >= GAME_H - BALL_RADIUS && ball.vy > 0) {
             ball.vy *= -1;
+            ball.bounced++;
+          }
+          
+          // Left/right bounce
+          if (ball.x <= BALL_RADIUS && ball.vx < 0) {
+            ball.vx *= -1;
+            ball.bounced++;
+          } else if (ball.x >= GAME_W - BALL_RADIUS && ball.vx > 0) {
+            ball.vx *= -1;
             ball.bounced++;
           }
         }
@@ -1967,11 +2355,27 @@
       segments.push({ from: start, to: firstHit.point });
 
       if (firstHit.type === "boundary" && firstHit.distance < TRAJECTORY_MAX_DISTANCE) {
-        const remaining = TRAJECTORY_MAX_DISTANCE - firstHit.distance;
-        if (remaining > 4) {
-          const bounceDir = { x: direction.x, y: -direction.y };
-          const secondHit = traceRay(firstHit.point, bounceDir, remaining);
+        const remaining1 = TRAJECTORY_MAX_DISTANCE - firstHit.distance;
+        if (remaining1 > 4) {
+          // Bounce direction: reverse either x or y depending on which wall was hit
+          const bounceDir1 = {
+            x: (firstHit.side === "left" || firstHit.side === "right") ? -direction.x : direction.x,
+            y: (firstHit.side === "top" || firstHit.side === "bottom") ? -direction.y : direction.y
+          };
+          const secondHit = traceRay(firstHit.point, bounceDir1, remaining1);
           segments.push({ from: firstHit.point, to: secondHit.point });
+
+          if (secondHit.type === "boundary" && secondHit.distance < remaining1) {
+            const remaining2 = remaining1 - secondHit.distance;
+            if (remaining2 > 4) {
+              const bounceDir2 = {
+                x: (secondHit.side === "left" || secondHit.side === "right") ? -bounceDir1.x : bounceDir1.x,
+                y: (secondHit.side === "top" || secondHit.side === "bottom") ? -bounceDir1.y : bounceDir1.y
+              };
+              const thirdHit = traceRay(secondHit.point, bounceDir2, remaining2);
+              segments.push({ from: secondHit.point, to: thirdHit.point });
+            }
+          }
         }
       }
 
@@ -1999,10 +2403,12 @@
 
     function traceBoundary(origin, direction, maxDistance) {
       let best = { distance: maxDistance, type: "none", side: null };
+      
+      // Check top/bottom boundaries
       if (Math.abs(direction.y) > 0.0001) {
         const targetY = direction.y < 0 ? BALL_RADIUS : GAME_H - BALL_RADIUS;
         const t = (targetY - origin.y) / direction.y;
-        if (t > 0 && t < best.distance) {
+        if (t > 0.0001 && t < best.distance) {
           best = {
             distance: t,
             type: "boundary",
@@ -2010,6 +2416,20 @@
           };
         }
       }
+      
+      // Check left/right boundaries (only if no top/bottom hit, or if closer)
+      if (Math.abs(direction.x) > 0.0001) {
+        const targetX = direction.x < 0 ? BALL_RADIUS : GAME_W - BALL_RADIUS;
+        const t = (targetX - origin.x) / direction.x;
+        if (t > 0.0001 && t < best.distance) {
+          best = {
+            distance: t,
+            type: "boundary",
+            side: direction.x < 0 ? "left" : "right"
+          };
+        }
+      }
+      
       return best;
     }
 
@@ -2128,8 +2548,8 @@
     function drawWheelFrame() {
       const _wheel = (window.CannonSkins ? window.CannonSkins.getWheelImg() : null) || imgWheel;
 
-      const wheelOffsetX =  270;
-      const wheelOffsetY =  320;
+      const wheelOffsetX = 270;
+      const wheelOffsetY = 320;
 
       if (_wheel === imgWheel) {
         const wheelW = FRAME_W * SCALE * WHEEL_SCALE;
@@ -2141,7 +2561,7 @@
         );
       } else {
         const skinWheelW = imgCanon.naturalWidth * CANON_SCALE * 0.72;
-        const skinWheelH = imgCanon.naturalWidth * CANON_SCALE * 0.72; 
+        const skinWheelH = imgCanon.naturalWidth * CANON_SCALE * 0.72;
         ctx.drawImage(
           _wheel,
           0, 0, _wheel.naturalWidth, _wheel.naturalHeight,
@@ -2207,18 +2627,20 @@
       drawLetterSuccessFlash();
       drawCannonBalls();
 
-    if (targetWordOverlay) {
-      targetWordOverlay.classList.toggle("dimmed", gameOver);
-    }
-    if (window.TargetWord) {
-      TargetWord.draw(ctx, letterImages, coinImage, heartImage);
-    }
-    drawAmmoDisplay();
-    drawGameOverOverlay();
+      if (targetWordOverlay) {
+        targetWordOverlay.classList.toggle("dimmed", gameOver);
+      }
+      if (window.TargetWord) {
+        TargetWord.draw(ctx, letterImages, coinImage, heartImage);
+      }
+      drawAmmoDisplay();
     }
 
     function animate(ts) {
-      updateBackgroundMovement(ts);
+      const canProgress = !gameOver && !gamePaused && !roundCompleteActive;
+      if (canProgress) {
+        updateBackgroundMovement(ts);
+      }
       if (!lastBlinkTime) lastBlinkTime = ts;
 
       const elapsed = ts - lastBlinkTime;
@@ -2234,7 +2656,6 @@
         nextBlinkDelay = 1800 + Math.random() * 2200;
       }
 
-      const canProgress = !gameOver && !gamePaused;
       if (canProgress) {
         updateCannonBalls();
         updateTimer(ts);
@@ -2275,26 +2696,26 @@
     // INPUT
     // --------------------------------------------------
     canvas.addEventListener("mousedown", (e) => {
-      if (e.button === 0 && !gameOver && !gamePaused) {
+      if (e.button === 0 && !gameOver && !gamePaused && !roundCompleteActive) {
         isDragging = true;
         cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
       }
     });
 
     window.addEventListener("mousemove", (e) => {
-      if (gameOver || gamePaused) return;
+      if (gameOver || gamePaused || roundCompleteActive) return;
       cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
     });
 
     window.addEventListener("mouseup", (e) => {
-      if (isDragging && e.button === 0 && !gameOver && !gamePaused) {
+      if (isDragging && e.button === 0 && !gameOver && !gamePaused && !roundCompleteActive) {
         fireCannon();
       }
       isDragging = false;
     });
 
     canvas.addEventListener("touchstart", (e) => {
-      if (gameOver || gamePaused) return;
+      if (gameOver || gamePaused || roundCompleteActive) return;
       isDragging = true;
       const t = e.touches[0];
       cannonAngle = getAngleFromMouse(t.clientX, t.clientY);
@@ -2302,14 +2723,14 @@
     }, { passive: false });
 
     window.addEventListener("touchmove", (e) => {
-      if (gameOver || gamePaused) return;
+      if (gameOver || gamePaused || roundCompleteActive) return;
       const t = e.touches[0];
       cannonAngle = getAngleFromMouse(t.clientX, t.clientY);
       e.preventDefault();
     }, { passive: false });
 
     window.addEventListener("touchend", (e) => {
-      if (isDragging && !gameOver && !gamePaused) {
+      if (isDragging && !gameOver && !gamePaused && !roundCompleteActive) {
         fireCannon();
       }
       isDragging = false;
@@ -2322,13 +2743,13 @@
         togglePauseMenu();
         return;
       }
-      if (e.code === "Space" && !gameOver && !gamePaused) {
+      if (e.code === "Space" && !gameOver && !gamePaused && !roundCompleteActive) {
         e.preventDefault();
         fireCannon();
       }
       if (e.code === "KeyR") {
         e.preventDefault();
-        restartGame();
+        if (!roundCompleteActive && gameOver) restartGame();
       }
     });
 
@@ -2351,6 +2772,44 @@
     // pauseBackdrop?.addEventListener("click", hidePauseOverlay);
 
     initPause();
+    if (retryOverlayButton) {
+      addUIButtonPressEffects(retryOverlayButton);
+      retryOverlayButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        playClickSfx();
+        restartGame();
+      });
+    }
+    if (exitOverlayButton) {
+      addUIButtonPressEffects(exitOverlayButton);
+      exitOverlayButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        playClickSfx();
+        goToMainMenu();
+      });
+    }
+    if (roundCompleteNextBtn) {
+      addUIButtonPressEffects(roundCompleteNextBtn);
+      roundCompleteNextBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        playClickSfx();
+        continueAfterRoundCompletion();
+      });
+    }
+    if (roundCompleteBackBtn) {
+      addUIButtonPressEffects(roundCompleteBackBtn);
+      roundCompleteBackBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        playClickSfx();
+        pendingRoundCompletion = null;
+        hideRoundCompleteOverlay();
+        goToMainMenu();
+      });
+    }
 
     // --------------------------------------------------
     // LOAD / PRELOADING
@@ -2366,6 +2825,16 @@
       FRAME_H = imgBody.naturalHeight;
       canvas.width = GAME_W;
       canvas.height = GAME_H;
+    }
+
+    function applyRequestedRound() {
+      if (typeof requestedRound === "number") {
+        currentRound = Math.max(1, requestedRound);
+        highestUnlockedRound = Math.max(highestUnlockedRound, requestedRound);
+        updateThemeForRound(currentRound);
+      } else {
+        highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+      }
     }
 
     function startGame() {
@@ -2390,7 +2859,7 @@
         };
 
         // Enforce minimum 1.5s loading screen display
-        const elapsed  = Date.now() - loadStartTime;
+        const elapsed = Date.now() - loadStartTime;
         const remaining = Math.max(0, 1500 - elapsed);
         setTimeout(revealGame, remaining);
       }
@@ -2402,10 +2871,12 @@
           if (savedGameState) {
             applySavedGameState(savedGameState);
           }
+          applyRequestedRound();
           finalizeStart();
         });
       } else {
         resetTimerForRound();
+        applyRequestedRound();
         finalizeStart();
       }
     }
@@ -2453,7 +2924,6 @@
     trackImage(borderRightElem, { critical: true, callback: updateBorderOverlayPositions });
     trackImage(borderBottomElem, { critical: true, callback: updateBorderOverlayPositions });
 
-    updateThemeForRound(currentRound);
 
     for (let letter of alphabet) {
       trackImage(letterImages[letter]);
@@ -2468,4 +2938,5 @@
   <script src="js/ballSkins.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>

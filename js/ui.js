@@ -3,7 +3,7 @@
 //  Everything related to buttons and screen transitions.
 //
 //  setupBtn()  → makes a button interactive (press effect + particles)
-//  goToGame()  → white flash then goes to game.html
+//  goToGame()  → white flash then goes to level selector
 //
 //  To add a new button: just call setupBtn() in main.js.
 //  No changes needed here.
@@ -86,5 +86,5 @@ function goToGame() {
   persistSelectedCharacter();
   document.body.style.transition = 'opacity 0.35s ease';
   document.body.style.opacity    = '0';
-  setTimeout(() => { window.location.href = 'game.html'; }, 350);
+  setTimeout(() => { window.location.href = 'level.html'; }, 350);
 }

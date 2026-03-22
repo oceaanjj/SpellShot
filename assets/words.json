@@ -1,35 +1,35 @@
 {
   "words_3": [
-    "CAT",
-    "DOG",
-    "BAT",
-    "HIT",
-    "RUN",
-    "SUN",
-    "FLY",
-    "AIM",
-    "ZAP"
+    "BIT",
+    "BUG",
+    "CPU",
+    "RAM",
+    "TAG",
+    "KEY",
+    "VAR",
+    "BOX",
+    "NET"
   ],
   "words_4": [
-    "CAST",
-    "FIRE",
-    "SNOW",
-    "WIND",
-    "BOLT",
-    "MAGE",
-    "CUBE",
-    "WAVE",
-    "ITEM"
+    "CODE",
+    "DATA",
+    "TYPE",
+    "LOOP",
+    "FILE",
+    "LINK",
+    "NODE",
+    "HASH",
+    "BYTE"
   ],
   "words_5": [
-    "SPELL",
-    "MAGIC",
-    "STORM",
-    "FLAME",
-    "FROST",
-    "POWER",
-    "BURST",
-    "CURSE",
-    "SMITE"
+    "ARRAY",
+    "CLASS",
+    "ERROR",
+    "STACK",
+    "QUEUE",
+    "WHILE",
+    "PRINT",
+    "LOGIC",
+    "CACHE"
   ]
 }

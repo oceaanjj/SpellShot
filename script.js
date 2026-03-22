@@ -22,37 +22,76 @@
     }
   }
 
-  let wordLists = null; 
+  let wordLists = null;
+  let usedWords = new Set();
 
   function loadWordsJson() {
     if (wordLists) return Promise.resolve(wordLists);
 
-    return fetch('assets/words.json')
-      .then(r => r.json())
+    // Cache-bust with timestamp to force fresh fetch
+    const cacheBustUrl = `assets/words.json?t=${Date.now()}`;
+    return fetch(cacheBustUrl)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(data => {
+        console.log('✓ Loaded words.json:', data);
         wordLists = {
           words_3: (data.words_3 || []).map(w => String(w).toUpperCase()),
           words_4: (data.words_4 || []).map(w => String(w).toUpperCase()),
           words_5: (data.words_5 || []).map(w => String(w).toUpperCase())
         };
+        usedWords.clear();
+        console.log('✓ Parsed wordLists:', wordLists);
         return wordLists;
       })
-      .catch(() => {
+      .catch(err => {
+        console.error('✗ Failed to load words.json:', err);
         wordLists = { words_3: [], words_4: [], words_5: [] };
+        usedWords.clear();
         return wordLists;
       });
   }
 
+  // Load words immediately when script loads
+  loadWordsJson();
+
   function getNextWordInTier(tier) {
-    if (!wordLists) return "SPELL";
+    console.log(`🎲 getNextWordInTier(${tier}): wordLists=${wordLists ? 'loaded' : 'NULL'}`);
     
-    const tierKey = `words_${2 + tier}`;
+    if (!wordLists) {
+      console.error('✗ wordLists is null, returning SPELL fallback');
+      return "SPELL";
+    }
+    
+    // Cap tier at 3 (we only have words_3, words_4, words_5)
+    const cappedTier = Math.min(3, Math.max(1, tier));
+    const tierKey = `words_${2 + cappedTier}`;
     const words = wordLists[tierKey] || [];
     
-    if (words.length === 0) return "SPELL";
+    if (words.length === 0) {
+      console.error(`✗ No words found for ${tierKey}, returning SPELL fallback`);
+      return "SPELL";
+    }
     
-    const randomIdx = Math.floor(Math.random() * words.length);
-    return words[randomIdx];
+    // Get available words that haven't been used in this tier
+    const availableWords = words.filter(w => !usedWords.has(w));
+    
+    // If all words in tier have been used, reset and use all words
+    if (availableWords.length === 0) {
+      usedWords.clear();
+      const selected = words[Math.floor(Math.random() * words.length)];
+      console.log(`✓ All tier ${cappedTier} words used, cycling. Selected: ${selected}`);
+      usedWords.add(selected);
+      return selected;
+    }
+    
+    const randomIdx = Math.floor(Math.random() * availableWords.length);
+    const selectedWord = availableWords[randomIdx];
+    usedWords.add(selectedWord);
+    console.log(`✓ Selected word for tier ${cappedTier}: ${selectedWord} (${usedWords.size}/${words.length} used)`);
+    return selectedWord;
   }
 
   function setTargetWord(word) {
@@ -100,7 +139,6 @@
 
   function recordMiss() {
     loseLife();
-    adjustCoins(-25);
     useAmmo();
     return state.lives;
   }
@@ -113,13 +151,10 @@
       letter = (letter || '').toUpperCase();
       if (!letter) return;
 
-      useAmmo(); // Always spend ammo even on ordered hits
-
       if (!isInOrder) {
         loseLife();
         return false;
       }
-
       let matchedIndex = -1;
       for (let i = 0; i < state.word.length; i++) {
         if (state.word[i] === letter && !state.progress[i]) {
@@ -132,7 +167,6 @@
         loseLife();
         return false;
       }
-
       state.progress[matchedIndex] = true;
       adjustCoins(100);
       return state.progress.every(Boolean);
@@ -251,6 +285,9 @@
     adjustCoins: adjustCoins,
     loadNextWordInTier: loadNextWordInTier,
     resetDisplayedCoins: resetDisplayedCoins,
-    state: state
+    state: state,
+    // Expose for debugging
+    _wordLists: () => wordLists,
+    _usedWords: () => usedWords
   };
 })();
