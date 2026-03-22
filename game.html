@@ -320,6 +320,15 @@
     #targetWordOverlay.dimmed {
       filter: brightness(0.45);
     }
+
+    @keyframes timerPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1);    }
+      50%       { transform: translate(-50%, -50%) scale(1.15); }
+    }
+
+    #timerOverlayText.urgent {
+      animation: timerPulse 0.5s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
@@ -362,16 +371,17 @@
   </div>
 
   <script src="js/cannonSkins.js"></script>
+  <script src="js/sfx.js"></script> 
   <script src="js/settings.js"></script>
+  <script src="js/music.js"></script>
+  <script src="js/pause.js"></script> 
+
   <script>
     const canvas = document.getElementById("c");
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
-    const pauseBackdrop = document.getElementById("pauseBackdrop");
-    const pauseOverlay = document.getElementById("pauseOverlay");
-    const pauseToggleButton = document.getElementById("pauseToggle");
-    const pauseOptionButtons = document.querySelectorAll("#pausePanel [data-pause-action]");
+
     ctx.font = "16px PixelFont";
 
     // --------------------------------------------------
@@ -962,6 +972,8 @@
       timerRemaining = TIMER_DURATION_SECONDS;
       lastTimerTimestamp = null;
       timerExpired = false;
+      timerOverlayText?.classList.remove('urgent');
+      if (timerOverlayText) timerOverlayText.style.color = '#ffef72';
       updateTimerOverlayText();
     }
 
@@ -975,95 +987,6 @@
       }
     }
 
-    function addUIButtonPressEffects(el) {
-      if (!el) return;
-      const onPress = () => {
-        el.classList.remove("released");
-        el.classList.add("pressing");
-      };
-      const onRelease = () => {
-        el.classList.remove("pressing");
-        void el.offsetWidth;
-        el.classList.add("released");
-      };
-      const onLeave = () => {
-        el.classList.remove("pressing");
-      };
-      el.addEventListener("mousedown", onPress);
-      el.addEventListener("mouseup", onRelease);
-      el.addEventListener("mouseleave", onLeave);
-      el.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        onPress();
-      }, { passive: false });
-      el.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        onRelease();
-      }, { passive: false });
-      el.addEventListener("touchcancel", onLeave);
-    }
-
-    function setPauseToggleEnabled(enabled) {
-      if (!pauseToggleButton) return;
-      pauseToggleButton.disabled = !enabled;
-      pauseToggleButton.classList.toggle("disabled", !enabled);
-    }
-
-    function showPauseOverlay() {
-      if (gameOver || gamePaused) return;
-      gamePaused = true;
-      isDragging = false;
-      pauseOverlay?.classList.add("active");
-      pauseBackdrop?.classList.add("active");
-      setPauseToggleEnabled(false);
-    }
-
-    function hidePauseOverlay() {
-      const wasPaused = gamePaused;
-      gamePaused = false;
-      pauseOverlay?.classList.remove("active");
-      pauseBackdrop?.classList.remove("active");
-      if (wasPaused) {
-        lastTimerTimestamp = null;
-      }
-      setPauseToggleEnabled(true);
-    }
-
-    function togglePauseMenu() {
-      if (gamePaused) {
-      hidePauseOverlay();
-        return;
-      }
-      showPauseOverlay();
-    }
-
-    function goToHome() {
-      window.location.href = "index.html";
-    }
-
-    // function goToSettings() {
-    //   window.location.href = "index.html#settings";
-    // }
-
-    function goToSettings() {
-      openSettings();  // ← opens the modal directly in game.html
-    }
-
-    function handlePauseAction(action) {
-      switch (action) {
-        case "resume":
-          hidePauseOverlay();
-          break;
-        case "setting":
-          hidePauseOverlay();
-          goToSettings();
-          break;
-        case "home":
-          hidePauseOverlay();
-          goToHome();
-          break;
-      }
-    }
 
     function updateTimer(ts) {
       if (timerExpired || timerRemaining <= 0) return;
@@ -1076,8 +999,18 @@
       lastTimerTimestamp = ts;
       timerRemaining = Math.max(0, timerRemaining - deltaSeconds);
 
+      if (timerRemaining <= 10 && timerRemaining > 0) {
+        startTickingSfx();
+        timerOverlayText?.classList.add('urgent');
+        if (timerOverlayText) timerOverlayText.style.color = '#ff4f4f';
+      } else {
+        timerOverlayText?.classList.remove('urgent');
+        if (timerOverlayText) timerOverlayText.style.color = '#ffef72';
+      }
+
       if (timerRemaining <= 0) {
         timerRemaining = 0;
+        stopTickingSfx();
         handleTimerExpiry();
       }
 
@@ -1581,6 +1514,7 @@
       const nextIndex = state.progress.findIndex(flag => !flag);
       const nextLetter = nextIndex >= 0 ? state.word[nextIndex] : null;
       if (nextLetter && block.letter === nextLetter) {
+        playHitSfx();
         const wordFinished = TargetWord.onLetterHit(block.letter, true);
         spawnHitPopup(block, COIN_HIT_REWARD);
         markTargetWordDirty();
@@ -1630,9 +1564,12 @@
     }
 
     function handleGameOver(reason) {
-        hidePauseOverlay();
+      initPause();
       if (gameOver) return;
       gameOver = true;
+      if (typeof bgMusic !== 'undefined') bgMusic.pause();
+      playGameOverSfx();
+      stopTickingSfx();
       gameOverReason = reason || "";
       timerExpired = true;
       roundMessageTimer = 0;
@@ -1738,7 +1675,9 @@
 
     function restartGame() {
       if (!window.TargetWord) return;
-      hidePauseOverlay();
+      stopTickingSfx();
+      initPause();
+      if (typeof bgMusic !== 'undefined') bgMusic.play().catch(() => {});
       TargetWord.resetGameProgress();
       currentWord = TargetWord.state.word;
       cannonBalls.length = 0;
@@ -1778,6 +1717,8 @@
       if (gameOver || gamePaused) return;
       const ammoState = window.TargetWord?.state;
       if (ammoState && ammoState.ammo <= 0) return;
+
+      playFireSfx();
 
       const tip = getCannonTipPosition();
       const direction = {
@@ -2265,25 +2206,25 @@
       }
     });
 
-    if (pauseToggleButton) {
-      addUIButtonPressEffects(pauseToggleButton);
-      pauseToggleButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        togglePauseMenu();
-      });
-    }
+    // if (pauseToggleButton) {
+    //   addUIButtonPressEffects(pauseToggleButton);
+    //   pauseToggleButton.addEventListener("click", (e) => {
+    //     e.stopPropagation();
+    //     togglePauseMenu();
+    //   });
+    // }
 
-    pauseOptionButtons.forEach((btn) => {
-      addUIButtonPressEffects(btn);
-      btn.addEventListener("click", () => {
-        const action = btn.dataset.pauseAction;
-        if (action) handlePauseAction(action);
-      });
-    });
+    // pauseOptionButtons.forEach((btn) => {
+    //   addUIButtonPressEffects(btn);
+    //   btn.addEventListener("click", () => {
+    //     const action = btn.dataset.pauseAction;
+    //     if (action) handlePauseAction(action);
+    //   });
+    // });
 
-    pauseBackdrop?.addEventListener("click", hidePauseOverlay);
+    // pauseBackdrop?.addEventListener("click", hidePauseOverlay);
 
-    hidePauseOverlay();
+    initPause();
 
     // --------------------------------------------------
     // LOAD / PRELOADING
@@ -2379,7 +2320,7 @@
 
     updateBorderOverlayPositions();
     window.addEventListener("beforeunload", persistGameState);
-    window.addEventListener("resize", positionTopOverlays);
+    window.addEventListener("resize", updateBorderOverlayPositions);
   </script>
 
   <!-- Ball skin bridge — reads equipped skin from localStorage, exposes window.BallSkins -->

@@ -12,21 +12,18 @@
 // =============================================
 
 
-// ── State ──────────────────────────────────────────────────────────────────
-let musicVolume = parseFloat(localStorage.getItem('musicVolume') ?? '0.7');  // 0.0 → 1.0  (70% filled by default, matches mockup)
-let sfxVolume   = 0.0;   // 0.0 → 1.0  (0% filled by default, matches mockup)
-let aimGuideOn = localStorage.getItem('aimGuide') !== 'false';  // true = ON button shown
+// ── State
+let musicVolume = parseFloat(localStorage.getItem('musicVolume') ?? '0.7'); 
+let sfxVolume = parseFloat(localStorage.getItem('sfxVolume') ?? '0.5');  
+let aimGuideOn = localStorage.getItem('aimGuide') !== 'false'; 
 
 
-// ── Modal element (built once, reused) ────────────────────────────────────
 let settingsModal = null;
 
 
 function buildSettingsModal() {
 
-  // ╔══════════════════════════════════════════════════════╗
-  // ║              BACKDROP (dark background)              ║
-  // ╚══════════════════════════════════════════════════════╝
+  // dark backdrop (covers whole screen, sits behind panel)
   const backdrop = document.createElement('div');
   backdrop.id = 'settingsBackdrop';
   Object.assign(backdrop.style, {
@@ -42,10 +39,7 @@ function buildSettingsModal() {
   });
 
 
-  // ╔══════════════════════════════════════════════════════╗
-  // ║                  PANEL (stone box)                   ║
-  // ║  ↓ Change width here to resize the whole modal       ║
-  // ╚══════════════════════════════════════════════════════╝
+  // panel element (holds all the content, sits on top of backdrop)
   const panel = document.createElement('div');
   Object.assign(panel.style, {
     position:    'relative',
@@ -55,7 +49,7 @@ function buildSettingsModal() {
   });
 
 
-  // ── Background image ───────────────────────────────────────────────────
+  // ── Background image
   const bg = document.createElement('img');
   bg.src = 'assets/settingsBg.png';
   Object.assign(bg.style, {
@@ -68,30 +62,25 @@ function buildSettingsModal() {
   panel.appendChild(bg);
 
 
-  // ╔══════════════════════════════════════════════════════╗
-  // ║                  CLOSE (X) BUTTON                    ║
-  // ║                                                      ║
-  // ║  top   → move UP (smaller %) or DOWN (bigger %)      ║
-  // ║  right → move LEFT (bigger %) or RIGHT (smaller %)   ║
-  // ║  width → resize the button (% of panel width)        ║
-  // ║                                                      ║
-  // ║  Negative values push it outside the panel edge.     ║
-  // ╚══════════════════════════════════════════════════════╝
+  // close button (top-right corner)
   const closeBtn = document.createElement('img');
   closeBtn.src = 'assets/button/closeButton.png'; // ← your X button asset
 
   Object.assign(closeBtn.style, {
     position:    'absolute',
-    top:         '-4%',   // ← ADJUST: move the X button up/down
-    right:       '-4%',   // ← ADJUST: move the X button left/right
-    width:       '13%',   // ← ADJUST: resize the X button
+    top:         '-4%',   
+    right:       '-4%',   
+    width:       '13%',   
     aspectRatio: '1',
     cursor:      'pointer',
     zIndex:      '10',
     transition:  'transform 0.1s ease',
   });
 
-  closeBtn.addEventListener('click', closeSettings);
+  closeBtn.addEventListener('click', () => {
+    playClickSfx(); // ← add this
+    closeSettings();
+  });
 
   // Small press-down animation on click
   closeBtn.addEventListener('mousedown', () => {
@@ -104,43 +93,21 @@ function buildSettingsModal() {
   panel.appendChild(closeBtn);
 
 
-  // ╔══════════════════════════════════════════════════════════════════════╗
-  // ║                         SLIDER FACTORY                              ║
-  // ║                                                                      ║
-  // ║  makeSlider( topPct, leftPct, widthPct, initVal, onChange )          ║
-  // ║                                                                      ║
-  // ║  topPct   → vertical position (% of panel height)                   ║
-  // ║             e.g. '38%' = 38% down from the top of the panel         ║
-  // ║             → make this SMALLER to move slider UP                    ║
-  // ║             → make this BIGGER  to move slider DOWN                  ║
-  // ║                                                                      ║
-  // ║  leftPct  → horizontal start of the slider (% of panel width)       ║
-  // ║             e.g. '15%' = starts 15% from the left edge of the panel ║
-  // ║             → make this SMALLER to push slider LEFT                  ║
-  // ║             → make this BIGGER  to push slider RIGHT                 ║
-  // ║                                                                      ║
-  // ║  widthPct → how wide the slider track is (% of panel width)         ║
-  // ║             e.g. '72%' = slider stretches 72% across the panel      ║
-  // ║             → make this BIGGER  to stretch it wider                  ║
-  // ║             → make this SMALLER to shrink it                         ║
-  // ║                                                                      ║
-  // ║  initVal  → starting knob position   0.0 = left,  1.0 = right       ║
-  // ║                                                                      ║
-  // ║  onChange → called while dragging:  (value) => { ... }              ║
-  // ╚══════════════════════════════════════════════════════════════════════╝
+  // sliders and toggle button
   function makeSlider(topPct, leftPct, widthPct, initVal, onChange) {
 
+
     // ── Visual sizes of the slider images ─────────────────────────────
-    const TRACK_HEIGHT = '38px'; // ← height of slider.png
-    const KNOB_WIDTH   = '32px'; // ← width  of sliderButton.png
-    const YELLOW_FILL  = 'rgba(255, 185, 0, 0.82)'; // ← fill colour
+    const TRACK_HEIGHT = '38px'; 
+    const KNOB_WIDTH   = '32px'; 
+    const YELLOW_FILL  = 'rgba(255, 185, 0, 0.82)'; 
 
     const row = document.createElement('div');
     Object.assign(row.style, {
       position:  'absolute',
-      top:       topPct,    // ← controlled by the argument
-      left:      leftPct,   // ← controlled by the argument
-      width:     widthPct,  // ← controlled by the argument
+      top:       topPct,    
+      left:      leftPct,   
+      width:     widthPct, 
       height:    TRACK_HEIGHT,
       transform: 'translateY(-50%)',
     });
@@ -189,10 +156,11 @@ function buildSettingsModal() {
     row.appendChild(knob);
 
    
-const LEFT_LIMIT  = 6;   // ← knob won't go past this % from the left
-const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
-    // ── Drag logic ─────────────────────────────────────────────────────
-    function setKnobValue(val) {
+    const LEFT_LIMIT  = 6;   
+    const RIGHT_LIMIT = 95; 
+
+  // ── Drag logic 
+  function setKnobValue(val) {
   const clamped    = Math.max(0, Math.min(1, val));
   const pct        = LEFT_LIMIT + clamped * (RIGHT_LIMIT - LEFT_LIMIT);
   knob.style.left  = pct + '%';
@@ -205,6 +173,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
     let dragging = false;
 
     knob.addEventListener('mousedown', e => {
+      playClickSfx();
       dragging = true;
       knob.style.cursor = 'grabbing';
       e.preventDefault();
@@ -242,15 +211,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
   }
 
 
-  // ╔══════════════════════════════════════════════════════════════════════╗
-  // ║                  SLIDER POSITIONS — EDIT HERE                        ║
-  // ║                                                                      ║
-  // ║  makeSlider( topPct, leftPct, widthPct, initVal, onChange )          ║
-  // ║                                                                      ║
-  // ║  Step 1 → Adjust topPct  so the slider sits on the right ROW        ║
-  // ║  Step 2 → Adjust leftPct so the left  edge lines up with the art    ║
-  // ║  Step 3 → Adjust widthPct so the right edge lines up with the art   ║
-  // ╚══════════════════════════════════════════════════════════════════════╝
+  // sliders positioning
 
   //                         top      left    width   start  callback
     const musicSlider = makeSlider('38%', '15%', '72%', musicVolume, v => {
@@ -260,33 +221,31 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
     });
 
 
-  const sfxSlider   = makeSlider('63%', '15%',  '72%',  sfxVolume,   v => { sfxVolume   = v; });
+  const sfxSlider   = makeSlider('63%', '15%',  '72%',  sfxVolume,   v => { 
+    sfxVolume   = v; 
+    localStorage.setItem('sfxVolume', v);
+  });
 
   panel.appendChild(musicSlider);
   panel.appendChild(sfxSlider);
 
 
-  // ╔══════════════════════════════════════════════════════╗
-  // ║               AIM GUIDE TOGGLE BUTTON                ║
-  // ║                                                      ║
-  // ║  bottom → move UP (bigger %) or DOWN (smaller %)     ║
-  // ║  right  → move LEFT (bigger %) or RIGHT (smaller %)  ║
-  // ║  width  → resize the button (% of panel width)       ║
-  // ╚══════════════════════════════════════════════════════╝
+  // Aim guide button (ON/OFF toggle)
   const toggleBtn = document.createElement('img');
   toggleBtn.src = aimGuideOn ? 'assets/button/offButton.png' : 'assets/button/onButton.png';
 
   Object.assign(toggleBtn.style, {
     position:   'absolute',
-    bottom:     '20%',  // ← ADJUST: move toggle UP or DOWN
-    right:      '17%',   // ← ADJUST: move toggle LEFT or RIGHT
-    width:      '22%',  // ← ADJUST: resize the toggle
+    bottom:     '20%', 
+    right:      '17%',   
+    width:      '22%',
     cursor:     'pointer',
     zIndex:     '5',
     transition: 'transform 0.1s ease',
   });
 
   toggleBtn.addEventListener('click', () => {
+    playClickSfx();
     aimGuideOn    = !aimGuideOn;
     toggleBtn.src = aimGuideOn ? 'assets/button/offButton.png' : 'assets/button/onButton.png';
     localStorage.setItem('aimGuide', aimGuideOn);
@@ -312,7 +271,7 @@ const RIGHT_LIMIT = 95;  // ← knob won't go past this % from the right
 }
 
 
-// ── Open / Close ───────────────────────────────────────────────────────────
+// ── Open / Close 
 
 function openSettings() {
   if (!settingsModal) buildSettingsModal();
@@ -328,15 +287,6 @@ function closeSettings() {
     if (settingsModal) settingsModal.style.display = 'none';
   }, 250);
 }
-
-
-// ── Getters (OPTIONAL — only needed if you add audio/aim-guide logic) ──────
-// These let other files read the current slider values. For example:
-//
-//   audioNode.gain.value = getMusicVolume();   ← in your audio file
-//   showAimDots = getAimGuide();               ← in your gameplay file
-//
-// If you never write audio code, you can ignore these completely.
 
 function getMusicVolume() { return musicVolume; }
 function getSfxVolume()   { return sfxVolume;   }

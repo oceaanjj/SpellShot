@@ -42,15 +42,15 @@ function setupBtn(id, burstColor, callback) {
   // When the player releases the button
   const onRelease = () => {
     el.classList.remove('pressing');
-    void el.offsetWidth;              // forces the browser to restart the CSS animation
-    el.classList.add('released');     // CSS handles the bounce-back look
+    void el.offsetWidth;
+    el.classList.add('released');
 
-    // Spawn particles at the centre of the button
+    playClickSfx(); 
+
     const pos = getCenter(el);
     spawnClickBurst(pos.x, pos.y, burstColor);
     spawnSparkles(pos.x, pos.y);
 
-    // Run the callback after the particle animation has a moment to play
     if (callback) setTimeout(callback, 230);
   };
 

@@ -161,7 +161,10 @@
       transition:     'transform 0.1s ease, filter 0.1s ease',
       filter:         'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))',
     });
-    closeBtn.addEventListener('click', closeShop);
+    closeBtn.addEventListener('click', () => {
+      playClickSfx();
+      closeShop();
+    });
     closeBtn.addEventListener('mouseenter', () => {
       closeBtn.style.transform = 'scale(1.12)';
       closeBtn.style.filter    = 'brightness(1.3) drop-shadow(0 0 6px rgba(255,80,80,0.9))';
@@ -343,7 +346,10 @@
       card.style.zIndex     = '';
     });
 
-    card.addEventListener('click', () => onCardClick(skin.id));
+    card.addEventListener('click', () => {
+      playClickSfx(); 
+      onCardClick(skin.id);
+    });
     grid.appendChild(card);
   }
 
@@ -368,12 +374,12 @@
       btn.src              = 'assets/button/equipButton.png';
       btn.dataset.disabled = 'false';
       btn.style.cursor     = 'pointer';
-      btn.onclick          = () => equipSkin(selectedId);
+      btn.onclick = () => { playClickSfx(); equipSkin(selectedId); };
     } else {
       btn.src              = 'assets/button/buyButton.png';
       btn.dataset.disabled = 'false';
       btn.style.cursor     = 'pointer';
-      btn.onclick          = () => buySkin(selectedId);
+      btn.onclick = () => { playClickSfx(); buySkin(selectedId); }; // coin purchase
     }
   }
 
@@ -392,6 +398,7 @@
     spendCoins(skin.price);
     ownedIds.push(skinId);
     saveState();
+    if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
 
     const slotImg = document.getElementById('cannonSlot-' + skinId);
     if (slotImg) slotImg.src = skin.unlockedSlot;
