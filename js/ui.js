@@ -10,6 +10,17 @@
 // =============================================
 
 
+const CHARACTER_SELECTION_KEY = "spellshot-selected-character";
+
+function persistSelectedCharacter() {
+  if (typeof currentCharIdx !== "number") return;
+  try {
+    localStorage.setItem(CHARACTER_SELECTION_KEY, String(currentCharIdx));
+  } catch (error) {
+    console.warn("SpellShot: Unable to save selected character", error);
+  }
+}
+
 // -- Get the centre point of a button --
 // Returns { x, y } relative to the game container
 // Used so particles know where to spawn when a button is clicked
@@ -72,6 +83,7 @@ function setupBtn(id, burstColor, callback) {
 // -- Go to the game screen --
 // Flashes the screen white then loads game.html
 function goToGame() {
+  persistSelectedCharacter();
   document.body.style.transition = 'opacity 0.35s ease';
   document.body.style.opacity    = '0';
   setTimeout(() => { window.location.href = 'game.html'; }, 350);

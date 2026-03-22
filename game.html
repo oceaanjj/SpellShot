@@ -389,6 +389,79 @@
     // --------------------------------------------------
     const bgImg = new Image();
     const mapBridgeImage = new Image();
+    const CHARACTER_SELECTION_KEY = "spellshot-selected-character";
+    const CHARACTER_SPRITES = [
+      "girlieSprite.png",
+      "markSprite.png",
+      "pattieSprite.png",
+      "peterSprite.png"
+    ];
+    const DEFAULT_CHARACTER_NAME = CHARACTER_SPRITES[0];
+    const CHARACTER_FRAME_METADATA = {
+      "girlieSprite.png": [
+        { width: 1930, center: 1057 },
+        { width: 1930, center: 1057 },
+      ],
+      "markSprite.png": [
+        { width: 1585, center: 1051.5 },
+        { width: 1562, center: 1043 },
+      ],
+      "pattieSprite.png": [
+        { width: 1919, center: 1026.5 },
+        { width: 1919, center: 1026.5},
+      ],
+      "peterSprite.png": [
+        { width: 1539, center: 769.5 },
+        { width: 1579, center: 789.5 },
+      ],
+    };
+    const CHARACTER_DISPLAY_TARGET = { width: 768, height: 1024 };
+    let currentCharacterSpriteName = DEFAULT_CHARACTER_NAME;
+
+    function getCharacterFrameAdjustment(frameIndex) {
+      const referenceFrames = CHARACTER_FRAME_METADATA[DEFAULT_CHARACTER_NAME];
+      const selectedFrames = CHARACTER_FRAME_METADATA[currentCharacterSpriteName] || referenceFrames;
+      const reference = referenceFrames?.[frameIndex] ?? referenceFrames?.[0];
+      const metadata = selectedFrames?.[frameIndex] ?? selectedFrames?.[0] ?? reference;
+      if (!reference || !metadata || typeof reference.center !== "number" || typeof metadata.center !== "number") {
+        return 0;
+      }
+      const centerDelta = metadata.center - reference.center;
+      return centerDelta * SCALE;
+    }
+
+    function getCharacterDisplayScale() {
+      const EXTRA_SCALE = 0.70;
+      if (FRAME_W <= 0 || FRAME_H <= 0) return EXTRA_SCALE;
+      const baseWidth = FRAME_W * SCALE;
+      const baseHeight = FRAME_H * SCALE;
+      if (baseWidth <= 0 || baseHeight <= 0) return EXTRA_SCALE;
+      const widthScale = CHARACTER_DISPLAY_TARGET.width / baseWidth;
+      const heightScale = CHARACTER_DISPLAY_TARGET.height / baseHeight;
+      const targetScale = Math.min(widthScale, heightScale, 1);
+      return Math.max(0.35, (targetScale > 0 ? targetScale : 1) * EXTRA_SCALE);
+    }
+
+    function getSelectedCharacterSpritePath() {
+      let selectedIndex = 0;
+      try {
+        const raw = localStorage.getItem(CHARACTER_SELECTION_KEY);
+        const parsed = parseInt(raw, 10);
+        if (!Number.isNaN(parsed)) {
+          selectedIndex = parsed;
+        }
+      } catch (error) {
+        console.warn("SpellShot: Unable to read selected character", error);
+      }
+
+      if (selectedIndex < 0 || selectedIndex >= CHARACTER_SPRITES.length) {
+        selectedIndex = 0;
+      }
+
+      currentCharacterSpriteName = CHARACTER_SPRITES[selectedIndex];
+      return `assets/character/${currentCharacterSpriteName}`;
+    }
+
     const imgBody = new Image();
     const imgCanon = new Image();
     const imgWheel = new Image();
@@ -403,7 +476,7 @@
     const borderLeftElem = document.getElementById("borderLeft");
     const borderRightElem = document.getElementById("borderRight");
     const borderBottomElem = document.getElementById("borderBottom");
-    imgBody.src = "assets/girlySprite.png";
+    imgBody.src = getSelectedCharacterSpritePath();
     imgCanon.src = "assets/canon.png";
     imgWheel.src = "assets/wheel.png";
     coinImage.src = "assets/coin.png";
@@ -1022,10 +1095,8 @@
       const displaySeconds = Math.max(0, Math.ceil(timerRemaining));
       const minutes = Math.floor(displaySeconds / 60);
       const seconds = displaySeconds % 60;
-      if (minutes > 0) {
-        return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-      }
-      return `${seconds}`;
+      const secondsStr = seconds.toString().padStart(2, "0");
+      return `${minutes}:${secondsStr}`;
     }
 
     // --------------------------------------------------
@@ -1958,7 +2029,7 @@
       const maxAmmo = ammoState.maxAmmo ?? 6;
       const currentAmmo = ammoState.ammo ?? maxAmmo;
       const ammoSize = 46;
-      const gap = 10;
+      const gap = 2;
       const hudPadding = HUD_PADDING;
       const ammoPaddingX = Math.max(12, hudPadding + 120);
       const y = GAME_H - hudPadding - ammoSize + 50;
@@ -1993,11 +2064,17 @@
     }
 
     function drawWholeFrame(img, frameIndex) {
+      const shift = getCharacterFrameAdjustment(frameIndex);
+      const displayScale = getCharacterDisplayScale();
+      ctx.save();
+      ctx.scale(displayScale, displayScale);
+      ctx.translate(-shift / displayScale, 0);
       ctx.drawImage(
         img,
         frameIndex * FRAME_W, 0, FRAME_W, FRAME_H,
         0, 0, FRAME_W * SCALE, FRAME_H * SCALE
       );
+      ctx.restore();
     }
 
     function drawWheelFrame() {
