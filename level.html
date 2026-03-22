@@ -145,16 +145,16 @@
     .level-track {
       position: relative;
       flex: 1;
-      max-width: 600px;
-      /* caps width */
-      max-height: 300px;
-      /* caps height */
+      max-width: 650px;
+      max-height: 350px;
       margin: 0 auto;
-      /* keep centered */
+      margin-bottom: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      left: 0;
+      right: 0;
     }
 
     .level-grid-track {
@@ -237,10 +237,14 @@
     }
 
     .theme-nav-row {
+      position: absolute;
+      bottom: 140px;
+      /* move up/down */
+      left: 50%;
+      transform: translateX(-50%);
+
       display: flex;
-      justify-content: center;
-      gap: 10rem;
-      margin-top: -3rem;
+      gap: 2rem;
     }
 
     .theme-nav {
