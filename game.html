@@ -1012,7 +1012,7 @@
       { words: 3, seconds: 90  },  
       { words: 3, seconds: 90  },   
       { words: 3, seconds: 90  },   
-      { words: 3, seconds: 90  },   
+      { words: 1, seconds: 90  },   
       { words: 4, seconds: 120 },   
       { words: 4, seconds: 120 },   
       { words: 4, seconds: 120 },  
@@ -1208,6 +1208,73 @@ function applyLevelConfig(round) {
       updateTimerOverlayText();
       updateThemeForRound(currentRound);
     }
+
+    // ── Floating Hearts ─────────────────────────────
+const floatingHearts = [];
+const HEART_SPAWN_INTERVAL_MS = 8000; // one heart every 8s
+const HEART_SIZE = 36;
+let lastHeartSpawnTime = 0;
+
+function spawnFloatingHeart(ts) {
+  if (gameOver || gamePaused || roundCompleteActive) return;
+  if (ts - lastHeartSpawnTime < HEART_SPAWN_INTERVAL_MS) return;
+  lastHeartSpawnTime = ts;
+
+  // Random chance — not every interval
+  if (Math.random() > 0.4) return;
+
+  floatingHearts.push({
+    x: 320 + Math.random() * (GAME_W - 480),
+    y: GAME_H - 100,
+    vy: -(0.6 + Math.random() * 0.4),
+    alpha: 1,
+    collected: false
+  });
+}
+
+function updateFloatingHearts() {
+  for (let i = floatingHearts.length - 1; i >= 0; i--) {
+    const h = floatingHearts[i];
+    h.y += h.vy;
+    h.alpha = Math.max(0, h.alpha - 0.003);
+
+    // Check collision with any cannonball
+    for (const ball of cannonBalls) {
+      const dx = ball.x - (h.x + HEART_SIZE / 2);
+      const dy = ball.y - (h.y + HEART_SIZE / 2);
+      if (Math.sqrt(dx * dx + dy * dy) < HEART_SIZE / 2 + BALL_RADIUS) {
+        if (!h.collected) {
+          h.collected = true;
+          // Add a life if not at max
+          const state = window.TargetWord?.state;
+          if (state && state.lives < state.maxLives) {
+            state.lives = Math.min(state.maxLives, state.lives + 1);
+            markTargetWordDirty();
+          }
+        }
+      }
+    }
+
+    if (h.alpha <= 0 || h.y < -HEART_SIZE || h.collected) {
+      floatingHearts.splice(i, 1);
+    }
+  }
+}
+
+function drawFloatingHearts() {
+  if (!floatingHearts.length) return;
+  floatingHearts.forEach(h => {
+    if (!heartImage || !heartImage.complete) return;
+    ctx.save();
+    ctx.globalAlpha = h.alpha;
+    // Gentle pulse
+    const pulse = 1 + Math.sin(Date.now() * 0.005) * 0.08;
+    ctx.translate(h.x + HEART_SIZE / 2, h.y + HEART_SIZE / 2);
+    ctx.scale(pulse, pulse);
+    ctx.drawImage(heartImage, -HEART_SIZE / 2, -HEART_SIZE / 2, HEART_SIZE, HEART_SIZE);
+    ctx.restore();
+  });
+}
 
     function updateBackgroundMovement(ts) {
       if (!ts) return;
@@ -2042,6 +2109,7 @@ function applyLevelConfig(round) {
           window.TargetWord.state.lives = Math.max(0, window.TargetWord.state.lives - 1);
         }
         markTargetWordDirty();
+        block.wrongFlash = 24;
         queueBlockAnimation(block, null, 20);
         checkGameOverForPlayer();
       } else {
@@ -2222,7 +2290,7 @@ function applyLevelConfig(round) {
     }
 
     function goToMainMenu() {
-      persistGameState();
+      clearSavedGameState(); 
       clearOverlayBackdrop();
       document.body.style.transition = "opacity 0.35s ease";
       document.body.style.opacity = "0";
@@ -2281,6 +2349,8 @@ function applyLevelConfig(round) {
     }
 
     function restartGame() {
+      floatingHearts.length = 0;
+  lastHeartSpawnTime = 0;
       if (!window.TargetWord) return;
       stopTickingSfx();
       hidePauseOverlay();
@@ -2741,6 +2811,7 @@ function applyLevelConfig(round) {
       drawLetterHitParticles();
       drawLetterSuccessFlash();
       drawCannonBalls();
+      drawFloatingHearts();
 
       if (targetWordOverlay) {
         targetWordOverlay.classList.toggle("dimmed", gameOver);
@@ -2777,6 +2848,8 @@ function applyLevelConfig(round) {
         updateBlockAnimations();
         updateLetterHitEffects();
         updateFloatingPopups();
+        updateFloatingHearts();
+        spawnFloatingHeart(ts);
         if (roundMessageTimer > 0) {
           roundMessageTimer = Math.max(0, roundMessageTimer - 1);
         }
