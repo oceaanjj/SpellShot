@@ -1240,10 +1240,11 @@
       const nextLetter = nextIndex >= 0 ? TWORD[nextIndex] : null;
 
       if (nextLetter && block.letter === nextLetter) {
+        playHitSfx();
         // Correct letter
         tProgress[nextIndex] = true;
         tCoins += COIN_HIT_REWARD;
-        spawnHitPopup(block, COIN_HIT_REWARD);
+        // spawnHitPopup(block, COIN_HIT_REWARD);
         markTargetWordDirty();
         triggerLetterSuccessFlash(block.x + block.width / 2, block.y + block.height / 2);
         queueBlockAnimation(block, "jump", 22);
@@ -1253,7 +1254,7 @@
       } else if (hasRemainingLetter(block.letter)) {
         // Wrong order — letter exists but not next
         tLives = Math.max(0, tLives - 1);
-        spawnHitPopup(block, COIN_HIT_PENALTY);
+        // spawnHitPopup(block, COIN_HIT_PENALTY);
         markTargetWordDirty();
         queueBlockAnimation(block, null, 20);
         if (typeof window.tutorialOnWrongHit === 'function') window.tutorialOnWrongHit();
@@ -1417,6 +1418,7 @@
 
     function fireCannon() {
       if (gameOver || gamePaused) return;
+      playFireSfx();
       // Tutorial: unlimited ammo
       if (typeof window.tutorialOnFire === 'function') window.tutorialOnFire();
       const tip = getCannonTipPosition();
@@ -1540,22 +1542,57 @@
       ctx.restore();
     }
 
-    function computeTrajectorySegments(start, direction) {
-      const segments = [];
-      const firstHit = traceRay(start, direction, TRAJECTORY_MAX_DISTANCE);
-      segments.push({ from: start, to: firstHit.point });
+    // In tutorial.html inline script — replace these two functions:
 
-      if (firstHit.type === "boundary" && firstHit.distance < TRAJECTORY_MAX_DISTANCE) {
-        const remaining = TRAJECTORY_MAX_DISTANCE - firstHit.distance;
-        if (remaining > 4) {
-          const bounceDir = { x: direction.x, y: -direction.y };
-          const secondHit = traceRay(firstHit.point, bounceDir, remaining);
-          segments.push({ from: firstHit.point, to: secondHit.point });
+function computeTrajectorySegments(start, direction) {
+  const segments = [];
+  const firstHit = traceRay(start, direction, TRAJECTORY_MAX_DISTANCE);
+  segments.push({ from: start, to: firstHit.point });
+
+  if (firstHit.type === "boundary" && firstHit.distance < TRAJECTORY_MAX_DISTANCE) {
+    const remaining1 = TRAJECTORY_MAX_DISTANCE - firstHit.distance;
+    if (remaining1 > 4) {
+      const bounceDir1 = {
+        x: (firstHit.side === "left" || firstHit.side === "right") ? -direction.x : direction.x,
+        y: (firstHit.side === "top" || firstHit.side === "bottom") ? -direction.y : direction.y
+      };
+      const secondHit = traceRay(firstHit.point, bounceDir1, remaining1);
+      segments.push({ from: firstHit.point, to: secondHit.point });
+
+      if (secondHit.type === "boundary" && secondHit.distance < remaining1) {
+        const remaining2 = remaining1 - secondHit.distance;
+        if (remaining2 > 4) {
+          const bounceDir2 = {
+            x: (secondHit.side === "left" || secondHit.side === "right") ? -bounceDir1.x : bounceDir1.x,
+            y: (secondHit.side === "top" || secondHit.side === "bottom") ? -bounceDir1.y : bounceDir1.y
+          };
+          const thirdHit = traceRay(secondHit.point, bounceDir2, remaining2);
+          segments.push({ from: secondHit.point, to: thirdHit.point });
         }
       }
-
-      return segments;
     }
+  }
+  return segments;
+}
+
+function traceBoundary(origin, direction, maxDistance) {
+  let best = { distance: maxDistance, type: "none", side: null };
+  if (Math.abs(direction.y) > 0.0001) {
+    const targetY = direction.y < 0 ? BALL_RADIUS : GAME_H - BALL_RADIUS;
+    const t = (targetY - origin.y) / direction.y;
+    if (t > 0.0001 && t < best.distance) {
+      best = { distance: t, type: "boundary", side: direction.y < 0 ? "top" : "bottom" };
+    }
+  }
+  if (Math.abs(direction.x) > 0.0001) {
+    const targetX = direction.x < 0 ? BALL_RADIUS : GAME_W - BALL_RADIUS;
+    const t = (targetX - origin.x) / direction.x;
+    if (t > 0.0001 && t < best.distance) {
+      best = { distance: t, type: "boundary", side: direction.x < 0 ? "left" : "right" };
+    }
+  }
+  return best;
+}
 
     function traceRay(origin, direction, maxDistance) {
       const boundaryHit = traceBoundary(origin, direction, maxDistance);
@@ -1576,21 +1613,7 @@
       };
     }
 
-    function traceBoundary(origin, direction, maxDistance) {
-      let best = { distance: maxDistance, type: "none", side: null };
-      if (Math.abs(direction.y) > 0.0001) {
-        const targetY = direction.y < 0 ? BALL_RADIUS : GAME_H - BALL_RADIUS;
-        const t = (targetY - origin.y) / direction.y;
-        if (t > 0 && t < best.distance) {
-          best = {
-            distance: t,
-            type: "boundary",
-            side: direction.y < 0 ? "top" : "bottom"
-          };
-        }
-      }
-      return best;
-    }
+  
 
     function traceBlock(origin, direction, maxDistance) {
       let best = null;
@@ -1988,6 +2011,8 @@
       letterImages[letter].onerror = onLoad;
     }
 
+    initPause();
+
     // tutorial — no beforeunload save
     // window.addEventListener("resize", positionTopOverlays);
   </script>
@@ -1995,6 +2020,9 @@
   <!-- Ball skin bridge — reads equipped skin from localStorage, exposes window.BallSkins -->
   <script src="js/ballSkins.js"></script>
   <script src="js/sfx.js"></script> 
+  <script src="js/settings.js"></script>
+  <script src="js/music.js"></script>
+  <script src="js/pause.js"></script>
   <script src="js/tutorial.js"></script>
 </body>
 </html>
