@@ -12,6 +12,8 @@ function playClickSfx()    { _playSfx('sounds/sfx/clickButton.mp3');  }
 function playFireSfx()     { _playSfx('sounds/sfx/firingBall.mp3');   }
 function playGameOverSfx() { _playSfx('sounds/sfx/gameOver.mp3');     }
 function playHitSfx()      { _playSfx('sounds/sfx/hittingBlocks.mp3');}
+function playGoodSfx()          { _playSfx('sounds/sfx/great.mp3');          }
+function playUnbelievableSfx()   { _playSfx('sounds/sfx/unbelievable.mp3');  }
 
 // Timeticking loops — needs special handling
 let _tickingAudio = null;
