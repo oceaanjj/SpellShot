@@ -842,6 +842,8 @@
       return `assets/character/${currentCharacterSpriteName}`;
     }
 
+
+
     const imgBody = new Image();
     const imgCanon = new Image();
     const imgWheel = new Image();
@@ -871,6 +873,21 @@
     let requestedRound = parseRequestedRound();
     let highestUnlockedRound = 1;
     let levelStartRound = 1;
+    let autoContinueTimer = null;      
+    let isInitialRoundReady = false;
+    let _tickingActive = false;
+
+    // function startTicking() {
+    //   if (_tickingActive) return; // already running — don't create another interval
+    //   _tickingActive = true;
+    //   startTickingSfx();
+    // }
+
+    // function stopTicking() {
+    //   if (!_tickingActive) return; // already stopped
+    //   _tickingActive = false;
+    //   stopTickingSfx();
+    // }
 
     function setOverlayBackdrop(mode = "game") {
       if (!overlayBackdrop) return;
@@ -2329,6 +2346,7 @@ function drawFloatingHearts() {
 
     function hideRoundCompleteOverlay() {
       clearTimeout(autoContinueTimer);
+      isInitialRoundReady = false;
       if (!roundCompleteOverlay) return;
       clearOverlayBackdrop();
       roundCompleteOverlay.classList.remove("active");
@@ -2367,18 +2385,25 @@ function drawFloatingHearts() {
       
       currentRound = Math.min(15, completedRound + 1);
       highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
+
+      const isNewLevelBoundary = (currentRound - 1) % 5 === 0;
+      if (isNewLevelBoundary) {
+        levelStartRound = currentRound;
+      }
+
       applyLevelConfig(currentRound);
       updateThemeForRound(currentRound);
       currentWord = window.TargetWord?.state?.word || currentWord;
       markTargetWordDirty();
       cannonBalls.length = 0;
-      roundMessage = `Round ${currentRound} Ready`;
-      roundMessageTimer = ROUND_MESSAGE_DURATION;
+      // roundMessage = `Round ${currentRound} Ready`;
+      // roundMessageTimer = ROUND_MESSAGE_DURATION;
       resetTimerForRound();
       generateLetterBlocks();
       persistGameState();
       hideRoundCompleteOverlay();
       if (typeof bgMusic !== "undefined") bgMusic.play().catch(() => { });
+      showInitialRoundReady();
     }
 
     function goToLevelSelection() {
@@ -2480,7 +2505,6 @@ function drawFloatingHearts() {
       roundMessage = "";
       roundMessageTimer = 0;
       highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
-      updateThemeForRound(currentRound);
       gameOverReason = "";
       gameOver = false;
       timerExpired = false;
@@ -2488,6 +2512,7 @@ function drawFloatingHearts() {
       generateLetterBlocks();
       persistGameState();
       hideGameOverOverlay();
+
       showInitialRoundReady();
     }
 
@@ -3167,7 +3192,11 @@ if (allCompleteRetry) {
         e.preventDefault();
         e.stopPropagation();
         playClickSfx();
-        continueAfterRoundCompletion();
+        if (isInitialRoundReady) {
+          dismissInitialRoundReady(); 
+        } else {
+          continueAfterRoundCompletion(); 
+        }
       });
     }
     if (roundCompleteBackBtn) {
@@ -3176,6 +3205,8 @@ if (allCompleteRetry) {
         e.preventDefault();
         e.stopPropagation();
         playClickSfx();
+        clearTimeout(autoContinueTimer);
+        isInitialRoundReady = false;
         pendingRoundCompletion = null;
         hideRoundCompleteOverlay();
         goToMainMenu();
@@ -3211,6 +3242,41 @@ if (allCompleteRetry) {
       applyLevelConfig(currentRound);
     }
 
+    function showInitialRoundReady() {
+      stopTickingSfx();
+      clearTimeout(autoContinueTimer);
+      if (!roundCompleteOverlay) return;
+      isInitialRoundReady = true;
+      if (roundCompleteReasonText) {
+        roundCompleteReasonText.textContent = `Round ${currentRound} Ready`;
+      }
+      if (roundCompleteInstructionText) {
+        roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${currentRound}.`;
+      }
+      setOverlayBackdrop("round");
+      roundCompleteOverlay.classList.add("active");
+      roundCompleteActive = true;
+      pauseUIButton?.classList.add("hidden");
+      if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(false);
+
+      autoContinueTimer = setTimeout(() => {
+        dismissInitialRoundReady();
+      }, 5000);
+    }
+
+    function dismissInitialRoundReady() {
+      stopTickingSfx(); 
+      clearTimeout(autoContinueTimer);
+      isInitialRoundReady = false;
+      clearOverlayBackdrop();
+      roundCompleteOverlay?.classList.remove("active");
+      roundCompleteActive = false;
+      pauseUIButton?.classList.remove("hidden");
+      if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(true);
+      lastTimerTimestamp = null; 
+    }
+
+
     function startGame() {
       const savedGameState = loadSavedGameState();
 
@@ -3224,12 +3290,12 @@ if (allCompleteRetry) {
         const revealGame = () => {
           if (loading) {
             loading.style.opacity = '0';
-            setTimeout(() => { loading.style.display = 'none'; }, 500);
+            setTimeout(() => { loading.style.display = 'none'; }, 200);
           }
           document.getElementById('gameShell').style.opacity = '1';
           render();
           requestAnimationFrame(animate);
-          showInitialRoundReady(); 
+          showInitialRoundReady(); // ← now calls the global version correctly
         };
 
         const elapsed = Date.now() - loadStartTime;
@@ -3237,21 +3303,36 @@ if (allCompleteRetry) {
         setTimeout(revealGame, remaining);
       }
 
-      function showInitialRoundReady() {
-        if (!roundCompleteOverlay) return;
-        if (roundCompleteReasonText) {
-          roundCompleteReasonText.textContent = `Round ${currentRound} Ready`;
-        }
-        if (roundCompleteInstructionText) {
-          roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${currentRound}.`;
-        }
-        setOverlayBackdrop("round");
-        roundCompleteOverlay.classList.add("active");
-        roundCompleteActive = true;
-        pauseUIButton?.classList.add("hidden");
-        if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(false);
-        // No auto-continue timer for initial round — player must click manually
-      }
+      // function showInitialRoundReady() {
+      //   if (!roundCompleteOverlay) return;
+      //   if (roundCompleteReasonText) {
+      //     roundCompleteReasonText.textContent = `Round ${currentRound} Ready`;
+      //   }
+      //   if (roundCompleteInstructionText) {
+      //     roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${currentRound}.`;
+      //   }
+      //   setOverlayBackdrop("round");
+      //   roundCompleteOverlay.classList.add("active");
+      //   roundCompleteActive = true;
+      //   pauseUIButton?.classList.add("hidden");
+      //   if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(false);
+        
+      //   autoContinueTimer = setTimeout(() => {
+      //     dismissInitialRoundReady();
+      //   }, 2000);
+      // }
+
+      // function dismissInitialRoundReady() {
+      //   stopTickingSfx();
+      //   clearTimeout(autoContinueTimer);
+      //   isInitialRoundReady = false;
+      //   clearOverlayBackdrop();
+      //   roundCompleteOverlay?.classList.remove("active");
+      //   roundCompleteActive = false;
+      //   pauseUIButton?.classList.remove("hidden");
+      //   if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(true);
+      //   lastTimerTimestamp = null; // ensures timer starts fresh from this moment
+      // }
 
       if (window.TargetWord) {
         TargetWord.init().then(() => {
