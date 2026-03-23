@@ -66,6 +66,7 @@ function togglePauseMenu() {
 }
 
 function goToHome() {
+  if (typeof clearSavedGameState === 'function') clearSavedGameState();
   document.body.style.transition = 'opacity 0.35s ease';
   document.body.style.opacity    = '0';
   setTimeout(() => { window.location.href = 'index.html'; }, 350);

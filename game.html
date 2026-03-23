@@ -210,7 +210,7 @@
 
     .pause-panel-title {
       color: #fefefe;
-      font-size: 62px;
+      font-size: 30px;
       letter-spacing: 10px;
       text-transform: uppercase;
       font-family: "PixelFont", sans-serif;
@@ -1204,17 +1204,17 @@ function applyLevelConfig(round) {
         targetState.sessionBaselineCoins = targetState.coins;
       }
 
-      if (typeof saved.lives === "number") {
-        const maxLives = targetState.maxLives ?? 0;
-        const clampedLives = Math.max(0, Math.min(maxLives, saved.lives));
-        targetState.lives = clampedLives > 0 ? clampedLives : maxLives;
-      }
+      // if (typeof saved.lives === "number") {
+      //   const maxLives = targetState.maxLives ?? 0;
+      //   const clampedLives = Math.max(0, Math.min(maxLives, saved.lives));
+      //   targetState.lives = clampedLives > 0 ? clampedLives : maxLives;
+      // }
 
-      if (typeof saved.ammo === "number") {
-        const maxAmmo = targetState.maxAmmo ?? 0;
-        const clampedAmmo = Math.max(0, Math.min(maxAmmo, saved.ammo));
-        targetState.ammo = clampedAmmo > 0 ? clampedAmmo : maxAmmo;
-      }
+      // if (typeof saved.ammo === "number") {
+      //   const maxAmmo = targetState.maxAmmo ?? 0;
+      //   const clampedAmmo = Math.max(0, Math.min(maxAmmo, saved.ammo));
+      //   targetState.ammo = clampedAmmo > 0 ? clampedAmmo : maxAmmo;
+      // }
 
       if (typeof saved.currentTier === "number") {
         targetState.currentTier = Math.max(1, saved.currentTier);
@@ -2122,6 +2122,39 @@ function drawFloatingHearts() {
       });
     }
 
+    function respawnLetter(letter) {
+      if (gameOver || roundCompleteActive) return;
+
+      const safeZone = { minX: 320, maxX: GAME_W - 160, minY: 100, maxY: 380 };
+      let x, y, attempts = 0, collides;
+
+      do {
+        collides = false;
+        x = safeZone.minX + Math.random() * (safeZone.maxX - safeZone.minX);
+        y = safeZone.minY + Math.random() * (safeZone.maxY - safeZone.minY);
+        for (const b of letterBlocks) {
+          if (b.isDestroyed) continue;
+          const dx = x - b.x, dy = y - b.y;
+          if (Math.sqrt(dx*dx + dy*dy) < LETTER_BLOCK_SIZE + 20) { collides = true; break; }
+        }
+        attempts++;
+      } while (collides && attempts < 40);
+
+      letterBlocks.push({
+        x, y,
+        width: LETTER_BLOCK_SIZE, height: LETTER_BLOCK_SIZE,
+        letter,
+        isCorrect: currentWord.includes(letter),
+        wordIndex: -1, // treated as a loose block
+        flashTime: 0, isDestroyed: false, shakeTimer: 0,
+        color: "#FFD700", isActive: true, cooldownTimer: 0,
+        animationQueued: null, animationState: null,
+        fallVelocity: 0, vx: 0, opacity: 1,
+        jumpTimer: 0, jumpDuration: 0, jumpHeight: 0, jumpOffset: 0,
+        wrongFlash: 0
+      });
+    }
+
     function processBlockHit(block) {
       if (gameOver || !block.isActive || block.isDestroyed || !window.TargetWord) return;
       const state = TargetWord.state;
@@ -2158,7 +2191,10 @@ function drawFloatingHearts() {
         }
         markTargetWordDirty();
         block.wrongFlash = 24;
-        queueBlockAnimation(block, null, 20);
+        queueBlockAnimation(block, "fall", 18);
+        // queueBlockAnimation(block, null, 20);
+        const letterToRespawn = block.letter;
+        setTimeout(() => respawnLetter(letterToRespawn), 600);
         checkGameOverForPlayer();
       } else {
         // TargetWord.onLetterHit(block.letter, false);
@@ -2330,7 +2366,8 @@ function drawFloatingHearts() {
     }
 
     function goToLevelSelection() {
-      persistGameState();
+      clearSavedGameState();
+      // persistGameState();
       clearOverlayBackdrop();
       document.body.style.transition = "opacity 0.35s ease";
       document.body.style.opacity = "0";
