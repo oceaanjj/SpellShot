@@ -3217,12 +3217,12 @@ if (allCompleteRetry) {
 
       if (window.TargetWord) {
         TargetWord.init().then(() => {
-          resetTimerForRound();
           if (window.CannonSkins) CannonSkins.preloadAll();
           if (savedGameState) {
             applySavedGameState(savedGameState);
           }
-          applyRequestedRound();
+          applyRequestedRound();     
+          resetTimerForRound();      
           finalizeStart();
         });
       } else {
