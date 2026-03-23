@@ -13,6 +13,23 @@
       font-style: normal;
     }
 
+    #allCompleteStack {
+      gap: 1.5rem;
+      transform: scale(1.2);
+    }
+
+    #allCompleteStack img:first-child {
+      width: min(420px, 88vw);
+    }
+
+    #allCompleteOverlay.active .game-over-actions .ui-btn {
+      pointer-events: auto;
+    }
+
+    #allCompleteOverlay {
+      z-index: 28;
+    }
+
     body {
       margin: 0;
       background: #111;
@@ -100,7 +117,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.28s ease;
-      z-index: 18;
+      z-index: 15;
     }
 
     #pauseBackdrop.active {
@@ -677,23 +694,19 @@
     </div>
 
     <div id="allCompleteOverlay">
-      <div class="overlay-stack">
-        <p class="overlay-reason" style="color:#ffe066; font-size:14px; letter-spacing:2px;">
-          ALL LEVELS COMPLETE!
-        </p>
-        <p class="overlay-instruction" style="margin-top:8px;">
-          You finished all 15 levels!
-        </p>
-        <div class="round-complete-actions">
-          <button id="allCompleteHome" class="ui-btn" type="button">
-            <img class="btn overlay-icon" src="assets/home.png" alt="Home" />
-          </button> 
-          <button id="allCompleteRetry" class="ui-btn" type="button">
-            <img class="btn overlay-icon" src="assets/button/retryButton.png" alt="Play Again" />
-          </button>
-        </div>
-      </div>
+  <div class="overlay-stack" id="allCompleteStack">
+    <img src="assets/congrats.png" alt="All Levels Complete" />
+    <p class="overlay-reason" style="color:#ffe066;">ALL LEVELS COMPLETE!</p>
+    <div class="game-over-actions">
+      <button id="allCompleteHome" class="ui-btn" type="button">
+        <img class="btn overlay-icon" src="assets/home.png" alt="Home" />
+      </button>
+      <button id="allCompleteRetry" class="ui-btn" type="button">
+        <img class="btn overlay-icon" src="assets/button/retryButton.png" alt="Play Again" />
+      </button>
     </div>
+  </div>
+</div>
   </div>
 
   <script src="js/cannonSkins.js"></script>
