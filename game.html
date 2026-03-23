@@ -1651,7 +1651,7 @@ function drawFloatingHearts() {
       timerRemaining = Math.max(0, timerRemaining - deltaSeconds);
 
       if (timerRemaining <= 10 && timerRemaining > 0) {
-        startTickingSfx();
+        if (!roundCompleteActive && !gameOver) startTickingSfx();
         timerOverlayText?.classList.add('urgent');
         if (timerOverlayText) timerOverlayText.style.color = '#ff4f4f';
       } else {
@@ -2403,7 +2403,7 @@ function drawFloatingHearts() {
       persistGameState();
       hideRoundCompleteOverlay();
       if (typeof bgMusic !== "undefined") bgMusic.play().catch(() => { });
-      showInitialRoundReady();
+      // showInitialRoundReady();
     }
 
     function goToLevelSelection() {
@@ -2493,7 +2493,7 @@ function drawFloatingHearts() {
         bgMusic.play().catch(() => {});
       }
 
-      currentRound = levelStartRound;
+      levelStartRound = currentRound; 
       applyLevelConfig(currentRound);
       updateThemeForRound(currentRound);
       wordsCompletedThisLevel = 0;
