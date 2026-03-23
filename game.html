@@ -636,16 +636,16 @@
       <div id="pausePanel">
         <div class="pause-panel-title">Paused</div>
         <div class="pause-icon-row">
-          <button class="pause-option ui-btn" type="button" data-pause-action="resume" role="menuitem"
-            aria-label="Resume gameplay">
+          <button class="pause-option ui-btn" type="button" data-pause-action="resume" role="menuitem" aria-label="Resume gameplay">
             <img src="assets/resume.png" alt="Resume" />
           </button>
-          <button class="pause-option ui-btn" type="button" data-pause-action="setting" role="menuitem"
-            aria-label="Open settings">
+          <button class="pause-option ui-btn" type="button" data-pause-action="restart" role="menuitem" aria-label="Restart level">
+            <img src="assets/restartButton.png" alt="Restart" /> <!-- swap with your asset -->
+          </button>
+          <button class="pause-option ui-btn" type="button" data-pause-action="setting" role="menuitem" aria-label="Open settings">
             <img src="assets/setting.png" alt="Setting" />
           </button>
-          <button class="pause-option ui-btn" type="button" data-pause-action="home" role="menuitem"
-            aria-label="Go to home">
+          <button class="pause-option ui-btn" type="button" data-pause-action="home" role="menuitem" aria-label="Go to home">
             <img src="assets/home.png" alt="Home" />
           </button>
         </div>
@@ -870,6 +870,7 @@
     const LEVEL_SELECTION_KEY = "spellshot-selected-level";
     let requestedRound = parseRequestedRound();
     let highestUnlockedRound = 1;
+    let levelStartRound = 1;
 
     function setOverlayBackdrop(mode = "game") {
       if (!overlayBackdrop) return;
@@ -2224,9 +2225,10 @@ function drawFloatingHearts() {
 
     function handleMissedShot() {
       if (gameOver) return;
-      if (window.TargetWord && typeof TargetWord.recordMiss === "function") {
-        TargetWord.recordMiss();
-        checkGameOverForPlayer();
+      if (window.TargetWord?.state) {
+        window.TargetWord.state.ammo = Math.max(0, window.TargetWord.state.ammo - 1);
+        markTargetWordDirty();
+        checkGameOverForPlayer(); 
       }
     }
 
@@ -2298,17 +2300,18 @@ function drawFloatingHearts() {
 
     function updateRoundCompleteOverlay() {
       if (!roundCompleteOverlay) return;
-      const roundNumber = pendingRoundCompletion?.roundNumber ?? currentRound;
+      const completedRound = pendingRoundCompletion?.roundNumber ?? currentRound;
+      const nextRound = pendingRoundCompletion ? Math.min(15, completedRound + 1) : currentRound;
       if (roundCompleteReasonText) {
-        roundCompleteReasonText.textContent = `Round ${roundNumber} Complete`;
+        roundCompleteReasonText.textContent = `Round ${nextRound} Ready`;
       }
       if (roundCompleteInstructionText) {
-        const nextRound = Math.min(15, roundNumber + 1);
         roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${nextRound}.`;
       }
     }
 
     function showRoundCompleteOverlay() {
+      stopTickingSfx();
       if (!roundCompleteOverlay) return;
       updateRoundCompleteOverlay();
       setOverlayBackdrop("round");
@@ -2369,7 +2372,7 @@ function drawFloatingHearts() {
       currentWord = window.TargetWord?.state?.word || currentWord;
       markTargetWordDirty();
       cannonBalls.length = 0;
-      roundMessage = `Level ${currentRound} Ready`;
+      roundMessage = `Round ${currentRound} Ready`;
       roundMessageTimer = ROUND_MESSAGE_DURATION;
       resetTimerForRound();
       generateLetterBlocks();
@@ -2460,9 +2463,16 @@ function drawFloatingHearts() {
       const pauseUI = document.getElementById('pauseUI');
       if (pauseUI) pauseUI.style.display = '';
 
-      if (typeof bgMusic !== 'undefined')
+      if (typeof bgMusic !== 'undefined') {
         bgMusic.currentTime = 0;
-      bgMusic.play().catch(() => { });
+        bgMusic.play().catch(() => {});
+      }
+
+      currentRound = levelStartRound;
+      applyLevelConfig(currentRound);
+      updateThemeForRound(currentRound);
+      wordsCompletedThisLevel = 0;
+
       resetTargetWordForRetry();
       currentWord = TargetWord.state.word;
       markTargetWordDirty();
@@ -2478,6 +2488,7 @@ function drawFloatingHearts() {
       generateLetterBlocks();
       persistGameState();
       hideGameOverOverlay();
+      showInitialRoundReady();
     }
 
     function checkGameOverConditions() {
@@ -3190,9 +3201,11 @@ if (allCompleteRetry) {
     function applyRequestedRound() {
       if (typeof requestedRound === "number") {
         currentRound = Math.max(1, requestedRound);
+        levelStartRound = currentRound;
         highestUnlockedRound = Math.max(highestUnlockedRound, requestedRound);
         updateThemeForRound(currentRound);
       } else {
+        levelStartRound = currentRound;
         highestUnlockedRound = Math.max(highestUnlockedRound, currentRound);
       }
       applyLevelConfig(currentRound);
@@ -3207,10 +3220,6 @@ if (allCompleteRetry) {
         persistGameState();
         startAutoSave();
 
-        roundMessage = `Level ${currentRound}`;  // ← add this
-        roundMessageTimer = ROUND_MESSAGE_DURATION;
-
-        // Fade out loading, fade in game
         const loading = document.getElementById('loadingScreen');
         const revealGame = () => {
           if (loading) {
@@ -3220,12 +3229,28 @@ if (allCompleteRetry) {
           document.getElementById('gameShell').style.opacity = '1';
           render();
           requestAnimationFrame(animate);
+          showInitialRoundReady(); 
         };
 
-        // Enforce minimum 1.5s loading screen display
         const elapsed = Date.now() - loadStartTime;
         const remaining = Math.max(0, 1500 - elapsed);
         setTimeout(revealGame, remaining);
+      }
+
+      function showInitialRoundReady() {
+        if (!roundCompleteOverlay) return;
+        if (roundCompleteReasonText) {
+          roundCompleteReasonText.textContent = `Round ${currentRound} Ready`;
+        }
+        if (roundCompleteInstructionText) {
+          roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${currentRound}.`;
+        }
+        setOverlayBackdrop("round");
+        roundCompleteOverlay.classList.add("active");
+        roundCompleteActive = true;
+        pauseUIButton?.classList.add("hidden");
+        if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(false);
+        // No auto-continue timer for initial round — player must click manually
       }
 
       if (window.TargetWord) {

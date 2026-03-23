@@ -78,9 +78,22 @@ function goToSettings() {
 
 function handlePauseAction(action) {
   switch (action) {
-    case 'resume':  hidePauseOverlay(); break;
-    case 'setting': goToSettings(); break;
-    case 'home':    hidePauseOverlay(); goToHome(); break;
+    case "resume":
+      hidePauseOverlay();
+      break;
+    case "restart":
+      hidePauseOverlay();
+      if (typeof restartGame === "function") restartGame();
+      break;
+    case "setting":
+      openSettings();
+      break;
+    case "home":
+      if (typeof clearSavedGameState === "function") clearSavedGameState();
+      document.body.style.transition = "opacity 0.35s ease";
+      document.body.style.opacity = "0";
+      setTimeout(() => { window.location.href = "index.html"; }, 350);
+      break;
   }
 }
 
