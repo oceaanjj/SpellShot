@@ -13,6 +13,13 @@
       font-style: normal;
     }
 
+    #gameShell, #gameShell * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
     #allCompleteStack {
       gap: 1.5rem;
       transform: scale(1.2);
@@ -729,6 +736,11 @@
 
     ctx.font = "10px PixelFont";
 
+
+    const gameShellEl = document.getElementById('gameShell');
+    gameShellEl.addEventListener('contextmenu', e => e.preventDefault());
+    gameShellEl.addEventListener('copy', e => e.preventDefault());
+    gameShellEl.addEventListener('selectstart', e => e.preventDefault());
     // --------------------------------------------------
     // IMPORTING FILES
     // --------------------------------------------------
@@ -1065,6 +1077,18 @@
     const letterBlocks = [];
     const LETTER_BLOCK_SIZE = 52;
 
+    // ── Letter placement zones (fraction of GAME_W) ────────────────────
+    // Target letters (the ones you need to shoot) — inner band
+    const TARGET_ZONE_MIN_X_FRAC = 0.25;   // 25% from left
+    const TARGET_ZONE_MAX_X_FRAC = 0.75;   // 75% from left
+    const TARGET_ZONE_PADDING_X  = 20;     // px inset from zone edges
+
+    // Distractor letters — slightly wider band but still off the margins
+    const DISTRACTOR_ZONE_MIN_X_FRAC = 0.22;
+    const DISTRACTOR_ZONE_MAX_X_FRAC = 0.78;
+    const DISTRACTOR_ZONE_PADDING_X  = 16;
+    
+
     // --------------------------------------------------
     // GAME STATE
     // --------------------------------------------------
@@ -1394,7 +1418,7 @@ function drawFloatingHearts() {
     let gameOverReason = "";
     let timerBoxBounds = { x: 0, y: 0, width: 0, height: 0 };
     const TRAJECTORY_MAX_DISTANCE = 2200;
-    const BALL_SPEED = 18;
+    const BALL_SPEED = 15;
     const BALL_RADIUS = 12;
     const BOUNCE_LIMIT = 2;
     const CANNONBALL_DRAW_SIZE = 34;
@@ -1705,7 +1729,7 @@ function drawFloatingHearts() {
     const CANON_SCALE = 0.38;
 
     let cannonAngle = 0;
-    const MIN_ANGLE = -Math.PI * 0.35;
+    const MIN_ANGLE = -Math.PI * 0.45;
     const MAX_ANGLE = Math.PI * 0.35;
     let isDragging = false;
 
@@ -2320,10 +2344,10 @@ function drawFloatingHearts() {
       const completedRound = pendingRoundCompletion?.roundNumber ?? currentRound;
       const nextRound = pendingRoundCompletion ? Math.min(15, completedRound + 1) : currentRound;
       if (roundCompleteReasonText) {
-        roundCompleteReasonText.textContent = `Round ${nextRound} Ready`;
+        roundCompleteReasonText.textContent = `Level ${nextRound} Ready`;
       }
       if (roundCompleteInstructionText) {
-        roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${nextRound}.`;
+        roundCompleteInstructionText.textContent = `Press the Resume icon to start.`;
       }
     }
 
@@ -2528,7 +2552,7 @@ function drawFloatingHearts() {
 
     function getCannonTipPosition() {
       const pivot = getCannonPivotPosition();
-      const rawLength = Math.max(120, (imgCanon.naturalWidth || 220) - CANON_PIVOT_X);
+      const rawLength = Math.max(120, ((imgCanon.complete && imgCanon.naturalWidth > 0 ? imgCanon.naturalWidth : 220)) - CANON_PIVOT_X);
       const scaledLength = rawLength * CANON_SCALE * PLAYER_SCALE;
       return {
         x: pivot.x + Math.cos(cannonAngle) * scaledLength,
@@ -2552,7 +2576,8 @@ function drawFloatingHearts() {
         y: tip.y,
         vx: direction.x * BALL_SPEED,
         vy: direction.y * BALL_SPEED,
-        bounced: 0
+        bounced: 0,
+        trail: [] 
       });
     }
 
@@ -2564,24 +2589,27 @@ function drawFloatingHearts() {
         ball.x += ball.vx;
         ball.y += ball.vy;
 
-        if (ball.bounced < BOUNCE_LIMIT) {
-          // Top/bottom bounce
-          if (ball.y <= BALL_RADIUS && ball.vy < 0) {
-            ball.vy *= -1;
-            ball.bounced++;
-          } else if (ball.y >= GAME_H - BALL_RADIUS && ball.vy > 0) {
-            ball.vy *= -1;
-            ball.bounced++;
-          }
-          
-          // Left/right bounce
-          if (ball.x <= BALL_RADIUS && ball.vx < 0) {
-            ball.vx *= -1;
-            ball.bounced++;
-          } else if (ball.x >= GAME_W - BALL_RADIUS && ball.vx > 0) {
-            ball.vx *= -1;
-            ball.bounced++;
-          }
+        ball.trail.push({ x: ball.x, y: ball.y });
+        if (ball.trail.length > 14) ball.trail.shift();
+
+        if (ball.y <= BALL_RADIUS && ball.vy < 0) {
+          ball.y = 2 * BALL_RADIUS - ball.y;   // ← reflect position back past wall
+          ball.vy *= -1;
+          ball.bounced++;
+        } else if (ball.y >= GAME_H - BALL_RADIUS && ball.vy > 0) {
+          ball.y = 2 * (GAME_H - BALL_RADIUS) - ball.y;   // ← reflect
+          ball.vy *= -1;
+          ball.bounced++;
+        }
+
+        if (ball.x <= BALL_RADIUS && ball.vx < 0) {
+          ball.x = 2 * BALL_RADIUS - ball.x;   // ← reflect
+          ball.vx *= -1;
+          ball.bounced++;
+        } else if (ball.x >= GAME_W - BALL_RADIUS && ball.vx > 0) {
+          ball.x = 2 * (GAME_W - BALL_RADIUS) - ball.x;   // ← reflect
+          ball.vx *= -1;
+          ball.bounced++;
         }
 
         const hitBlock = letterBlocks.find((block) => {
@@ -2614,6 +2642,47 @@ function drawFloatingHearts() {
 
       cannonBalls.length = 0;
       cannonBalls.push(...preserved);
+    }
+
+    function drawBallTrails() {
+      if (!cannonBalls.length) return;
+      const rgb = window.BallSkins ? window.BallSkins.getTrailColor() : '200,200,220';
+
+      cannonBalls.forEach(ball => {
+        if (!ball.trail || ball.trail.length < 2) return;
+        const len = ball.trail.length;
+
+        ctx.save();
+        ctx.lineCap    = 'round';
+        ctx.lineJoin   = 'round';
+        ctx.globalCompositeOperation = 'lighter';
+
+        // Draw 3 slightly offset strokes to replicate the multi-brush look
+        const offsets = [
+          { ox: 0,  oy: 0,  widthMult: 1.0, alphaMult: 1.0 },
+          { ox: -3, oy: 2,  widthMult: 0.6, alphaMult: 0.5 },
+          { ox: 3,  oy: -2, widthMult: 0.4, alphaMult: 0.35 },
+        ];
+
+        offsets.forEach(({ ox, oy, widthMult, alphaMult }) => {
+          for (let i = 1; i < len; i++) {
+            const t       = i / len;                      // 0 = oldest, 1 = newest
+            const alpha   = t * 0.72 * alphaMult;
+            const width   = t * BALL_RADIUS * 1.6 * widthMult;
+
+            ctx.beginPath();
+            ctx.globalAlpha = alpha;
+            ctx.lineWidth   = Math.max(0.5, width);
+            ctx.strokeStyle = `rgb(${rgb})`;
+
+            ctx.moveTo(ball.trail[i - 1].x + ox, ball.trail[i - 1].y + oy);
+            ctx.lineTo(ball.trail[i].x     + ox, ball.trail[i].y     + oy);
+            ctx.stroke();
+          }
+        });
+
+        ctx.restore();
+      });
     }
 
     function drawCannonBalls() {
@@ -2724,6 +2793,19 @@ function drawFloatingHearts() {
       };
     }
 
+    // function traceRay(origin, direction, maxDistance) {
+    //   const boundaryHit = traceBoundary(origin, direction, maxDistance);
+    //   const distance = Math.min(boundaryHit.distance, maxDistance);
+    //   return {
+    //     ...boundaryHit,
+    //     distance,
+    //     point: {
+    //       x: origin.x + direction.x * distance,
+    //       y: origin.y + direction.y * distance
+    //     }
+    //   };
+    // }
+
     function traceBoundary(origin, direction, maxDistance) {
       let best = { distance: maxDistance, type: "none", side: null };
       
@@ -2759,8 +2841,8 @@ function drawFloatingHearts() {
     function traceBlock(origin, direction, maxDistance) {
       let best = null;
       for (const block of letterBlocks) {
-        if (block.isDestroyed) continue;
-        const t = rayRectIntersection(origin, direction, block);
+          if (block.isDestroyed || !block.isActive) continue;
+          const t = rayRectIntersection(origin, direction, block);
         if (t === null || t < 0 || t > maxDistance) continue;
         if (!best || t < best.distance) {
           best = { distance: t, type: "block" };
@@ -2964,6 +3046,7 @@ function drawFloatingHearts() {
       drawFloatingPopups();
       drawLetterHitParticles();
       drawLetterSuccessFlash();
+      drawBallTrails();
       drawCannonBalls();
       drawFloatingHearts();
       drawComboMessage();
@@ -3039,7 +3122,7 @@ function drawFloatingHearts() {
     // --------------------------------------------------
     // INPUT
     // --------------------------------------------------
-    canvas.addEventListener("mousedown", (e) => {
+    window.addEventListener("mousedown", (e) => {
       if (e.button === 0 && !gameOver && !gamePaused && !roundCompleteActive) {
         isDragging = true;
         cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
@@ -3248,10 +3331,10 @@ if (allCompleteRetry) {
       if (!roundCompleteOverlay) return;
       isInitialRoundReady = true;
       if (roundCompleteReasonText) {
-        roundCompleteReasonText.textContent = `Round ${currentRound} Ready`;
+        roundCompleteReasonText.textContent = `Level ${currentRound} Ready`;
       }
       if (roundCompleteInstructionText) {
-        roundCompleteInstructionText.textContent = `Press the Resume icon to start Round ${currentRound}.`;
+        roundCompleteInstructionText.textContent = `Press the Resume icon to start.`;
       }
       setOverlayBackdrop("round");
       roundCompleteOverlay.classList.add("active");
@@ -3406,6 +3489,7 @@ if (allCompleteRetry) {
 
   <!-- Ball skin bridge — reads equipped skin from localStorage, exposes window.BallSkins -->
   <script src="js/ballSkins.js"></script>
+  <script src="js/hitEffects_patch.js"></script> 
   <script src="script.js"></script>
 </body>
 
