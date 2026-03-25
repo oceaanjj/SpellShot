@@ -424,6 +424,7 @@
         button.addEventListener("click", () => {
           const level = Number(button.dataset.level);
           if (!level || button.classList.contains("locked")) return;
+          playClickSfx();  
           sessionStorage.setItem(SELECTED_LEVEL_KEY, String(level));
           document.body.classList.add("fade-out");
           setTimeout(() => {
@@ -492,10 +493,11 @@
         }, 360);
       }
 
-      prevBtn.addEventListener("click", () => transitionTheme(currentThemeIndex - 1));
-      nextBtn.addEventListener("click", () => transitionTheme(currentThemeIndex + 1));
+      prevBtn.addEventListener("click", () => { playClickSfx(); transitionTheme(currentThemeIndex - 1); });
+      nextBtn.addEventListener("click", () => { playClickSfx(); transitionTheme(currentThemeIndex + 1); });
 
       backToMenu.addEventListener("click", () => {
+        playClickSfx();  
         document.body.classList.add("fade-out");
         setTimeout(() => {
           window.location.href = "index.html";
@@ -505,6 +507,8 @@
       applyTheme(0);
     })();
   </script>
+  <script src="js/settings.js"></script>
+  <script src="js/sfx.js"></script>
 </body>
 
 </html>
