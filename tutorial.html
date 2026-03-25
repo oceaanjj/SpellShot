@@ -7,7 +7,7 @@
   <style>
     @font-face {
       font-family: "PixelFont";
-      src: url("assets/font/Pixel_Font.otf") format("opentype");
+      src: url("assets/font/PressStart2P-Regular.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -25,11 +25,11 @@
     }
 
     #gameShell {
-        position: relative;
-        width: 1035px;
-        height: 596px;
-        opacity: 0;
-        transition: opacity 0.4s ease;
+      position: relative;
+      width: 1035px;
+      height: 596px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
 
     #gameShell canvas {
@@ -97,36 +97,43 @@
       pointer-events: auto;
       transform-origin: center center;
       will-change: transform, filter;
-      transition: transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease;
+      transition: transform 0.10s cubic-bezier(.22, .61, .36, 1), filter 0.10s ease;
       filter: drop-shadow(3px 4px 0px rgba(0, 0, 0, 0.55));
     }
 
     .ui-btn:hover {
       transform: scale(1.07) translateY(-3px);
       filter:
-        brightness(1.22)
-        drop-shadow(0 0 9px rgba(255, 210, 60, 0.90))
-        drop-shadow(3px 4px 0px rgba(0, 0, 0, 0.55));
+        brightness(1.22) drop-shadow(0 0 9px rgba(255, 210, 60, 0.90)) drop-shadow(3px 4px 0px rgba(0, 0, 0, 0.55));
     }
 
     .ui-btn.pressing {
       transform: scale(0.91) translateY(3px) !important;
       filter:
-        brightness(1.55)
-        drop-shadow(0 0 16px rgba(255, 130, 0, 1))
-        drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.55)) !important;
+        brightness(1.55) drop-shadow(0 0 16px rgba(255, 130, 0, 1)) drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.55)) !important;
       transition: transform 0.04s ease, filter 0.04s ease;
     }
 
     @keyframes btnRelease {
-      0% { transform: scale(0.91) translateY(3px); }
-      45% { transform: scale(1.13) translateY(-5px); }
-      72% { transform: scale(0.97) translateY(0px); }
-      100% { transform: scale(1.00) translateY(0px); }
+      0% {
+        transform: scale(0.91) translateY(3px);
+      }
+
+      45% {
+        transform: scale(1.13) translateY(-5px);
+      }
+
+      72% {
+        transform: scale(0.97) translateY(0px);
+      }
+
+      100% {
+        transform: scale(1.00) translateY(0px);
+      }
     }
 
     .ui-btn.released {
-      animation: btnRelease 0.32s cubic-bezier(.22,.61,.36,1) forwards;
+      animation: btnRelease 0.32s cubic-bezier(.22, .61, .36, 1) forwards;
     }
 
     .ui-btn img {
@@ -234,10 +241,10 @@
     #timerOverlayText {
       position: absolute;
       top: 50%;
-      left: 50%;
+      left: 52%;
       transform: translate(-50%, -50%);
       font-family: "PixelFont", sans-serif;
-      font-size: 32px;
+      font-size: 12px;
       letter-spacing: 2px;
       color: #ffef72;
       text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
@@ -246,11 +253,11 @@
 
     #targetWordOverlay {
       position: absolute;
-      top: calc(100% + 1rem);
+      top: calc(100% + 0.1rem);
       left: 50%;
       transform: translateX(-50%) translateY(-8px) scale(0.92);
       display: flex;
-      gap: 0.5rem;
+      gap: 0;
       justify-content: center;
       align-items: center;
       pointer-events: none;
@@ -305,48 +312,67 @@
     }
   </style>
 </head>
+
 <body>
 
-    <div id="loadingScreen" style="
+  <div id="loadingScreen" style="
   position: fixed; inset: 0; z-index: 999;
   background: #0a0a0e;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   transition: opacity 0.5s ease;
 ">
-  <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
+    <img src="assets/logo.png" style="width: 400px; image-rendering: pixelated;
     animation: loadLogoFloat 1.5s ease-in-out infinite;" />
-  <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
+    <div style="margin-top: 32px; font-family: 'PixelFont', sans-serif;
     font-size: 22px; color: #FFD700; letter-spacing: 4px;
     animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
-</div>
+  </div>
 
   <div id="gameShell">
     <!-- Loading screen -->
 
-        <style>
-        @keyframes loadLogoFloat {
-            0%, 100% { transform: translateY(0px); }
-            50%       { transform: translateY(-8px); }
+    <style>
+      @keyframes loadLogoFloat {
+
+        0%,
+        100% {
+          transform: translateY(0px);
         }
-        @keyframes loadPulse {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: 0.3; }
+
+        50% {
+          transform: translateY(-8px);
         }
-        </style>
+      }
+
+      @keyframes loadPulse {
+
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.3;
+        }
+      }
+    </style>
     <canvas id="c"></canvas>
     <div id="pauseBackdrop"></div>
     <div id="pauseOverlay">
-    <div id="pausePanel">
+      <div id="pausePanel">
         <div class="pause-panel-title">Paused</div>
         <div class="pause-icon-row">
-          <button class="pause-option ui-btn" type="button" data-pause-action="resume" role="menuitem" aria-label="Resume gameplay">
+          <button class="pause-option ui-btn" type="button" data-pause-action="resume" role="menuitem"
+            aria-label="Resume gameplay">
             <img src="assets/resume.png" alt="Resume" />
           </button>
-          <button class="pause-option ui-btn" type="button" data-pause-action="setting" role="menuitem" aria-label="Open settings">
+          <button class="pause-option ui-btn" type="button" data-pause-action="setting" role="menuitem"
+            aria-label="Open settings">
             <img src="assets/setting.png" alt="Setting" />
           </button>
-          <button class="pause-option ui-btn" type="button" data-pause-action="home" role="menuitem" aria-label="Go to home">
+          <button class="pause-option ui-btn" type="button" data-pause-action="home" role="menuitem"
+            aria-label="Go to home">
             <img src="assets/home.png" alt="Home" />
           </button>
         </div>
@@ -438,15 +464,19 @@
     let currentWord = "HELLO"; // Tutorial — always HELLO
 
     // ── Tutorial local state (no TargetWord, no saves) ──
-    const TWORD       = "HELLO";
-    let   tProgress   = Array(5).fill(false);
-    let   tCoins      = 0;
-    let   tLives      = 3;
-    let   tAmmo       = 6;
+    const TWORD = "HELLO";
+    let tProgress = Array(5).fill(false);
+    let tCoins = 0;
+    let displayCoins = 0;
+    let coinCounterAnimTimer = 0;
+    // higher for slower coin animation and lower for faster coin animation
+    const COIN_ANIM_DURATION = 20;
+    let tLives = Infinity;
+    let tAmmo = Infinity;
     const T_MAX_LIVES = 3;
-    const T_MAX_AMMO  = 6;
+    const T_MAX_AMMO = 6;
     let wordProgress = [];
-    const TIMER_DURATION_SECONDS = 60;
+    const TIMER_DURATION_SECONDS = 120;
     const TIMER_BOX_SCALE = 0.105;
     const TIMER_BOX_TOP = 8;
     const BACKGROUND_SCROLL_SPEED = 0.012;
@@ -461,15 +491,15 @@
 
     function buildSavePayload() { return null; } // tutorial — no saving
 
-    function persistGameState() {} // tutorial — no saving
+    function persistGameState() { } // tutorial — no saving
 
     function loadSavedGameState() { return null; } // tutorial — no saving
 
-    function clearSavedGameState() {} // tutorial — no saving
+    function clearSavedGameState() { } // tutorial — no saving
 
-    function startAutoSave() {} // tutorial — no saving
+    function startAutoSave() { } // tutorial — no saving
 
-    function applySavedGameState(saved) {} // tutorial — no saving
+    function applySavedGameState(saved) { } // tutorial — no saving
 
     function updateBackgroundMovement(ts) {
       if (!ts) return;
@@ -512,7 +542,7 @@
     const TRAJECTORY_MAX_DISTANCE = 2200;
     const BALL_SPEED = 18;
     const BALL_RADIUS = 12;
-    const BOUNCE_LIMIT = 1;
+    const BOUNCE_LIMIT = 2;
     const CANNONBALL_DRAW_SIZE = 34;
     const cannonBalls = [];
     const letterHitParticles = [];
@@ -695,17 +725,17 @@
 
     function togglePauseMenu() {
       if (gamePaused) {
-      hidePauseOverlay();
+        hidePauseOverlay();
         return;
       }
       showPauseOverlay();
     }
 
     function goToHome() {
-        document.body.style.transition = 'opacity 0.35s ease';
-        document.body.style.opacity    = '0';
-        setTimeout(() => { window.location.href = 'index.html'; }, 350);
-        }
+      document.body.style.transition = 'opacity 0.35s ease';
+      document.body.style.opacity = '0';
+      setTimeout(() => { window.location.href = 'index.html'; }, 350);
+    }
 
     // function goToSettings() {
     //   window.location.href = "index.html#settings";
@@ -754,10 +784,7 @@
       const displaySeconds = Math.max(0, Math.ceil(timerRemaining));
       const minutes = Math.floor(displaySeconds / 60);
       const seconds = displaySeconds % 60;
-      if (minutes > 0) {
-        return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-      }
-      return `${seconds}`;
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     }
 
     // --------------------------------------------------
@@ -789,7 +816,7 @@
     const CANON_SCALE = 0.38;
 
     let cannonAngle = 0;
-    const MIN_ANGLE = -Math.PI * 0.35;
+    const MIN_ANGLE = -Math.PI * 0.45;
     const MAX_ANGLE = Math.PI * 0.35;
     let isDragging = false;
 
@@ -812,7 +839,7 @@
 
       const distractors = [];
       // number of text generator
-      const maxDistractors = Math.min(4, 26 - uniqueLettersInWord.length); 
+      const maxDistractors = Math.min(4, 26 - uniqueLettersInWord.length);
       while (distractors.length < maxDistractors) {
         let letter = alphabet[Math.floor(Math.random() * alphabet.length)];
         if (!uniqueLettersInWord.includes(letter) && !distractors.includes(letter)) {
@@ -824,7 +851,7 @@
 
       const pivotY = PLAYER_Y + (MOUNT_Y * SCALE) * PLAYER_SCALE;
       const marginAboveCannon = 60;
-      const defaultMinY = 100; 
+      const defaultMinY = 100;
       const defaultMaxY = GAME_H - 120;
 
       let computedMaxY = Math.min(defaultMaxY, Math.floor(pivotY - marginAboveCannon));
@@ -832,7 +859,7 @@
         computedMaxY = Math.max(defaultMinY + LETTER_BLOCK_SIZE, defaultMaxY);
       }
 
-      const bandHeight = 100; 
+      const bandHeight = 100;
       const bandMinY = Math.max(defaultMinY, computedMaxY - bandHeight);
       const bandMaxY = computedMaxY;
 
@@ -843,7 +870,7 @@
         maxY: bandMaxY
       };
 
-      const minDistance = LETTER_BLOCK_SIZE + 20; 
+      const minDistance = LETTER_BLOCK_SIZE + 20;
       const positions = [];
 
       const maxAttempts = Math.max(allLetters.length * 25, 80);
@@ -877,31 +904,31 @@
       allLetters.forEach((letter, index) => {
         if (index < positions.length) {
           const pos = positions[index];
-        letterBlocks.push({
-          x: pos.x,
-          y: pos.y,
-          width: LETTER_BLOCK_SIZE,
-          height: LETTER_BLOCK_SIZE,
-          letter,
-          isCorrect: TWORD.includes(letter),
-          wordIndex: index < wordLetters.length ? index : -1,
-          flashTime: 0,
-          isDestroyed: false,
-          shakeTimer: 0,
-          color: "#FFD700",
-          isActive: true,
-          cooldownTimer: 0,
-          animationQueued: null,
-          animationState: null,
-          fallVelocity: 0,
-          vx: 0,
-          opacity: 1,
-          jumpTimer: 0,
-          jumpDuration: 0,
-          jumpHeight: 0,
-          jumpOffset: 0,
-          wrongFlash: 0
-        });
+          letterBlocks.push({
+            x: pos.x,
+            y: pos.y,
+            width: LETTER_BLOCK_SIZE,
+            height: LETTER_BLOCK_SIZE,
+            letter,
+            isCorrect: TWORD.includes(letter),
+            wordIndex: index < wordLetters.length ? index : -1,
+            flashTime: 0,
+            isDestroyed: false,
+            shakeTimer: 0,
+            color: "#FFD700",
+            isActive: true,
+            cooldownTimer: 0,
+            animationQueued: null,
+            animationState: null,
+            fallVelocity: 0,
+            vx: 0,
+            opacity: 1,
+            jumpTimer: 0,
+            jumpDuration: 0,
+            jumpHeight: 0,
+            jumpOffset: 0,
+            wrongFlash: 0
+          });
         }
       });
 
@@ -910,28 +937,28 @@
 
     function ensureAllLettersAimable() {
       const minDistance = LETTER_BLOCK_SIZE + 30;
-      
+
       letterBlocks.forEach((block, blockIndex) => {
         let colliding = true;
         let attempts = 0;
-        
+
         while (colliding && attempts < 50) {
           colliding = false;
-          
+
           for (let i = 0; i < letterBlocks.length; i++) {
             if (i === blockIndex) continue;
-            
+
             const other = letterBlocks[i];
             const dx = block.x - other.x;
             const dy = block.y - other.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
+
             if (distance < minDistance) {
               colliding = true;
               break;
             }
           }
-          
+
           if (colliding) {
             block.x = 300 + Math.random() * (GAME_W - 450);
             block.y = 100 + Math.random() * (GAME_H - 250);
@@ -944,44 +971,44 @@
     function ensureWordLettersAccessible() {
       const cannonX = PLAYER_X + (MOUNT_X * SCALE) * PLAYER_SCALE;
       const cannonY = PLAYER_Y + (MOUNT_Y * SCALE) * PLAYER_SCALE;
-      
+
       letterBlocks.forEach(block => {
         if (block.wordIndex < 0) return;
-        
+
         let isBlocked = true;
         let attempts = 0;
-        
+
         while (isBlocked && attempts < 10) {
           isBlocked = false;
-          
-          const dx = block.x + block.width/2 - cannonX;
-          const dy = block.y + block.height/2 - cannonY;
-          const distance = Math.sqrt(dx*dx + dy*dy);
+
+          const dx = block.x + block.width / 2 - cannonX;
+          const dy = block.y + block.height / 2 - cannonY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
           const steps = Math.floor(distance / 10);
-          
+
           for (let i = 1; i < steps; i++) {
             const checkX = cannonX + (dx * i / steps);
             const checkY = cannonY + (dy * i / steps);
-            
+
             for (let otherBlock of letterBlocks) {
               if (otherBlock === block) continue;
-              
+
               const closestX = Math.max(otherBlock.x, Math.min(checkX, otherBlock.x + otherBlock.width));
               const closestY = Math.max(otherBlock.y, Math.min(checkY, otherBlock.y + otherBlock.height));
-              
+
               const distanceX = checkX - closestX;
               const distanceY = checkY - closestY;
               const distanceSquared = distanceX * distanceX + distanceY * distanceY;
-              
+
               if (distanceSquared <= BALL_RADIUS * BALL_RADIUS) {
                 isBlocked = true;
                 break;
               }
             }
-            
+
             if (isBlocked) break;
           }
-          
+
           if (isBlocked) {
             block.x = 300 + Math.random() * (GAME_W - 450);
             block.y = 100 + Math.random() * (GAME_H - 250);
@@ -1232,6 +1259,39 @@
       });
     }
 
+    function respawnLetter(letter) {
+      if (gameOver || gamePaused) return;
+
+      const safeZone = { minX: 320, maxX: GAME_W - 160, minY: 100, maxY: 380 };
+      let x, y, attempts = 0, collides;
+
+      do {
+        collides = false;
+        x = safeZone.minX + Math.random() * (safeZone.maxX - safeZone.minX);
+        y = safeZone.minY + Math.random() * (safeZone.maxY - safeZone.minY);
+        for (const b of letterBlocks) {
+          if (b.isDestroyed) continue;
+          const dx = x - b.x, dy = y - b.y;
+          if (Math.sqrt(dx*dx + dy*dy) < LETTER_BLOCK_SIZE + 20) { collides = true; break; }
+        }
+        attempts++;
+      } while (collides && attempts < 40);
+
+      letterBlocks.push({
+        x, y,
+        width: LETTER_BLOCK_SIZE, height: LETTER_BLOCK_SIZE,
+        letter,
+        isCorrect: currentWord.includes(letter),
+        wordIndex: -1, // treated as a loose block
+        flashTime: 0, isDestroyed: false, shakeTimer: 0,
+        color: "#FFD700", isActive: true, cooldownTimer: 0,
+        animationQueued: null, animationState: null,
+        fallVelocity: 0, vx: 0, opacity: 1,
+        jumpTimer: 0, jumpDuration: 0, jumpHeight: 0, jumpOffset: 0,
+        wrongFlash: 0
+      });
+    }
+
     function processBlockHit(block) {
       if (gameOver || !block.isActive || block.isDestroyed) return;
       block.isActive = false;
@@ -1244,6 +1304,8 @@
         // Correct letter
         tProgress[nextIndex] = true;
         tCoins += COIN_HIT_REWARD;
+        displayCoins = tCoins - COIN_HIT_REWARD;
+        coinCounterAnimTimer = COIN_ANIM_DURATION;
         // spawnHitPopup(block, COIN_HIT_REWARD);
         markTargetWordDirty();
         triggerLetterSuccessFlash(block.x + block.width / 2, block.y + block.height / 2);
@@ -1253,15 +1315,17 @@
         }
       } else if (hasRemainingLetter(block.letter)) {
         // Wrong order — letter exists but not next
-        tLives = Math.max(0, tLives - 1);
+        // Tutorial: infinite lives
         // spawnHitPopup(block, COIN_HIT_PENALTY);
         markTargetWordDirty();
-        queueBlockAnimation(block, null, 20);
+        block.wrongFlash = 24;
+        queueBlockAnimation(block, "fall", 18);
+        respawnLetter(block.letter);
         if (typeof window.tutorialOnWrongHit === 'function') window.tutorialOnWrongHit();
       } else {
         // Distractor letter
-        tLives = Math.max(0, tLives - 1);
-        spawnHitPopup(block, COIN_HIT_PENALTY);
+        // Tutorial: infinite lives
+        // spawnHitPopup(block, COIN_HIT_PENALTY);
         markTargetWordDirty();
         block.wrongFlash = 24;
         queueBlockAnimation(block, "fall", 18);
@@ -1278,7 +1342,7 @@
     }
 
     function handleGameOver(reason) {
-        hidePauseOverlay();
+      hidePauseOverlay();
       if (gameOver) return;
       gameOver = true;
       gameOverReason = reason || "";
@@ -1382,10 +1446,10 @@
 
     function restartGame() {
       hidePauseOverlay();
-      tProgress  = Array(TWORD.length).fill(false);
-      tCoins     = 0;
-      tLives     = T_MAX_LIVES;
-      tAmmo      = T_MAX_AMMO;
+      tProgress = Array(TWORD.length).fill(false);
+      tCoins = 0;
+      tLives = Infinity;
+      tAmmo = Infinity;
       cannonBalls.length = 0;
       roundMessage = "";
       roundMessageTimer = 0;
@@ -1432,7 +1496,8 @@
         y: tip.y,
         vx: direction.x * BALL_SPEED,
         vy: direction.y * BALL_SPEED,
-        bounced: 0
+        bounced: 0,
+        trail: []
       });
     }
 
@@ -1444,12 +1509,25 @@
         ball.x += ball.vx;
         ball.y += ball.vy;
 
+        ball.trail.push({ x: ball.x, y: ball.y });
+        if (ball.trail.length > 14) ball.trail.shift();
+
         if (ball.bounced < BOUNCE_LIMIT) {
           if (ball.y <= BALL_RADIUS && ball.vy < 0) {
             ball.vy *= -1;
             ball.bounced++;
           } else if (ball.y >= GAME_H - BALL_RADIUS && ball.vy > 0) {
             ball.vy *= -1;
+            ball.bounced++;
+          }
+
+          if (ball.x <= BALL_RADIUS && ball.vx < 0) {
+            ball.x = 2 * BALL_RADIUS - ball.x;   // ← reflect
+            ball.vx *= -1;
+            ball.bounced++;
+          } else if (ball.x >= GAME_W - BALL_RADIUS && ball.vx > 0) {
+            ball.x = 2 * (GAME_W - BALL_RADIUS) - ball.x;   // ← reflect
+            ball.vx *= -1;
             ball.bounced++;
           }
         }
@@ -1484,6 +1562,47 @@
 
       cannonBalls.length = 0;
       cannonBalls.push(...preserved);
+    }
+
+    function drawBallTrails() {
+      if (!cannonBalls.length) return;
+      const rgb = window.BallSkins ? window.BallSkins.getTrailColor() : '200,200,220';
+
+      cannonBalls.forEach(ball => {
+        if (!ball.trail || ball.trail.length < 2) return;
+        const len = ball.trail.length;
+
+        ctx.save();
+        ctx.lineCap    = 'round';
+        ctx.lineJoin   = 'round';
+        ctx.globalCompositeOperation = 'lighter';
+
+        // Draw 3 slightly offset strokes to replicate the multi-brush look
+        const offsets = [
+          { ox: 0,  oy: 0,  widthMult: 1.0, alphaMult: 1.0 },
+          { ox: -3, oy: 2,  widthMult: 0.6, alphaMult: 0.5 },
+          { ox: 3,  oy: -2, widthMult: 0.4, alphaMult: 0.35 },
+        ];
+
+        offsets.forEach(({ ox, oy, widthMult, alphaMult }) => {
+          for (let i = 1; i < len; i++) {
+            const t       = i / len;                      // 0 = oldest, 1 = newest
+            const alpha   = t * 0.72 * alphaMult;
+            const width   = t * BALL_RADIUS * 1.6 * widthMult;
+
+            ctx.beginPath();
+            ctx.globalAlpha = alpha;
+            ctx.lineWidth   = Math.max(0.5, width);
+            ctx.strokeStyle = `rgb(${rgb})`;
+
+            ctx.moveTo(ball.trail[i - 1].x + ox, ball.trail[i - 1].y + oy);
+            ctx.lineTo(ball.trail[i].x     + ox, ball.trail[i].y     + oy);
+            ctx.stroke();
+          }
+        });
+
+        ctx.restore();
+      });
     }
 
     function drawCannonBalls() {
@@ -1529,7 +1648,7 @@
       ctx.save();
       ctx.lineWidth = 2;
       ctx.setLineDash([8, 8]);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.strokeStyle = "rgba(57, 255, 20, 1)";
       ctx.shadowColor = "rgba(255, 255, 255, 0.35)";
       ctx.shadowBlur = 6;
 
@@ -1544,55 +1663,55 @@
 
     // In tutorial.html inline script — replace these two functions:
 
-function computeTrajectorySegments(start, direction) {
-  const segments = [];
-  const firstHit = traceRay(start, direction, TRAJECTORY_MAX_DISTANCE);
-  segments.push({ from: start, to: firstHit.point });
+    function computeTrajectorySegments(start, direction) {
+      const segments = [];
+      const firstHit = traceRay(start, direction, TRAJECTORY_MAX_DISTANCE);
+      segments.push({ from: start, to: firstHit.point });
 
-  if (firstHit.type === "boundary" && firstHit.distance < TRAJECTORY_MAX_DISTANCE) {
-    const remaining1 = TRAJECTORY_MAX_DISTANCE - firstHit.distance;
-    if (remaining1 > 4) {
-      const bounceDir1 = {
-        x: (firstHit.side === "left" || firstHit.side === "right") ? -direction.x : direction.x,
-        y: (firstHit.side === "top" || firstHit.side === "bottom") ? -direction.y : direction.y
-      };
-      const secondHit = traceRay(firstHit.point, bounceDir1, remaining1);
-      segments.push({ from: firstHit.point, to: secondHit.point });
-
-      if (secondHit.type === "boundary" && secondHit.distance < remaining1) {
-        const remaining2 = remaining1 - secondHit.distance;
-        if (remaining2 > 4) {
-          const bounceDir2 = {
-            x: (secondHit.side === "left" || secondHit.side === "right") ? -bounceDir1.x : bounceDir1.x,
-            y: (secondHit.side === "top" || secondHit.side === "bottom") ? -bounceDir1.y : bounceDir1.y
+      if (firstHit.type === "boundary" && firstHit.distance < TRAJECTORY_MAX_DISTANCE) {
+        const remaining1 = TRAJECTORY_MAX_DISTANCE - firstHit.distance;
+        if (remaining1 > 4) {
+          const bounceDir1 = {
+            x: (firstHit.side === "left" || firstHit.side === "right") ? -direction.x : direction.x,
+            y: (firstHit.side === "top" || firstHit.side === "bottom") ? -direction.y : direction.y
           };
-          const thirdHit = traceRay(secondHit.point, bounceDir2, remaining2);
-          segments.push({ from: secondHit.point, to: thirdHit.point });
+          const secondHit = traceRay(firstHit.point, bounceDir1, remaining1);
+          segments.push({ from: firstHit.point, to: secondHit.point });
+
+          if (secondHit.type === "boundary" && secondHit.distance < remaining1) {
+            const remaining2 = remaining1 - secondHit.distance;
+            if (remaining2 > 4) {
+              const bounceDir2 = {
+                x: (secondHit.side === "left" || secondHit.side === "right") ? -bounceDir1.x : bounceDir1.x,
+                y: (secondHit.side === "top" || secondHit.side === "bottom") ? -bounceDir1.y : bounceDir1.y
+              };
+              const thirdHit = traceRay(secondHit.point, bounceDir2, remaining2);
+              segments.push({ from: secondHit.point, to: thirdHit.point });
+            }
+          }
         }
       }
+      return segments;
     }
-  }
-  return segments;
-}
 
-function traceBoundary(origin, direction, maxDistance) {
-  let best = { distance: maxDistance, type: "none", side: null };
-  if (Math.abs(direction.y) > 0.0001) {
-    const targetY = direction.y < 0 ? BALL_RADIUS : GAME_H - BALL_RADIUS;
-    const t = (targetY - origin.y) / direction.y;
-    if (t > 0.0001 && t < best.distance) {
-      best = { distance: t, type: "boundary", side: direction.y < 0 ? "top" : "bottom" };
+    function traceBoundary(origin, direction, maxDistance) {
+      let best = { distance: maxDistance, type: "none", side: null };
+      if (Math.abs(direction.y) > 0.0001) {
+        const targetY = direction.y < 0 ? BALL_RADIUS : GAME_H - BALL_RADIUS;
+        const t = (targetY - origin.y) / direction.y;
+        if (t > 0.0001 && t < best.distance) {
+          best = { distance: t, type: "boundary", side: direction.y < 0 ? "top" : "bottom" };
+        }
+      }
+      if (Math.abs(direction.x) > 0.0001) {
+        const targetX = direction.x < 0 ? BALL_RADIUS : GAME_W - BALL_RADIUS;
+        const t = (targetX - origin.x) / direction.x;
+        if (t > 0.0001 && t < best.distance) {
+          best = { distance: t, type: "boundary", side: direction.x < 0 ? "left" : "right" };
+        }
+      }
+      return best;
     }
-  }
-  if (Math.abs(direction.x) > 0.0001) {
-    const targetX = direction.x < 0 ? BALL_RADIUS : GAME_W - BALL_RADIUS;
-    const t = (targetX - origin.x) / direction.x;
-    if (t > 0.0001 && t < best.distance) {
-      best = { distance: t, type: "boundary", side: direction.x < 0 ? "left" : "right" };
-    }
-  }
-  return best;
-}
 
     function traceRay(origin, direction, maxDistance) {
       const boundaryHit = traceBoundary(origin, direction, maxDistance);
@@ -1613,7 +1732,7 @@ function traceBoundary(origin, direction, maxDistance) {
       };
     }
 
-  
+
 
     function traceBlock(origin, direction, maxDistance) {
       let best = null;
@@ -1685,7 +1804,7 @@ function traceBoundary(origin, direction, maxDistance) {
         } else {
           ctx.fillStyle = "rgba(30,30,30,0.9)";
           ctx.beginPath();
-          ctx.arc(x + ammoSize/2, y + ammoSize/2, ammoSize/2, 0, Math.PI*2);
+          ctx.arc(x + ammoSize / 2, y + ammoSize / 2, ammoSize / 2, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -1762,26 +1881,30 @@ function traceBoundary(origin, direction, maxDistance) {
     // ── Tutorial HUD: coins + lives (local, not saved) ──────────────────
     function drawTutorialHUD() {
       const pad = HUD_PADDING;
+      const coinWidth = 60;
+      const coinHeight = 50;
 
       // Coins
       if (coinImage && coinImage.complete && coinImage.naturalWidth > 0) {
         ctx.globalAlpha = 1;
-        ctx.drawImage(coinImage, pad, pad, 32, 32);
+        ctx.drawImage(coinImage, pad, pad, coinWidth, coinHeight);
       }
-      ctx.font = "bold 22px PixelFont";
-      ctx.fillStyle = "#FFD700";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.shadowColor = "rgba(0,0,0,0.6)";
-      ctx.shadowBlur = 4;
-      ctx.fillText(tCoins, pad + 38, pad + 16);
-      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffd207ff';
+      ctx.font = 'bold 30px PixelFont';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(displayCoins, pad + coinWidth + 10, pad + coinHeight / 2 + 4);
 
       // Lives
+      const heartSize = 40;
+      const heartSpacing = 2;
+      const coinSpacing = 10;
+      const heartsBaseY = pad + coinHeight + coinSpacing + 4;
       if (heartImage && heartImage.complete && heartImage.naturalWidth > 0) {
         for (let i = 0; i < T_MAX_LIVES; i++) {
+          const heartX = pad + i * (heartSize + heartSpacing);
           ctx.globalAlpha = i < tLives ? 1 : 0.25;
-          ctx.drawImage(heartImage, pad + i * 38, pad + 40, 32, 32);
+          ctx.drawImage(heartImage, heartX, heartsBaseY, heartSize, heartSize);
         }
       }
       ctx.globalAlpha = 1;
@@ -1805,6 +1928,7 @@ function traceBoundary(origin, direction, maxDistance) {
       drawFloatingPopups();
       drawLetterHitParticles();
       drawLetterSuccessFlash();
+      drawBallTrails();
       drawCannonBalls();
 
       if (targetWordOverlay) {
@@ -1835,6 +1959,14 @@ function traceBoundary(origin, direction, maxDistance) {
       const canProgress = !gameOver && !gamePaused;
       if (canProgress) {
         updateCannonBalls();
+        if (coinCounterAnimTimer > 0) {
+          coinCounterAnimTimer--;
+          if (displayCoins < tCoins) {
+            const increment = Math.ceil((tCoins - displayCoins) / (coinCounterAnimTimer + 1));
+            displayCoins += increment;
+            if (displayCoins > tCoins) displayCoins = tCoins;
+          }
+        }
         updateTimer(ts);
         updateBlockAnimations();
         updateLetterHitEffects();
@@ -1872,7 +2004,7 @@ function traceBoundary(origin, direction, maxDistance) {
     // --------------------------------------------------
     // INPUT
     // --------------------------------------------------
-    canvas.addEventListener("mousedown", (e) => {
+    window.addEventListener("mousedown", (e) => {
       if (e.button === 0 && !gameOver && !gamePaused) {
         isDragging = true;
         cannonAngle = getAngleFromMouse(e.clientX, e.clientY);
@@ -1966,26 +2098,26 @@ function traceBoundary(origin, direction, maxDistance) {
       canvas.width = GAME_W;
       canvas.height = GAME_H;
 
-    function startGame() {
+      function startGame() {
         resetTimerForRound();
         generateLetterBlocks();
 
         const loading = document.getElementById('loadingScreen');
         if (loading) {
-            loading.style.opacity = '0';
-            setTimeout(() => { loading.style.display = 'none'; }, 500);
+          loading.style.opacity = '0';
+          setTimeout(() => { loading.style.display = 'none'; }, 500);
         }
         document.getElementById('gameShell').style.opacity = '1';
 
         if (typeof window.startTutorialSlides === 'function') window.startTutorialSlides();
         render();
         requestAnimationFrame(animate);
-        }
+      }
 
-        setTimeout(startGame, 0); // ← ADD THIS LINE
-        }
+      setTimeout(startGame, 0); // ← ADD THIS LINE
+    }
 
-   
+
 
     bgImg.onload = onLoad;
     mapBridgeImage.onload = onLoad;
@@ -2019,10 +2151,11 @@ function traceBoundary(origin, direction, maxDistance) {
 
   <!-- Ball skin bridge — reads equipped skin from localStorage, exposes window.BallSkins -->
   <script src="js/ballSkins.js"></script>
-  <script src="js/sfx.js"></script> 
+  <script src="js/sfx.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/music.js"></script>
   <script src="js/pause.js"></script>
   <script src="js/tutorial.js"></script>
 </body>
+
 </html>

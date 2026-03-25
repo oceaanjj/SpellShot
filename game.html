@@ -628,8 +628,6 @@
         font-size: 22px; color: #FFD700; letter-spacing: 4px;
         animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
   </div>
-
-  ...
   <div id="gameShell">
     <div id="overlayBackdrop"></div>
     <div id="borderOverlay">
@@ -1567,6 +1565,42 @@ function drawFloatingHearts() {
       }
     }
 
+    function triggerCoinCounterCountUp() {
+      if (!window.TargetWord) return;
+      
+      const targetState = window.TargetWord.state;
+      if (!targetState) return;
+      
+      const finalCoins = targetState.coins;
+      const startCoins = Math.max(0, finalCoins - 100);
+      
+      let currentDisplay = startCoins;
+      let animationFrames = 0;
+      //Lower the frame for faster and taasan for slower
+      const totalFrames = 20;
+      
+      const updateCounter = () => {
+        animationFrames++;
+        const progress = animationFrames / totalFrames;
+        
+        currentDisplay = Math.floor(startCoins + (finalCoins - startCoins) * progress);
+        
+        if (window.TargetWord && window.TargetWord.updateDisplayedCoins) {
+          window.TargetWord.updateDisplayedCoins(currentDisplay);
+        }
+        
+        if (animationFrames < totalFrames) {
+          requestAnimationFrame(updateCounter);
+        } else {
+          if (window.TargetWord && window.TargetWord.updateDisplayedCoins) {
+            window.TargetWord.updateDisplayedCoins(finalCoins);
+          }
+        }
+      };
+      
+      updateCounter();
+    }
+
     function spawnHitPopup(block, coinDelta) {
       if (!block || !coinDelta) return;
       const isPositive = coinDelta > 0;
@@ -2229,6 +2263,7 @@ function drawFloatingHearts() {
         triggerComboEffect(performance.now(), block);
         const wordFinished = TargetWord.onLetterHit(block.letter, true);
         spawnHitPopup(block, COIN_HIT_REWARD);
+        triggerCoinCounterCountUp();
         markTargetWordDirty();
         triggerLetterSuccessFlash(
           block.x + block.width / 2,
