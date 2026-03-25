@@ -43,7 +43,7 @@
       position: absolute;
       bottom: 20px;
       right: 24px;
-      z-index: 50;
+      z-index: 15;
       pointer-events: none;
       width: 280px;  
     }
@@ -190,73 +190,90 @@
     void img.offsetWidth;
     img.classList.add('exiting');
 
-    setTimeout(() => showSlide(next), 400);
+    setTimeout(() => {
+      if (typeof gamePaused !== 'undefined' && gamePaused) {
+        // Wait until unpaused before showing the next slide
+        const waitId = setInterval(() => {
+          if (!gamePaused) {
+            clearInterval(waitId);
+            showSlide(next);
+          }
+        }, 150);
+      } else {
+        showSlide(next);
+      }
+    }, 400);
   }
 
   // ── Trigger logic per slide ──────────────────────────────────────────
   function setupTrigger(index) {
-    switch (index) {
+      switch (index) {
 
-      // Slide 1 — auto → slide 2
-      case 1:
-        slideTimer = setTimeout(() => goToSlide(2), AUTO_DELAY);
-        break;
+        case 1:
+          slideTimer = setTimeout(() => {
+            if (typeof gamePaused !== 'undefined' && gamePaused) {
+              const waitId = setInterval(() => { if (!gamePaused) { clearInterval(waitId); goToSlide(2); } }, 150);
+            } else { goToSlide(2); }
+          }, AUTO_DELAY);
+          break;
 
-      // Slide 2 — wait for mouse move → slide 3
-      case 2:
-        if (!listeningForMouse) {
-          listeningForMouse = true;
-          const onMove = () => {
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('touchmove', onMove);
-            if (activeSlide === 2) goToSlide(3);
-          };
-          document.addEventListener('mousemove', onMove);
-          document.addEventListener('touchmove', onMove, { passive: true });
-        }
-        break;
+        case 2:
+          if (!listeningForMouse) {
+            listeningForMouse = true;
+            const onMove = () => {
+              document.removeEventListener('mousemove', onMove);
+              document.removeEventListener('touchmove', onMove);
+              if (activeSlide === 2 && !(typeof gamePaused !== 'undefined' && gamePaused)) goToSlide(3);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, { passive: true });
+          }
+          break;
 
-      // Slide 3 — wait for one fire → slide 8
-      case 3:
-        listeningForFire3 = false; // not listening for 3-fire count yet
-        // handled by tutorialOnFire() below
-        break;
+        case 3:
+          listeningForFire3 = false;
+          break;
 
-      // Slide 8 — auto → slide 5
-      case 8:
-        slideTimer = setTimeout(() => goToSlide(5), AUTO_DELAY);
-        break;
+        case 8:
+          slideTimer = setTimeout(() => {
+            if (typeof gamePaused !== 'undefined' && gamePaused) {
+              const waitId = setInterval(() => { if (!gamePaused) { clearInterval(waitId); goToSlide(5); } }, 150);
+            } else { goToSlide(5); }
+          }, AUTO_DELAY);
+          break;
 
-      // Slide 5 — wait for 3 fires → slide 6
-      case 5:
-        listeningForFire3 = true;
-        fireCount = 0;
-        break;
+        case 5:
+          listeningForFire3 = true;
+          fireCount = 0;
+          break;
 
-      // Slide 6 — wait for wrong letter hit → slide 4
-      case 6:
-        listeningForWrong = true;
-        break;
+        case 6:
+          listeningForWrong = true;
+          break;
 
-      // Slide 4 — auto → slide 7
-      case 4:
-        slideTimer = setTimeout(() => goToSlide(7), AUTO_DELAY);
-        break;
+        case 4:
+          slideTimer = setTimeout(() => {
+            if (typeof gamePaused !== 'undefined' && gamePaused) {
+              const waitId = setInterval(() => { if (!gamePaused) { clearInterval(waitId); goToSlide(7); } }, 150);
+            } else { goToSlide(7); }
+          }, AUTO_DELAY);
+          break;
 
-      // Slide 7 — auto → slide 9
-      case 7:
-        slideTimer = setTimeout(() => goToSlide(9), AUTO_DELAY);
-        break;
+        case 7:
+          slideTimer = setTimeout(() => {
+            if (typeof gamePaused !== 'undefined' && gamePaused) {
+              const waitId = setInterval(() => { if (!gamePaused) { clearInterval(waitId); goToSlide(9); } }, 150);
+            } else { goToSlide(9); }
+          }, AUTO_DELAY);
+          break;
 
-      // Slide 9 — "Good Luck" — stays until word is complete
-      case 9:
-        // nothing — word completion calls showTutorialSuccess()
-        break;
+        case 9:
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
-  }
 
 
   // ── Public hooks — called by tutorial.html ────────────────────────────
@@ -264,6 +281,7 @@
   // Call this every time the cannon fires
   window.tutorialOnFire = function () {
     if (tutDone) return;
+    if (typeof gamePaused !== 'undefined' && gamePaused) return;
 
     // Slide 3: first fire → jump to slide 8
     if (activeSlide === 3) {
@@ -284,6 +302,8 @@
   // Call this when a wrong letter is hit
   window.tutorialOnWrongHit = function () {
     if (tutDone) return;
+    if (typeof gamePaused !== 'undefined' && gamePaused) return;
+    
     if (activeSlide === 6 && listeningForWrong) {
       listeningForWrong = false;
       goToSlide(4);
