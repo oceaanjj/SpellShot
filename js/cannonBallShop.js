@@ -216,7 +216,16 @@
       fontSize:      '11px',
       color:         '#ffe066',
       textAlign:     'center',
-      textShadow:    '1px 2px 0 #5a2a00, 0 0 10px rgba(255,180,0,0.55)',
+      textShadow: `
+        -2px -2px 0 #452103,
+        2px -2px 0 #452103,
+        -2px  2px 0 #452103,
+        2px  2px 0 #452103,
+        -2px  1px 0 #452103,
+        2px  1px 0 #452103,
+        1px -2px 0 #452103,
+        1px  2px 0 #452103
+      `,
       letterSpacing: '2px',
       zIndex:        '4',
       pointerEvents: 'none',
@@ -269,7 +278,16 @@
       color:         '#ffe066',
       textAlign:     'center',
       wordBreak:     'break-word',
-      textShadow:    '1px 1px 0 #5a2a00, 0 0 5px rgba(255,180,0,0.55)',
+      textShadow: `
+        -1px -1px 0 #452103,
+        1px -1px 0 #452103,
+        -1px  1px 0 #452103,
+        1px  1px 0 #452103,
+        -1px  0px 0 #452103,
+        1px  0px 0 #452103,
+        0px -1px 0 #452103,
+        0px  1px 0 #452103
+      `,
     });
     descPanel.appendChild(descText);
 
