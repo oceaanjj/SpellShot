@@ -476,7 +476,7 @@
     const T_MAX_LIVES = 3;
     const T_MAX_AMMO = 6;
     let wordProgress = [];
-    const TIMER_DURATION_SECONDS = 120;
+    const TIMER_DURATION_SECONDS = 999999;  // Tutorial — infinite time
     const TIMER_BOX_SCALE = 0.105;
     const TIMER_BOX_TOP = 8;
     const BACKGROUND_SCROLL_SPEED = 0.012;
@@ -649,7 +649,8 @@
 
     function onWordCompleted() {
       // Tutorial: HELLO complete — show success
-      setTimeout(showTutorialSuccess, 400);
+      // tutorialOnWordComplete handles showing success at the right time
+      if (typeof tutorialOnWordComplete === "function") tutorialOnWordComplete();
     }
 
     function resetTimerForRound() {
@@ -782,6 +783,10 @@
 
     function getTimerLabel() {
       const displaySeconds = Math.max(0, Math.ceil(timerRemaining));
+      // Show infinity symbol for very large timers (tutorial mode)
+      if (displaySeconds > 9999) {
+        return '∞';
+      }
       const minutes = Math.floor(displaySeconds / 60);
       const seconds = displaySeconds % 60;
       return `${minutes}:${seconds.toString().padStart(2, "0")}`;
@@ -1260,7 +1265,8 @@
     }
 
     function respawnLetter(letter) {
-      if (gameOver || gamePaused) return;
+      if (gameOver) return;
+      // Allow respawning during tutorial even if paused (for showing wrong letter warning)
 
       const safeZone = { minX: 320, maxX: GAME_W - 160, minY: 100, maxY: 380 };
       let x, y, attempts = 0, collides;
@@ -1294,6 +1300,10 @@
 
     function processBlockHit(block) {
       if (gameOver || !block.isActive || block.isDestroyed) return;
+      
+      // Tutorial: track any ball hit (for step 3 validation)
+      if (typeof window.tutorialOnBallHit === 'function') window.tutorialOnBallHit();
+      
       block.isActive = false;
 
       const nextIndex = tProgress.findIndex(flag => !flag);
@@ -1310,6 +1320,7 @@
         markTargetWordDirty();
         triggerLetterSuccessFlash(block.x + block.width / 2, block.y + block.height / 2);
         queueBlockAnimation(block, "jump", 22);
+        if (typeof window.tutorialOnCorrectHit === 'function') window.tutorialOnCorrectHit();
         if (tProgress.every(Boolean)) {
           onWordCompleted();
         }
