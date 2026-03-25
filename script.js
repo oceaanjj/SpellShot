@@ -9,6 +9,7 @@
     maxLives: 3,
     lives: 3,
     coins: 0,
+    sessionCoins: 0,
     maxAmmo: 6,
     ammo: 6
   };
@@ -103,14 +104,22 @@
   }
 
     function adjustCoins(amount) {
-      if (!amount) return state.coins;
-      state.coins = Math.max(0, state.coins + amount);
-      return state.coins;
+      if (!amount) return state.sessionCoins;
+      state.sessionCoins = Math.max(0, state.sessionCoins + amount);
+      return state.sessionCoins;
     }
 
   function getAccumulatedCoins() {
-    const baseline = typeof state.sessionBaselineCoins === "number" ? state.sessionBaselineCoins : 0;
-    return Math.max(0, state.coins - baseline);
+    return Math.max(0, state.sessionCoins);
+  }
+
+  function bankSessionCoins() {
+    state.coins = Math.max(0, state.coins + state.sessionCoins);
+    state.sessionCoins = 0;
+  }
+
+  function discardSessionCoins() {
+    state.sessionCoins = 0;
   }
 
   function resetDisplayedCoins() {
@@ -229,7 +238,7 @@
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${CoinAnimator.getCurrent()}`, padding + coinWidth + 10, padding + coinHeight / 2 + 4);
+      ctx.fillText(Number(CoinAnimator.getCurrent()).toLocaleString(), padding + coinWidth + 10, padding + coinHeight / 2 + 4);
     } else {
       ctx.fillStyle = '#ffd207ff';
       ctx.font = 'bold 10px PixelFont';
@@ -285,6 +294,8 @@
     adjustCoins: adjustCoins,
     loadNextWordInTier: loadNextWordInTier,
     resetDisplayedCoins: resetDisplayedCoins,
+    bankSessionCoins: bankSessionCoins,
+    discardSessionCoins: discardSessionCoins,
     state: state,
     // Expose for debugging
     _wordLists: () => wordLists,
