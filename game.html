@@ -739,6 +739,7 @@
   <script src="js/sfx.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/music.js"></script>
+  <script src="js/coinAnimator.js"></script>
   <script src="js/pause.js"></script>
 
   <script>
@@ -1322,6 +1323,7 @@ function applyLevelConfig(round) {
       markTargetWordDirty();
       updateTimerOverlayText();
       updateThemeForRound(currentRound);
+      CoinAnimator.jumpTo(0);
     }
 
     // ── Floating Hearts ─────────────────────────────
@@ -1588,38 +1590,9 @@ function drawFloatingHearts() {
 
     function triggerCoinCounterCountUp() {
       if (!window.TargetWord) return;
-      
-      const targetState = window.TargetWord.state;
-      if (!targetState) return;
-      
-      const finalCoins = targetState.coins;
-      const startCoins = Math.max(0, finalCoins - 100);
-      
-      let currentDisplay = startCoins;
-      let animationFrames = 0;
-      //Lower the frame for faster and taasan for slower
-      const totalFrames = 20;
-      
-      const updateCounter = () => {
-        animationFrames++;
-        const progress = animationFrames / totalFrames;
-        
-        currentDisplay = Math.floor(startCoins + (finalCoins - startCoins) * progress);
-        
-        if (window.TargetWord && window.TargetWord.updateDisplayedCoins) {
-          window.TargetWord.updateDisplayedCoins(currentDisplay);
-        }
-        
-        if (animationFrames < totalFrames) {
-          requestAnimationFrame(updateCounter);
-        } else {
-          if (window.TargetWord && window.TargetWord.updateDisplayedCoins) {
-            window.TargetWord.updateDisplayedCoins(finalCoins);
-          }
-        }
-      };
-      
-      updateCounter();
+      const state = window.TargetWord.state;
+      const accumulated = Math.max(0, state.coins - (state.sessionBaselineCoins || 0));
+      CoinAnimator.animateTo(accumulated);
     }
 
     function spawnHitPopup(block, coinDelta) {
@@ -2605,6 +2578,7 @@ function _cleanupAllCompleteListeners() {
       wordsCompletedThisLevel = 0;
 
       resetTargetWordForRetry();
+      CoinAnimator.jumpTo(0);
       currentWord = TargetWord.state.word;
       markTargetWordDirty();
       cannonBalls.length = 0;

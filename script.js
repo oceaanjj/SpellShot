@@ -221,7 +221,6 @@
     const coinLayoutHeight = hasCoin ? coinHeight + coinSpacing : 0;
     const heartsBaseY = padding + coinLayoutHeight + 4;
 
-    const displayedCoins = getAccumulatedCoins();
 
     if (hasCoin) {
       ctx.globalAlpha = 1;
@@ -230,13 +229,13 @@
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${displayedCoins}`, padding + coinWidth + 10, padding + coinHeight / 2 + 4);
+      ctx.fillText(`${CoinAnimator.getCurrent()}`, padding + coinWidth + 10, padding + coinHeight / 2 + 4);
     } else {
       ctx.fillStyle = '#ffd207ff';
       ctx.font = 'bold 10px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${displayedCoins}`, padding, padding + 18);
+      ctx.fillText(`${CoinAnimator.getCurrent()}`, padding, padding + 18);
     }
 
     if (state.maxLives > 0) {
