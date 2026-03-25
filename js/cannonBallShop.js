@@ -9,6 +9,7 @@
       unlockedSlot: 'assets/balls/unlocked/default.png',
       lockedSlot:   null,
       previewSrc:   'assets/balls/themes/default.png',
+      description:  'A battle-worn iron sphere, forged in the heat of a forgotten war. Plain in form, but reliable in purpose.',
     },
     {
       id:           'fire',
@@ -17,6 +18,7 @@
       unlockedSlot: 'assets/balls/unlocked/fire.png',
       lockedSlot:   'assets/balls/locked/fire.png',
       previewSrc:   'assets/balls/themes/fire.png',
+      description:  'Born from the heart of a volcanic forge, this blazing sphere leaves a trail of embers with every shot it makes.',
     },
     {
       id:           'spike',
@@ -25,6 +27,7 @@
       unlockedSlot: 'assets/balls/unlocked/spike.png',
       lockedSlot:   'assets/balls/locked/spike.png',
       previewSrc:   'assets/balls/themes/spike.png',
+      description:  'Jagged and merciless, its iron spines tear through the air like a rolling storm of iron thorns.',
     },
     {
       id:           'skull',
@@ -33,6 +36,7 @@
       unlockedSlot: 'assets/balls/unlocked/skull.png',
       lockedSlot:   'assets/balls/locked/skull.png',
       previewSrc:   'assets/balls/themes/skull.png',
+      description:  'Carved from ancient bone and sealed with dark magic. Whispers of the fallen echo in its hollow gaze.',
     },
     {
       id:           'toxic',
@@ -41,6 +45,7 @@
       unlockedSlot: 'assets/balls/unlocked/toxic.png',
       lockedSlot:   'assets/balls/locked/toxic.png',
       previewSrc:   'assets/balls/themes/toxic.png',
+      description:  'A seething orb of alchemical poison. It bubbles and churns, hungry for its next target.',
     },
     {
       id:           'shadow',
@@ -49,6 +54,7 @@
       unlockedSlot: 'assets/balls/unlocked/shadow.png',
       lockedSlot:   'assets/balls/locked/shadow.png',
       previewSrc:   'assets/balls/themes/shadow.png',
+      description:  'Drawn from the void between worlds. It absorbs all light around it, arriving unseen and unstoppable.',
     },
     {
       id:           'pink',
@@ -57,6 +63,7 @@
       unlockedSlot: 'assets/balls/unlocked/pink.png',
       lockedSlot:   'assets/balls/locked/pink.png',
       previewSrc:   'assets/balls/themes/pink.png',
+      description:  'Glimmering with starlight and charm, this celestial orb dazzles all who witness its graceful arc.',
     },
     {
       id:           'star',
@@ -65,6 +72,7 @@
       unlockedSlot: 'assets/balls/unlocked/star.png',
       lockedSlot:   'assets/balls/locked/star.png',
       previewSrc:   'assets/balls/themes/star.png',
+      description:  'A fragment of a fallen constellation, still burning with the brilliance of a thousand nights.',
     },
     {
       id:           'void',
@@ -73,6 +81,7 @@
       unlockedSlot: 'assets/balls/unlocked/void.png',
       lockedSlot:   'assets/balls/locked/void.png',
       previewSrc:   'assets/balls/themes/void.png',
+      description:  'It does not fly through the air — it consumes it. A rift given form, drawn toward its prey by dark gravity.',
     },
   ];
 
@@ -166,7 +175,6 @@
 
     // ── Close button ──
     const closeBtn = document.createElement('img');
-
     closeBtn.src = 'assets/button/closeButton.png';
     Object.assign(closeBtn.style, {
       position:       'absolute',
@@ -194,34 +202,90 @@
       closeBtn.style.filter    = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))';
     });
 
+    // ── Skin name label ──
+    const skinNameLabel = document.createElement('p');
+    skinNameLabel.id = 'ballShopSkinName';
+    skinNameLabel.textContent = getSkin(selectedId).name.toUpperCase();
+    Object.assign(skinNameLabel.style, {
+      position:      'absolute',
+      left:          '5%',
+      top:           '20%',
+      width:         '40%',
+      margin:        '0',
+      fontFamily:    '"PixelFont", sans-serif',
+      fontSize:      '11px',
+      color:         '#ffe066',
+      textAlign:     'center',
+      textShadow:    '1px 2px 0 #5a2a00, 0 0 10px rgba(255,180,0,0.55)',
+      letterSpacing: '2px',
+      zIndex:        '4',
+      pointerEvents: 'none',
+    });
+
     // ── Preview image ──
     const previewImg = document.createElement('img');
     previewImg.id  = 'ballShopPreview';
     previewImg.src = getSkin(selectedId).previewSrc;
     Object.assign(previewImg.style, {
       position:       'absolute',
-      left:           '10%',
-      top:            '28%',
-      width:          '30%',
+      left:           '12%',
+      top:            '22%',
+      width:          '26%',
       height:         'auto',
-      maxHeight:      '35%',
+      maxHeight:      '26%',
       imageRendering: 'pixelated',
       objectFit:      'contain',
     });
+
+    // ── Description panel ──
+    const descPanel = document.createElement('div');
+    descPanel.id = 'cannonShopDescPanel';
+    Object.assign(descPanel.style, {
+      position:         'absolute',
+      left:             '10%',
+      top:              '47%',
+      width:            '29%',
+      height:           '22%',
+      backgroundImage:  'url(assets/descriptionBg.png)',
+      backgroundSize:   '100% 100%',
+      backgroundRepeat: 'no-repeat',
+      display:          'flex',
+      alignItems:       'center',
+      justifyContent:   'center',
+      padding:          '1% 2.5%',
+      boxSizing:        'border-box',
+      zIndex:           '3',
+      pointerEvents:    'none',
+    });
+
+    const descText = document.createElement('p');
+    descText.id = 'ballShopDescText';
+    descText.textContent = getSkin(selectedId).description;
+    Object.assign(descText.style, {
+      margin:        '0',
+      fontFamily:    '"PixelFont", sans-serif',
+      fontSize:      '7px',
+      lineHeight:    '1.75',
+      color:         '#ffe066',
+      textAlign:     'center',
+      wordBreak:     'break-word',
+      textShadow:    '1px 1px 0 #5a2a00, 0 0 5px rgba(255,180,0,0.55)',
+    });
+    descPanel.appendChild(descText);
 
     // ── Action button image ──
     const actionBtn = document.createElement('img');
     actionBtn.id = 'ballShopActionBtn';
     Object.assign(actionBtn.style, {
       position:       'absolute',
-      left:           '15%',
-      top:            '65%',
-      width:          '20%',
+      left:           '13%',
+      bottom:         '18%',
+      width:          '22%',
       height:         'auto',
       imageRendering: 'pixelated',
       cursor:         'pointer',
       userSelect:     'none',
-      zIndex:         '2',
+      zIndex:         '5',
       transition:     'transform 0.1s ease, filter 0.1s ease',
       filter:         'drop-shadow(1px 2px 3px rgba(0,0,0,0.7))',
     });
@@ -254,7 +318,9 @@
     SKINS.forEach(skin => buildCard(skin, grid));
 
     modal.appendChild(closeBtn);
+    modal.appendChild(skinNameLabel);
     modal.appendChild(previewImg);
+    modal.appendChild(descPanel);
     modal.appendChild(actionBtn);
     modal.appendChild(grid);
     backdrop.appendChild(modal);
@@ -383,8 +449,19 @@
   // INTERACTIONS
   function onCardClick(skinId) {
     selectedId = skinId;
+
+    // Update preview image
     const preview = document.getElementById('ballShopPreview');
     if (preview) preview.src = getSkin(skinId).previewSrc;
+
+    // ── Update skin name label ──
+    const nameLabel = document.getElementById('ballShopSkinName');
+    if (nameLabel) nameLabel.textContent = getSkin(skinId).name.toUpperCase();
+
+    // ── Update description text ──
+    const descText = document.getElementById('ballShopDescText');
+    if (descText) descText.textContent = getSkin(skinId).description;
+
     refreshActionBtn();
   }
 

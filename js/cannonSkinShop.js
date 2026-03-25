@@ -10,6 +10,7 @@
       previewSrc:   'assets/cannon/themes/default.png',
       barrelSrc:    'assets/canon.png',
       wheelSrc:     'assets/wheel.png',
+      description:  'A trusty iron cannon, weathered by countless battles. It may lack glamour, but it has never failed its wielder.',
     },
     {
       id:           'gold',
@@ -20,6 +21,7 @@
       previewSrc:   'assets/cannon/themes/gold.png',
       barrelSrc:    'assets/cannon/cannon/gold.png',
       wheelSrc:     'assets/cannon/wheel/gold.png',
+      description:  'Gilded in pure gold and adorned with royal crests. A symbol of power and prestige fit for a champion.',
     },
     {
       id:           'ice',
@@ -30,6 +32,7 @@
       previewSrc:   'assets/cannon/themes/ice.png',
       barrelSrc:    'assets/cannon/cannon/ice.png',
       wheelSrc:     'assets/cannon/wheel/ice.png',
+      description:  'Encased in eternal frost, this cannon was carved from a glacier at the edge of the world. Cold, precise, and unforgiving.',
     },
     {
       id:           'lava',
@@ -40,6 +43,7 @@
       previewSrc:   'assets/cannon/themes/lava.png',
       barrelSrc:    'assets/cannon/cannon/lava.png',
       wheelSrc:     'assets/cannon/wheel/lava.png',
+      description:  'Forged in the depths of a magma chamber, it pulses with molten fury. The ground trembles at the sound of its roar.',
     },
     {
       id:           'punk',
@@ -50,6 +54,7 @@
       previewSrc:   'assets/cannon/themes/punk.png',
       barrelSrc:    'assets/cannon/cannon/punk.png',
       wheelSrc:     'assets/cannon/wheel/punk.png',
+      description:  'Built by rogue engineers who refused to follow the rules. Riveted, rugged, and ready to cause a ruckus.',
     },
     {
       id:           'stone',
@@ -60,6 +65,7 @@
       previewSrc:   'assets/cannon/themes/stone.png',
       barrelSrc:    'assets/cannon/cannon/stone.png',
       wheelSrc:     'assets/cannon/wheel/stone.png',
+      description:  'Hewn from ancient ruins and overgrown with moss, this relic of a forgotten civilization still holds its ground.',
     },
   ];
 
@@ -174,34 +180,92 @@
       closeBtn.style.filter    = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))';
     });
 
+    // ── Skin name label ──
+    // Displayed above the preview image so the player knows which skin is selected
+    const skinNameLabel = document.createElement('p');
+    skinNameLabel.id = 'cannonShopSkinName';
+    skinNameLabel.textContent = getSkin(selectedId).name.toUpperCase();
+    Object.assign(skinNameLabel.style, {
+      position:      'absolute',
+      left:          '7%',
+      top:           '20%',
+      width:         '40%',
+      margin:        '0',
+      fontFamily:    '"PixelFont", sans-serif',
+      fontSize:      '11px',
+      color:         '#ffe066',
+      textAlign:     'center',
+      textShadow:    '1px 2px 0 #5a2a00, 0 0 10px rgba(255,180,0,0.55)',
+      letterSpacing: '2px',
+      zIndex:        '4',
+      pointerEvents: 'none',
+    });
+
     // ── Preview image  (left panel, large landscape cannon) ──
     const previewImg = document.createElement('img');
     previewImg.id  = 'cannonShopPreview';
     previewImg.src = getSkin(selectedId).previewSrc;
     Object.assign(previewImg.style, {
       position:       'absolute',
-      left:           '12%',
-      top:            '32%',
-      width:          '28%',      
+      left:           '15%',
+      top:            '26%',
+      width:          '25%',
       height:         'auto',
-      maxHeight:      '30%',
+      maxHeight:      '25%',
       imageRendering: 'pixelated',
       objectFit:      'contain',
     });
+
+    // ── Description panel ──
+    // Uses the parchment background asset; tall enough to show the full description text
+    const descPanel = document.createElement('div');
+    descPanel.id = 'cannonShopDescPanel';
+    Object.assign(descPanel.style, {
+      position:         'absolute',
+      left:             '12%',
+      top:              '50%',
+      width:            '30%',
+      height:           '23%',
+      backgroundImage:  'url(assets/descriptionBg.png)',
+      backgroundSize:   '100% 100%',
+      backgroundRepeat: 'no-repeat',
+      display:          'flex',
+      alignItems:       'center',
+      justifyContent:   'center',
+      padding:          '1% 2.5%',
+      boxSizing:        'border-box',
+      zIndex:           '3',
+      pointerEvents:    'none',
+    });
+
+    const descText = document.createElement('p');
+    descText.id = 'cannonShopDescText';
+    descText.textContent = getSkin(selectedId).description;
+    Object.assign(descText.style, {
+      margin:        '0',
+      fontFamily:    '"PixelFont", sans-serif',
+      fontSize:      '7px',
+      lineHeight:    '1.75',
+      color:         '#ffe066',
+      textAlign:     'center',
+      wordBreak:     'break-word',
+      textShadow:    '1px 1px 0 #5a2a00, 0 0 5px rgba(255,180,0,0.55)',
+    });
+    descPanel.appendChild(descText);
 
     // ── Action button ──
     const actionBtn = document.createElement('img');
     actionBtn.id = 'cannonShopActionBtn';
     Object.assign(actionBtn.style, {
       position:       'absolute',
-      left:           '15%',
-      top:            '65%',
-      width:          '20%',       
+      left:           '15.5%',
+      bottom:         '15%',
+      width:          '22%',
       height:         'auto',
       imageRendering: 'pixelated',
       cursor:         'pointer',
       userSelect:     'none',
-      zIndex:         '2',
+      zIndex:         '5',
       transition:     'transform 0.1s ease, filter 0.1s ease',
       filter:         'drop-shadow(1px 2px 3px rgba(0,0,0,0.7))',
     });
@@ -234,7 +298,9 @@
     SKINS.forEach(skin => buildCard(skin, grid));
 
     modal.appendChild(closeBtn);
+    modal.appendChild(skinNameLabel);
     modal.appendChild(previewImg);
+    modal.appendChild(descPanel);
     modal.appendChild(actionBtn);
     modal.appendChild(grid);
     backdrop.appendChild(modal);
@@ -356,8 +422,19 @@
   // ── INTERACTIONS ─────────────────────────────────────────────────────────
   function onCardClick(skinId) {
     selectedId = skinId;
+
+    // Update preview image
     const preview = document.getElementById('cannonShopPreview');
     if (preview) preview.src = getSkin(skinId).previewSrc;
+
+    // ── Update skin name label ──
+    const nameLabel = document.getElementById('cannonShopSkinName');
+    if (nameLabel) nameLabel.textContent = getSkin(skinId).name.toUpperCase();
+
+    // ── Update description text ──
+    const descText = document.getElementById('cannonShopDescText');
+    if (descText) descText.textContent = getSkin(skinId).description;
+
     refreshActionBtn();
   }
 
