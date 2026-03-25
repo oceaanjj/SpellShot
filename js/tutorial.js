@@ -22,16 +22,15 @@
 // =============================================
 
 (function () {
-
   // ── State ─────────────────────────────────────────────────────────────
   let currentStep = 0;
-  let previousStep = null;  // Track step to return to after wrong letter warning
+  let previousStep = null; // Track step to return to after wrong letter warning
   let stepTimer = null;
   let fireCount = 0;
   let correctHitCount = 0;
   let tutDone = false;
   let wrongLetterPromptShown = false;
-  let showingWrongLetterWarning = false;  // Flag to prevent re-triggering
+  let showingWrongLetterWarning = false; // Flag to prevent re-triggering
 
   // One-shot listener guards
   let listeningForMouseMove = false;
@@ -40,106 +39,106 @@
 
   // Compact panel position configuration (can be customized)
   let compactPanelConfig = {
-    top: '300px',
-    right: '600px'
+    top: "300px",
+    right: "600px",
   };
 
   // Tutorial steps definition
   const steps = [
     {
       id: 1,
-      type: 'info',
-      title: 'WELCOME TO SPELL SHOT!',
-      text: 'Spell words to earn coins while getting familiar with computer terms. Let\'s learn how!',
+      type: "info",
+      title: "WELCOME TO SPELL SHOT!",
+      text: "Spell words to earn coins while getting familiar with computer terms. Let's learn how!",
       requiresClick: true,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 2,
-      type: 'action-mouse',
-      title: 'AIM YOUR CANNON',
-      text: 'Move your mouse to aim the cannon at the letter blocks.',
+      type: "action-mouse",
+      title: "AIM YOUR CANNON",
+      text: "Move your mouse to aim the cannon at the letter blocks.",
       requiresClick: false,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 3,
-      type: 'action-ball-hit',
-      title: 'RELEASE YOUR FIRST CANNON',
-      text: 'Press SPACE or click to fire at the blocks.',
+      type: "action-ball-hit",
+      title: "RELEASE YOUR FIRST CANNON",
+      text: "Press SPACE or click to fire at the blocks.",
       requiresClick: false,
-      pauseGame: false
+      pauseGame: false,
     },
     {
       id: 4,
-      type: 'info',
-      title: 'TARGET WORD',
-      text: 'Spell the target word by hitting its letters in order.',
+      type: "info",
+      title: "TARGET WORD",
+      text: "Spell the target word by hitting its letters in order.",
       requiresClick: true,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 5,
-      type: 'info',
-      title: 'BALL BOUNCING',
-      text: 'Your spells bounce off walls twice before disappearing. Use this to reach blocks!',
+      type: "info",
+      title: "BALL BOUNCING",
+      text: "Your spells bounce off walls twice before disappearing. Use this to reach blocks!",
       requiresClick: true,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 6,
-      type: 'action-fire-count',
+      type: "action-fire-count",
       fireTarget: 3,
-      title: 'HIT 3 LETTERS',
-      text: 'Fire and hit 3 letters from the target word to complete it.',
+      title: "HIT 3 LETTERS",
+      text: "Fire and hit 3 letters from the target word to complete it.",
       requiresClick: false,
-      pauseGame: false
+      pauseGame: false,
     },
     {
       id: 7,
-      type: 'info',
-      title: 'BONUS HEARTS',
-      text: 'Sometimes random hearts appear! Hit them for bonus lives to stay in the game.',
+      type: "info",
+      title: "BONUS HEARTS",
+      text: "Sometimes random hearts appear! Hit them for bonus lives to stay in the game.",
       requiresClick: true,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 8,
-      type: 'info',
-      title: 'SHOP & SKINS',
-      text: 'Spend your coins at the shop to buy cool cannon ball skins and upgrades!',
+      type: "info",
+      title: "SHOP & SKINS",
+      text: "Spend your coins at the shop to buy cool cannon ball skins and upgrades!",
       requiresClick: true,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 9,
-      type: 'info',
-      title: 'AVOID WRONG LETTERS',
-      text: 'Hit a wrong letter and you lose a life. Stay focused!',
+      type: "info",
+      title: "AVOID WRONG LETTERS",
+      text: "Hit a wrong letter and you lose a life. Stay focused!",
       requiresClick: true,
       pauseGame: true,
-      skipable: true  // Can skip if wrong letter not hit yet
+      skipable: true, // Can skip if wrong letter not hit yet
     },
     {
       id: 10,
-      type: 'info',
-      title: 'LIMITED RESOURCES',
-      text: 'You have limited ammo and time. Running out of either ends the game!',
+      type: "info",
+      title: "LIMITED RESOURCES",
+      text: "You have limited ammo and time. Running out of either ends the game!",
       requiresClick: true,
-      pauseGame: true
+      pauseGame: true,
     },
     {
       id: 11,
-      type: 'info',
-      title: 'YOU\'RE READY!',
-      text: 'Now complete the word to finish the tutorial.',
+      type: "info",
+      title: "YOU'RE READY!",
+      text: "Now complete the word to finish the tutorial.",
       requiresClick: true,
-      pauseGame: true
-    }
+      pauseGame: true,
+    },
   ];
 
   // ── Inject CSS ─────────────────────────────────────────────────────────
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     #tutorialOverlay {
       position: fixed;
@@ -348,15 +347,15 @@
   document.head.appendChild(style);
 
   // ── Build DOM ────────────────────────────────────────────────────────
-  const host = document.getElementById('gameShell') || document.body;
+  const host = document.getElementById("gameShell") || document.body;
 
   // Create main overlay
-  const overlay = document.createElement('div');
-  overlay.id = 'tutorialOverlay';
+  const overlay = document.createElement("div");
+  overlay.id = "tutorialOverlay";
 
   // Create panel
-  const panel = document.createElement('div');
-  panel.id = 'tutorialPanel';
+  const panel = document.createElement("div");
+  panel.id = "tutorialPanel";
   panel.innerHTML = `
     <div id="tutorialTitle"></div>
     <div id="tutorialText"></div>
@@ -367,38 +366,42 @@
   host.appendChild(overlay);
 
   // Create success overlay
-  const successOverlay = document.createElement('div');
-  successOverlay.id = 'tutorialSuccess';
+  const successOverlay = document.createElement("div");
+  successOverlay.id = "tutorialSuccess";
   successOverlay.innerHTML = `
     <div id="tutorialSuccessText">WELL DONE!</div>
     <img id="tutorialReturnBtn" src="assets/button/returnHomeButton.png" alt="Return Home" />
   `;
   host.appendChild(successOverlay);
 
-  const continueButton = document.getElementById('tutorialButton');
-  const returnBtn = document.getElementById('tutorialReturnBtn');
+  const continueButton = document.getElementById("tutorialButton");
+  const returnBtn = document.getElementById("tutorialReturnBtn");
 
-  continueButton.addEventListener('click', () => {
+  continueButton.addEventListener("click", () => {
     // If on the wrong letter warning step and we have a previous step to return to
-    if (currentStep === 8 && showingWrongLetterWarning && previousStep !== null) {
+    if (
+      currentStep === 8 &&
+      showingWrongLetterWarning &&
+      previousStep !== null
+    ) {
       showingWrongLetterWarning = false;
       showStep(previousStep);
     }
     // If on the last step ("You're Ready!"), just hide overlay and unpause for gameplay
     // Success will show when word is actually completed (via onWordCompleted() hook)
     else if (currentStep === steps.length - 1) {
-      const tutOverlay = document.getElementById('tutorialOverlay');
-      if (tutOverlay) tutOverlay.classList.remove('visible');
+      const tutOverlay = document.getElementById("tutorialOverlay");
+      if (tutOverlay) tutOverlay.classList.remove("visible");
       // Unpause game to let player complete the word
-      if (typeof gamePaused !== 'undefined') {
+      if (typeof gamePaused !== "undefined") {
         gamePaused = false;
       }
     } else {
       advanceStep();
     }
   });
-  returnBtn.addEventListener('click', () => {
-    window.location.href = 'index.html';
+  returnBtn.addEventListener("click", () => {
+    window.location.href = "index.html";
   });
 
   // ── Display a step ────────────────────────────────────────────────────
@@ -406,12 +409,12 @@
     if (tutDone || stepIndex < 0 || stepIndex >= steps.length) return;
 
     clearTimeout(stepTimer);
-    
+
     // Only save previous step if not showing wrong letter warning
     if (!showingWrongLetterWarning) {
       previousStep = currentStep;
     }
-    
+
     currentStep = stepIndex;
     fireCount = 0;
     correctHitCount = 0;
@@ -422,37 +425,37 @@
     listeningForThreeFires = false;
 
     const step = steps[stepIndex];
-    const title = document.getElementById('tutorialTitle');
-    const text = document.getElementById('tutorialText');
-    const hint = document.getElementById('tutorialHint');
-    const btn = document.getElementById('tutorialButton');
-    const tutOverlay = document.getElementById('tutorialOverlay');
-    const panel = document.getElementById('tutorialPanel');
+    const title = document.getElementById("tutorialTitle");
+    const text = document.getElementById("tutorialText");
+    const hint = document.getElementById("tutorialHint");
+    const btn = document.getElementById("tutorialButton");
+    const tutOverlay = document.getElementById("tutorialOverlay");
+    const panel = document.getElementById("tutorialPanel");
 
     title.textContent = step.title;
     text.textContent = step.text;
 
     // Set hint text based on step type
     if (step.requiresClick) {
-      hint.textContent = 'Click button to continue';
-    } else if (step.type === 'action-mouse') {
-      hint.textContent = 'Fire a cannon to continue';
-    } else if (step.type === 'action-fire') {
-      hint.textContent = 'Move your mouse to continue';
-    } else if (step.type === 'action-fire-count') {
-      hint.textContent = 'Fire 3 times to continue';
+      hint.textContent = "Click button to continue";
+    } else if (step.type === "action-mouse") {
+      hint.textContent = "Fire a cannon to continue";
+    } else if (step.type === "action-fire") {
+      hint.textContent = "Move your mouse to continue";
+    } else if (step.type === "action-fire-count") {
+      hint.textContent = "Fire 3 times to continue";
     }
 
     // Show or hide button based on step type
     if (step.requiresClick) {
-      btn.textContent = 'Continue';
-      btn.classList.remove('hidden');
+      btn.textContent = "Continue";
+      btn.classList.remove("hidden");
     } else {
-      btn.classList.add('hidden');
+      btn.classList.add("hidden");
     }
 
     // Pause or unpause game
-    if (step.pauseGame && typeof gamePaused !== 'undefined') {
+    if (step.pauseGame && typeof gamePaused !== "undefined") {
       gamePaused = true;
     }
 
@@ -460,16 +463,16 @@
     const isActionStep = !step.requiresClick;
     if (isActionStep) {
       // Action step: move to sidebar, hide dark overlay
-      tutOverlay.classList.add('compact');
-      panel.classList.add('compact');
+      tutOverlay.classList.add("compact");
+      panel.classList.add("compact");
     } else {
       // Info step: centered, show dark overlay
-      tutOverlay.classList.remove('compact');
-      panel.classList.remove('compact');
+      tutOverlay.classList.remove("compact");
+      panel.classList.remove("compact");
     }
 
     // Show the overlay
-    tutOverlay.classList.add('visible');
+    tutOverlay.classList.add("visible");
 
     // Setup trigger for this step
     setupStepTrigger(stepIndex);
@@ -478,23 +481,24 @@
   // ── Advance to next step ──────────────────────────────────────────────
   function advanceStep() {
     if (tutDone) return;
-    
+
     let nextStepIndex = currentStep + 1;
-    
+
     // Skip the "Avoid Wrong Letters" step (index 8) if it was already shown
     // This prevents showing it twice if player hit a wrong letter earlier
     if (nextStepIndex === 8 && wrongLetterPromptShown) {
-      nextStepIndex = 9;  // Jump to Limited Resources step instead
+      nextStepIndex = 9; // Jump to Limited Resources step instead
     }
-    
+
     // Unpause game before advancing (unless next step also pauses)
-    if (typeof gamePaused !== 'undefined') {
-      const nextStep = nextStepIndex < steps.length ? steps[nextStepIndex] : null;
+    if (typeof gamePaused !== "undefined") {
+      const nextStep =
+        nextStepIndex < steps.length ? steps[nextStepIndex] : null;
       if (!nextStep || !nextStep.pauseGame) {
         gamePaused = false;
       }
     }
-    
+
     showStep(nextStepIndex);
   }
 
@@ -503,38 +507,38 @@
     const step = steps[stepIndex];
 
     switch (step.type) {
-      case 'info':
+      case "info":
         // Info steps require click — button click handled by continueButton listener
         break;
 
-      case 'action-mouse':
+      case "action-mouse":
         if (!listeningForMouseMove) {
           listeningForMouseMove = true;
           const onMove = () => {
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("touchmove", onMove);
             if (currentStep === stepIndex) {
               advanceStep();
             }
           };
-          document.addEventListener('mousemove', onMove);
-          document.addEventListener('touchmove', onMove, { passive: true });
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("touchmove", onMove, { passive: true });
         }
         break;
 
-      case 'action-ball-hit':
+      case "action-ball-hit":
         if (!listeningForFirstBallHit) {
           listeningForFirstBallHit = true;
         }
         break;
 
-      case 'action-fire':
+      case "action-fire":
         if (!listeningForFirstFire) {
           listeningForFirstFire = true;
         }
         break;
 
-      case 'action-fire-count':
+      case "action-fire-count":
         if (!listeningForThreeFires) {
           listeningForThreeFires = true;
           fireCount = 0;
@@ -575,10 +579,13 @@
     // Step 6 (index 5): count 3 correct hits to complete the word
     if (currentStep === 5 && listeningForThreeFires) {
       correctHitCount++;
-      const countHint = document.getElementById('tutorialHint');
+      const countHint = document.getElementById("tutorialHint");
       if (countHint) {
         const remaining = 3 - correctHitCount;
-        countHint.textContent = remaining > 0 ? `Hit ${remaining} more letter${remaining === 1 ? '' : 's'}` : 'Word complete!';
+        countHint.textContent =
+          remaining > 0
+            ? `Hit ${remaining} more letter${remaining === 1 ? "" : "s"}`
+            : "Word complete!";
       }
       if (correctHitCount >= 3) {
         listeningForThreeFires = false;
@@ -593,7 +600,11 @@
 
     // Only show wrong letter warning if we're NOT currently in the middle of hitting letters (step 6)
     // Step 6 is index 5
-    if (!wrongLetterPromptShown && !showingWrongLetterWarning && currentStep !== 5) {
+    if (
+      !wrongLetterPromptShown &&
+      !showingWrongLetterWarning &&
+      currentStep !== 5
+    ) {
       wrongLetterPromptShown = true;
       showingWrongLetterWarning = true;
       // Show wrong letter warning step (step 9 = array index 8)
@@ -612,12 +623,12 @@
     if (currentStep === steps.length - 1) {
       // Give user time to see the result, then auto-hide and show success
       setTimeout(() => {
-        const tutOverlay = document.getElementById('tutorialOverlay');
+        const tutOverlay = document.getElementById("tutorialOverlay");
         if (tutOverlay) {
-          tutOverlay.classList.remove('visible');
+          tutOverlay.classList.remove("visible");
         }
         setTimeout(showTutorialSuccess, 300);
-      }, 500);  // Wait 500ms before hiding to let user see completion
+      }, 500); // Wait 500ms before hiding to let user see completion
     }
   };
 
@@ -628,18 +639,18 @@
     clearTimeout(stepTimer);
 
     // Hide tutorial overlay
-    const tutOverlay = document.getElementById('tutorialOverlay');
-    if (tutOverlay) tutOverlay.classList.remove('visible');
+    const tutOverlay = document.getElementById("tutorialOverlay");
+    if (tutOverlay) tutOverlay.classList.remove("visible");
 
     // Pause game and show success
-    if (typeof gamePaused !== 'undefined') gamePaused = true;
-    if (typeof gameOver !== 'undefined') gameOver = false;
-    const mapOverlay = document.getElementById('mapOverlay');
-    if (mapOverlay) mapOverlay.style.display = 'none';
+    if (typeof gamePaused !== "undefined") gamePaused = true;
+    if (typeof gameOver !== "undefined") gameOver = false;
+    const mapOverlay = document.getElementById("mapOverlay");
+    if (mapOverlay) mapOverlay.style.display = "none";
 
-    const successOverlay = document.getElementById('tutorialSuccess');
+    const successOverlay = document.getElementById("tutorialSuccess");
     if (successOverlay) {
-      requestAnimationFrame(() => successOverlay.classList.add('visible'));
+      requestAnimationFrame(() => successOverlay.classList.add("visible"));
     }
   }
 
@@ -657,11 +668,10 @@
     compactPanelConfig.top = top;
     compactPanelConfig.right = right;
     // Update CSS variable if needed
-    const overlay = document.getElementById('tutorialOverlay');
-    if (overlay && overlay.classList.contains('compact')) {
+    const overlay = document.getElementById("tutorialOverlay");
+    if (overlay && overlay.classList.contains("compact")) {
       overlay.style.top = top;
       overlay.style.right = right;
     }
   };
-
 })();

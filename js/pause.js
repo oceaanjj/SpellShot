@@ -8,33 +8,48 @@
 //  being in the global scope of the page.
 // =============================================
 
-
 function addUIButtonPressEffects(el) {
   if (!el) return;
   const onPress = () => {
-    el.classList.remove('released');
-    el.classList.add('pressing');
+    el.classList.remove("released");
+    el.classList.add("pressing");
   };
   const onRelease = () => {
-    el.classList.remove('pressing');
+    el.classList.remove("pressing");
     void el.offsetWidth;
-    el.classList.add('released');
+    el.classList.add("released");
   };
-  const onLeave = () => { el.classList.remove('pressing'); };
+  const onLeave = () => {
+    el.classList.remove("pressing");
+  };
 
-  el.addEventListener('mousedown', onPress);
-  el.addEventListener('mouseup', onRelease);
-  el.addEventListener('mouseleave', onLeave);
-  el.addEventListener('touchstart', (e) => { e.preventDefault(); onPress(); }, { passive: false });
-  el.addEventListener('touchend',   (e) => { e.preventDefault(); onRelease(); }, { passive: false });
-  el.addEventListener('touchcancel', onLeave);
+  el.addEventListener("mousedown", onPress);
+  el.addEventListener("mouseup", onRelease);
+  el.addEventListener("mouseleave", onLeave);
+  el.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      onPress();
+    },
+    { passive: false },
+  );
+  el.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      onRelease();
+    },
+    { passive: false },
+  );
+  el.addEventListener("touchcancel", onLeave);
 }
 
 function setPauseToggleEnabled(enabled) {
-  const btn = document.getElementById('pauseToggle');
+  const btn = document.getElementById("pauseToggle");
   if (!btn) return;
   btn.disabled = !enabled;
-  btn.classList.toggle('disabled', !enabled);
+  btn.classList.toggle("disabled", !enabled);
 }
 
 function showPauseOverlay() {
@@ -42,34 +57,39 @@ function showPauseOverlay() {
   gamePaused = true;
   isDragging = false;
   stopTickingSfx();
-  if (typeof bgMusic !== 'undefined') bgMusic.pause();
-  document.getElementById('pauseOverlay')?.classList.add('active');
-  document.getElementById('pauseBackdrop')?.classList.add('active');
+  if (typeof bgMusic !== "undefined") bgMusic.pause();
+  document.getElementById("pauseOverlay")?.classList.add("active");
+  document.getElementById("pauseBackdrop")?.classList.add("active");
   setPauseToggleEnabled(false);
 }
 
 function hidePauseOverlay() {
   const wasPaused = gamePaused;
   gamePaused = false;
-  document.getElementById('pauseOverlay')?.classList.remove('active');
-  document.getElementById('pauseBackdrop')?.classList.remove('active');
+  document.getElementById("pauseOverlay")?.classList.remove("active");
+  document.getElementById("pauseBackdrop")?.classList.remove("active");
   if (wasPaused) {
     lastTimerTimestamp = null;
-    if (typeof bgMusic !== 'undefined') bgMusic.play().catch(() => {}); 
+    if (typeof bgMusic !== "undefined") bgMusic.play().catch(() => {});
   }
   setPauseToggleEnabled(true);
 }
 
 function togglePauseMenu() {
-  if (gamePaused) { hidePauseOverlay(); return; }
+  if (gamePaused) {
+    hidePauseOverlay();
+    return;
+  }
   showPauseOverlay();
 }
 
 function goToHome() {
-  if (typeof clearSavedGameState === 'function') clearSavedGameState();
-  document.body.style.transition = 'opacity 0.35s ease';
-  document.body.style.opacity    = '0';
-  setTimeout(() => { window.location.href = 'index.html'; }, 350);
+  if (typeof clearSavedGameState === "function") clearSavedGameState();
+  document.body.style.transition = "opacity 0.35s ease";
+  document.body.style.opacity = "0";
+  setTimeout(() => {
+    window.location.href = "index.html";
+  }, 350);
 }
 
 function goToSettings() {
@@ -92,20 +112,24 @@ function handlePauseAction(action) {
       if (typeof clearSavedGameState === "function") clearSavedGameState();
       document.body.style.transition = "opacity 0.35s ease";
       document.body.style.opacity = "0";
-      setTimeout(() => { window.location.href = "index.html"; }, 350);
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 350);
       break;
   }
 }
 
 // ── Wire up all pause buttons on DOM ready ────
 function initPause() {
-  const pauseToggleButton  = document.getElementById('pauseToggle');
-  const pauseOptionButtons = document.querySelectorAll('#pausePanel [data-pause-action]');
-  const pauseBackdrop      = document.getElementById('pauseBackdrop');
+  const pauseToggleButton = document.getElementById("pauseToggle");
+  const pauseOptionButtons = document.querySelectorAll(
+    "#pausePanel [data-pause-action]",
+  );
+  const pauseBackdrop = document.getElementById("pauseBackdrop");
 
   if (pauseToggleButton) {
     addUIButtonPressEffects(pauseToggleButton);
-    pauseToggleButton.addEventListener('click', (e) => {
+    pauseToggleButton.addEventListener("click", (e) => {
       e.stopPropagation();
       playClickSfx();
       togglePauseMenu();
@@ -114,14 +138,14 @@ function initPause() {
 
   pauseOptionButtons.forEach((btn) => {
     addUIButtonPressEffects(btn);
-    btn.addEventListener('click', () => {
+    btn.addEventListener("click", () => {
       playClickSfx();
       const action = btn.dataset.pauseAction;
       if (action) handlePauseAction(action);
     });
   });
 
-  pauseBackdrop?.addEventListener('click', () => {
+  pauseBackdrop?.addEventListener("click", () => {
     playClickSfx();
     hidePauseOverlay();
   });

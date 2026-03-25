@@ -1,78 +1,121 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spell Shot</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spell Shot</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
-<div id="container">
+  <body>
+    <div id="container">
+      <!-- Layers (back to front) -->
+      <canvas id="mainCanvas" width="1035" height="596"></canvas>
+      <canvas id="fxCanvas" width="1035" height="596"></canvas>
 
-  <!-- Layers (back to front) -->
-  <canvas id="mainCanvas" width="1035" height="596"></canvas>
-  <canvas id="fxCanvas"   width="1035" height="596"></canvas>
+      <div id="ui">
+        <!-- LOGO IMAGE -->
+        <img id="logoImg" src="assets/logo.png" alt="Spell Shot" />
 
-  <div id="ui">
-    <!-- LOGO IMAGE -->
-    <img id="logoImg" src="assets/logo.png" alt="Spell Shot" />
+        <div
+          id="coinDisplay"
+          style="
+            position: absolute;
+            top: 30px;
+            left: 70%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            pointer-events: none;
+          "
+        >
+          <img src="assets/coin.png" style="width: 32px; height: 25px" />
+          <span
+            id="coinCount"
+            style="
+              font-family: &quot;PixelFont&quot;, sans-serif;
+              font-size: 16px;
+              color: #ffd700;
+              text-shadow: 2px 2px 0 #000;
+            "
+            >0</span
+          >
+        </div>
 
-     <div id="coinDisplay" style="position:absolute; top:30px; left:70%; transform:translateX(-50%);
-         display:flex; align-items:center; gap:8px; z-index:10; pointer-events:none;">
-      <img src="assets/coin.png" style="width:32px; height:25px;" />
-      <span id="coinCount"
-            style="font-family:'PixelFont',sans-serif; font-size:16px;
-                   color:#FFD700; text-shadow:2px 2px 0 #000;">0</span>
+        <!-- Settings (top-right) -->
+        <img
+          class="btn"
+          id="btnSettings"
+          src="assets/button/settings.png"
+          style="top: 16px; right: 16px; width: 168px"
+        />
+
+        <!-- Right arrow only (for future characters) -->
+        <img
+          class="btn"
+          id="btnRight"
+          src="assets/button/arrowRight.png"
+          style="top: 278px; right: 46px; width: 78px"
+        />
+        <img
+          class="btn"
+          id="btnLeft"
+          src="assets/button/arrowLeft.png"
+          style="top: 278px; left: 470px; width: 78px; display: none"
+        />
+
+        <!-- Cannon Balls -->
+        <img
+          class="btn"
+          id="btnBalls"
+          src="assets/button/cannonBalls.png"
+          style="top: 350px; left: 70px; width: 270px"
+        />
+
+        <!-- Cannon Skins -->
+        <img
+          class="btn"
+          id="btnSkins"
+          src="assets/button/cannonSkins.png"
+          style="top: 460px; left: 70px; width: 270px"
+        />
+
+        <!-- Play -->
+        <img
+          class="btn"
+          id="btnPlay"
+          src="assets/button/playButton.png"
+          style="bottom: 100px; right: 180px; width: 260px"
+        />
+
+        <!-- Tutorial -->
+        <img
+          class="btn"
+          id="btnTutorial"
+          src="assets/button/tutorialButton.png"
+          style="bottom: 45px; right: 230px; width: 160px"
+        />
+
+        <!-- White flash for PLAY transition -->
+        <div id="flashOverlay"></div>
+      </div>
     </div>
 
-    <!-- Settings (top-right) -->
-    <img class="btn" id="btnSettings" src="assets/button/settings.png"
-         style="top:16px; right:16px; width:168px;" />
-
-    <!-- Right arrow only (for future characters) -->
-    <img class="btn" id="btnRight" src="assets/button/arrowRight.png"
-         style="top:278px; right:46px; width:78px;" />
-    <img class="btn" id="btnLeft" src="assets/button/arrowLeft.png"
-     style="top:278px; left:470px; width:78px; display:none;" />
-
-    <!-- Cannon Balls -->
-    <img class="btn" id="btnBalls" src="assets/button/cannonBalls.png"
-         style="top:350px; left:70px; width:270px;" />
-
-    <!-- Cannon Skins -->
-    <img class="btn" id="btnSkins" src="assets/button/cannonSkins.png"
-         style="top:460px; left:70px; width:270px;" />
-
-    <!-- Play -->
-    <img class="btn" id="btnPlay" src="assets/button/playButton.png"
-         style="bottom:100px; right:180px; width:260px;" />
-
-     <!-- Tutorial -->
-    <img class="btn" id="btnTutorial" src="assets/button/tutorialButton.png"
-         style="bottom:45px; right:230px; width:160px;" />
-
-         
-
-    <!-- White flash for PLAY transition -->
-    <div id="flashOverlay"></div>
-    
-  </div>
-</div>
-
-<!-- Order matters: constants first, then systems, then entry point -->
-<script src="js/constants.js"></script>
-<script src="js/characters.js"></script>
-<script src="js/sfx.js"></script> 
-<script src="js/particles.js"></script>
-<script src="js/renderer.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/music.js"></script> 
-<script src="js/cannonBallShop.js"></script>
-<script src="js/cannonSkinShop.js"></script>
-<script src="js/cannonSkins.js"></script>
-<script src="js/coinAnimator.js"></script>
-<script src="js/main.js"></script>
-</body>
+    <!-- Order matters: constants first, then systems, then entry point -->
+    <script src="js/constants.js"></script>
+    <script src="js/characters.js"></script>
+    <script src="js/sfx.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/music.js"></script>
+    <script src="js/cannonBallShop.js"></script>
+    <script src="js/cannonSkinShop.js"></script>
+    <script src="js/cannonSkins.js"></script>
+    <script src="js/coinAnimator.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>
