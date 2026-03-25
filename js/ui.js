@@ -9,7 +9,6 @@
 //  No changes needed here.
 // =============================================
 
-
 const CHARACTER_SELECTION_KEY = "spellshot-selected-character";
 
 function persistSelectedCharacter() {
@@ -25,16 +24,15 @@ function persistSelectedCharacter() {
 // Returns { x, y } relative to the game container
 // Used so particles know where to spawn when a button is clicked
 function getCenter(el) {
-  const container     = document.getElementById('container');
+  const container = document.getElementById("container");
   const containerRect = container.getBoundingClientRect();
-  const buttonRect    = el.getBoundingClientRect();
+  const buttonRect = el.getBoundingClientRect();
 
   return {
-    x: buttonRect.left - containerRect.left + buttonRect.width  / 2,
-    y: buttonRect.top  - containerRect.top  + buttonRect.height / 2,
+    x: buttonRect.left - containerRect.left + buttonRect.width / 2,
+    y: buttonRect.top - containerRect.top + buttonRect.height / 2,
   };
 }
-
 
 // -- Make a button interactive --
 // id          → the HTML element id (e.g. 'btnPlay')
@@ -46,17 +44,17 @@ function setupBtn(id, burstColor, callback) {
 
   // When the player presses down on the button
   const onPress = () => {
-    el.classList.remove('released');
-    el.classList.add('pressing');     // CSS handles the press-down look
+    el.classList.remove("released");
+    el.classList.add("pressing"); // CSS handles the press-down look
   };
 
   // When the player releases the button
   const onRelease = () => {
-    el.classList.remove('pressing');
+    el.classList.remove("pressing");
     void el.offsetWidth;
-    el.classList.add('released');
+    el.classList.add("released");
 
-    playClickSfx(); 
+    playClickSfx();
 
     const pos = getCenter(el);
     spawnClickBurst(pos.x, pos.y, burstColor);
@@ -66,25 +64,40 @@ function setupBtn(id, burstColor, callback) {
   };
 
   // If the mouse leaves the button without releasing, cancel the press look
-  const onLeave = () => el.classList.remove('pressing');
+  const onLeave = () => el.classList.remove("pressing");
 
   // -- Mouse events (desktop) --
-  el.addEventListener('mousedown',  onPress);
-  el.addEventListener('mouseup',    onRelease);
-  el.addEventListener('mouseleave', onLeave);
+  el.addEventListener("mousedown", onPress);
+  el.addEventListener("mouseup", onRelease);
+  el.addEventListener("mouseleave", onLeave);
 
   // -- Touch events (mobile) --
-  el.addEventListener('touchstart',  (e) => { e.preventDefault(); onPress();   }, { passive: false });
-  el.addEventListener('touchend',    (e) => { e.preventDefault(); onRelease(); }, { passive: false });
-  el.addEventListener('touchcancel', onLeave);
+  el.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      onPress();
+    },
+    { passive: false },
+  );
+  el.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      onRelease();
+    },
+    { passive: false },
+  );
+  el.addEventListener("touchcancel", onLeave);
 }
-
 
 // -- Go to the game screen --
 // Flashes the screen white then loads game.html
 function goToGame() {
   persistSelectedCharacter();
-  document.body.style.transition = 'opacity 0.35s ease';
-  document.body.style.opacity    = '0';
-  setTimeout(() => { window.location.href = 'level.html'; }, 350);
+  document.body.style.transition = "opacity 0.35s ease";
+  document.body.style.opacity = "0";
+  setTimeout(() => {
+    window.location.href = "level.html";
+  }, 350);
 }

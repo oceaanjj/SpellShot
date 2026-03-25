@@ -1,515 +1,544 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spell Shot · Level Select</title>
+    <style>
+      @font-face {
+        font-family: "PressStart2P";
+        src: url("assets/font/PressStart2P-Regular.ttf") format("truetype");
+        font-weight: normal;
+        font-style: normal;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spell Shot · Level Select</title>
-  <style>
-    @font-face {
-      font-family: "PressStart2P";
-      src: url("assets/font/PressStart2P-Regular.ttf") format("truetype");
-      font-weight: normal;
-      font-style: normal;
-    }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-    }
+      body {
+        font-family: "PressStart2P", sans-serif;
+        background: #04030b;
+        color: #fdfdfa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
 
-    body {
-      font-family: "PressStart2P", sans-serif;
-      background: #04030b;
-      color: #fdfdfa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
+      body.fade-out {
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
 
-    body.fade-out {
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
+      #levelShell {
+        position: relative;
+        width: 1035px;
+        height: 596px;
+        border-radius: 0px;
+        /* border: 3px solid rgba(255, 255, 255, 0.4); */
+        box-shadow: 0 35px 60px rgba(0, 0, 0, 0.85);
+        overflow: hidden;
+        background: #02010a;
+      }
 
-    #levelShell {
-      position: relative;
-      width: 1035px;
-      height: 596px;
-      border-radius: 0px;
-      /* border: 3px solid rgba(255, 255, 255, 0.4); */
-      box-shadow: 0 35px 60px rgba(0, 0, 0, 0.85);
-      overflow: hidden;
-      background: #02010a;
-    }
+      .level-backdrop {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: saturate(1.05) brightness(0.9);
+        z-index: 1;
+      }
 
-    .level-backdrop {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      filter: saturate(1.05) brightness(0.9);
-      z-index: 1;
-    }
+      .selector-ui {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        padding: 1rem 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+      }
 
-    .selector-ui {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      padding: 1rem 1.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
+      .selector-top {
+        display: flex;
+        align-items: center;
+        margin-left: 20px;
+        justify-content: space-between;
+        gap: 0.5rem;
+        height: 80px;
+      }
 
-    .selector-top {
-      display: flex;
-      align-items: center;
-      margin-left: 20px;
-      justify-content: space-between;
-      gap: 0.5rem;
-      height: 80px;
-    }
+      .selector-title {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
 
-    .selector-title {
-      display: flex;
-      flex-direction: column;
-      gap: 0.1rem;
-    }
+      .selector-title h1 {
+        margin-top: 10px;
+        font-size: clamp(24px, 3vw, 12px);
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #ffe86d;
+      }
 
-    .selector-title h1 {
-      margin-top: 10px;
-      font-size: clamp(24px, 3vw, 12px);
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      color: #ffe86d;
-    }
+      .selector-title .level-subtitle {
+        margin: 0;
+        font-size: 6px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #fcd56c;
+      }
 
-    .selector-title .level-subtitle {
-      margin: 0;
-      font-size: 6px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #fcd56c;
-    }
+      .icon-button {
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+      }
 
-    .icon-button {
-      border: none;
-      background: transparent;
-      padding: 0;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s ease;
-    }
+      .icon-button:hover {
+        transform: translateY(-4px);
+      }
 
-    .icon-button:hover {
-      transform: translateY(-4px);
-    }
+      .icon-button img {
+        width: 150px;
+        height: auto;
+        image-rendering: pixelated;
+      }
 
-    .icon-button img {
-      width: 150px;
-      height: auto;
-      image-rendering: pixelated;
-    }
+      .theme-label {
+        text-align: center;
+        line-height: 1;
+        height: 50px;
+        color: #ffe86d;
+      }
 
-    .theme-label {
-      text-align: center;
-      line-height: 1;
-      height: 50px;
-      color: #ffe86d;
-    }
+      .theme-label span:first-child {
+        display: block;
+        font-size: 3rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
 
-    .theme-label span:first-child {
-      display: block;
-      font-size: 3rem;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
+      .theme-label span:last-child {
+        display: block;
+        font-size: 14px;
+        letter-spacing: 1px;
+        color: #c6c8ff;
+      }
 
-    .theme-label span:last-child {
-      display: block;
-      font-size: 14px;
-      letter-spacing: 1px;
-      color: #c6c8ff;
-    }
+      .level-track {
+        position: relative;
+        flex: 1;
+        max-width: 650px;
+        max-height: 350px;
+        margin: 0 auto;
+        margin-bottom: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        left: 0;
+        right: 0;
+      }
 
-    .level-track {
-      position: relative;
-      flex: 1;
-      max-width: 650px;
-      max-height: 350px;
-      margin: 0 auto;
-      margin-bottom: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      left: 0;
-      right: 0;
-    }
+      .level-grid-track {
+        display: flex;
+        width: 100%;
+        transition: transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
+        height: 100%;
+      }
 
-    .level-grid-track {
-      display: flex;
-      width: 100%;
-      transition: transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
-      height: 100%;
-    }
+      .level-grid-page {
+        flex: 0 0 100%;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0;
+        height: 100%;
+        justify-items: stretch;
+        align-items: stretch;
+        padding-bottom: 0rem;
+      }
 
-    .level-grid-page {
-      flex: 0 0 100%;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 0;
-      height: 100%;
-      justify-items: stretch;
-      align-items: stretch;
-      padding-bottom: 0rem;
-    }
+      .level-button {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 1 / 1;
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+      }
 
-    .level-button {
-      width: 100%;
-      max-width: 100%;
-      aspect-ratio: 1 / 1;
-      border: none;
-      background: none;
-      padding: 0;
-      margin: 0;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s ease;
-    }
+      .level-number {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+        display: block;
+        pointer-events: none;
+      }
 
-    .level-number {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      image-rendering: pixelated;
-      display: block;
-      pointer-events: none;
-    }
+      .level-button img {
+        width: 100%;
+        height: 100%;
+      }
 
-    .level-button img {
-      width: 100%;
-      height: 100%;
-    }
+      .level-button:hover:not(.locked) {
+        transform: translateY(-6px);
+      }
 
-    .level-button:hover:not(.locked) {
-      transform: translateY(-6px);
-    }
+      .level-button.locked .level-number {
+        display: none;
+      }
 
-    .level-button.locked .level-number {
-      display: none;
-    }
+      .lock-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
 
-    .lock-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-    }
+      .lock-overlay img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
 
-    .lock-overlay img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      image-rendering: pixelated;
-    }
+      .level-button.locked .lock-overlay {
+        opacity: 1;
+      }
 
-    .level-button.locked .lock-overlay {
-      opacity: 1;
-    }
+      .theme-nav-row {
+        position: absolute;
+        bottom: 140px;
+        /* move up/down */
+        left: 50%;
+        transform: translateX(-50%);
 
-    .theme-nav-row {
-      position: absolute;
-      bottom: 140px;
-      /* move up/down */
-      left: 50%;
-      transform: translateX(-50%);
+        display: flex;
+        gap: 2rem;
+      }
 
-      display: flex;
-      gap: 2rem;
-    }
+      .theme-nav {
+        width: 140px;
+        height: 80px;
+        border-radius: 0;
+        border: none;
+        background: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        padding: 0;
+        box-shadow: none;
+        outline: none;
+      }
 
-    .theme-nav {
-      width: 140px;
-      height: 80px;
-      border-radius: 0;
-      border: none;
-      background: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-      padding: 0;
-      box-shadow: none;
-      outline: none;
-    }
+      .theme-nav img {
+        width: 85%;
+        height: auto;
+        image-rendering: pixelated;
+      }
 
-    .theme-nav img {
-      width: 85%;
-      height: auto;
-      image-rendering: pixelated;
-    }
+      .theme-nav:hover {
+        transform: translateY(-5px);
+      }
 
-    .theme-nav:hover {
-      transform: translateY(-5px);
-    }
+      .theme-nav:active {
+        transform: translateY(2px);
+      }
 
-    .theme-nav:active {
-      transform: translateY(2px);
-    }
+      .level-note {
+        text-align: center;
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: rgb(255, 26, 26); /* Text color */
+        margin: 0;
+      }
+    </style>
+  </head>
 
-    .level-note {
-      text-align: center;
-      font-size: 12px;
-      letter-spacing: 1px;
-      color: rgb(255, 26, 26); /* Text color */
-      margin: 0;
-    }
-  </style>
-</head>
-
-<body>
-  <div id="levelShell">
-    <div class="level-backdrop" id="levelBackdrop"></div>
-    <div class="selector-ui">
-      <div class="selector-top">
-        <div class="selector-title">
-          <!-- Titles -->
-          <!-- <p class="level-subtitle">Level Select</p>
+  <body>
+    <div id="levelShell">
+      <div class="level-backdrop" id="levelBackdrop"></div>
+      <div class="selector-ui">
+        <div class="selector-top">
+          <div class="selector-title">
+            <!-- Titles -->
+            <!-- <p class="level-subtitle">Level Select</p>
           <h1>Choose a Stage</h1> -->
+          </div>
+          <button
+            type="button"
+            id="backToMenu"
+            class="icon-button"
+            aria-label="Return to main menu"
+          >
+            <img src="assets/button/returnHomeButton.png" alt="Return home" />
+          </button>
         </div>
-        <button type="button" id="backToMenu" class="icon-button" aria-label="Return to main menu">
-          <img src="assets/button/returnHomeButton.png" alt="Return home" />
-        </button>
-      </div>
 
-      <!-- TOP CENTER TITLES -->
-      <div class="theme-label">
-        <span id="themeName">Map 1</span>
-        <span id="themeRange">Levels 1 - 5</span>
-      </div>
+        <!-- TOP CENTER TITLES -->
+        <div class="theme-label">
+          <span id="themeName">Map 1</span>
+          <span id="themeRange">Levels 1 - 5</span>
+        </div>
 
-      <!-- LEVELS -->
-      <div class="level-track">
-        <div class="level-grid-track" id="levelGridTrack"></div>
-      </div>
+        <!-- LEVELS -->
+        <div class="level-track">
+          <div class="level-grid-track" id="levelGridTrack"></div>
+        </div>
 
-      <!-- Buttonss -->
-      <div class="theme-nav-row">
-        <button type="button" class="theme-nav" id="prevTheme" aria-label="Previous map">
-          <img id="prevIcon" src="" alt="Previous map" />
-        </button>
-        <button type="button" class="theme-nav" id="nextTheme" aria-label="Next map">
-          <img id="nextIcon" src="" alt="Next map" />
-        </button>
-      </div>
-      <!-- <p class="level-note">
+        <!-- Buttonss -->
+        <div class="theme-nav-row">
+          <button
+            type="button"
+            class="theme-nav"
+            id="prevTheme"
+            aria-label="Previous map"
+          >
+            <img id="prevIcon" src="" alt="Previous map" />
+          </button>
+          <button
+            type="button"
+            class="theme-nav"
+            id="nextTheme"
+            aria-label="Next map"
+          >
+            <img id="nextIcon" src="" alt="Next map" />
+          </button>
+        </div>
+        <!-- <p class="level-note">
         Locked stages remain as padlocks until the prior rounds are completed.
       </p> -->
+      </div>
     </div>
-  </div>
-  <script>
-    (function () {
-      const SAVE_KEY = "spellshot-game-state-v1";
-      const SELECTED_LEVEL_KEY = "spellshot-selected-level";
-      const THEMES = [
-        {
-          id: "map1",
-          label: "Map 1",
-          start: 1,
-          end: 5,
-          background: "assets/map1/background/background.png",
-          levelFolder: "assets/map1/level",
-          nav: {
-            back: "assets/map1/level/back.png",
-            next: "assets/map1/level/next.png"
+    <script>
+      (function () {
+        const SAVE_KEY = "spellshot-game-state-v1";
+        const SELECTED_LEVEL_KEY = "spellshot-selected-level";
+        const THEMES = [
+          {
+            id: "map1",
+            label: "Map 1",
+            start: 1,
+            end: 5,
+            background: "assets/map1/background/background.png",
+            levelFolder: "assets/map1/level",
+            nav: {
+              back: "assets/map1/level/back.png",
+              next: "assets/map1/level/next.png",
+            },
+          },
+          {
+            id: "map2",
+            label: "Map 2",
+            start: 6,
+            end: 10,
+            background: "assets/map2/background/background.png",
+            levelFolder: "assets/map2/level",
+            nav: {
+              back: "assets/map2/level/back.png",
+              next: "assets/map2/level/next.png",
+            },
+          },
+          {
+            id: "map3",
+            label: "Map 3",
+            start: 11,
+            end: 15,
+            background: "assets/map3/background/background.png",
+            levelFolder: "assets/map3/level",
+            nav: {
+              back: "assets/map3/level/back.png",
+              next: "assets/map3/level/next.png",
+            },
+          },
+        ];
+
+        const levelGridTrack = document.getElementById("levelGridTrack");
+        const backdrop = document.getElementById("levelBackdrop");
+        const prevBtn = document.getElementById("prevTheme");
+        const nextBtn = document.getElementById("nextTheme");
+        const themeNameEl = document.getElementById("themeName");
+        const themeRangeEl = document.getElementById("themeRange");
+        const prevIcon = document.getElementById("prevIcon");
+        const nextIcon = document.getElementById("nextIcon");
+        const backToMenu = document.getElementById("backToMenu");
+
+        const savedState = (() => {
+          try {
+            const raw = localStorage.getItem(SAVE_KEY);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : {};
+          } catch (error) {
+            console.warn("SpellShot: Unable to parse saved level data", error);
+            return {};
           }
-        },
-        {
-          id: "map2",
-          label: "Map 2",
-          start: 6,
-          end: 10,
-          background: "assets/map2/background/background.png",
-          levelFolder: "assets/map2/level",
-          nav: {
-            back: "assets/map2/level/back.png",
-            next: "assets/map2/level/next.png"
-          }
-        },
-        {
-          id: "map3",
-          label: "Map 3",
-          start: 11,
-          end: 15,
-          background: "assets/map3/background/background.png",
-          levelFolder: "assets/map3/level",
-          nav: {
-            back: "assets/map3/level/back.png",
-            next: "assets/map3/level/next.png"
-          }
+        })();
+
+        const candidate = Number(
+          savedState.maxUnlockedRound ?? savedState.currentRound ?? 1,
+        );
+        const highestUnlocked = Math.min(
+          15,
+          Math.max(1, Number.isFinite(candidate) ? candidate : 1),
+        );
+
+        const levelPages = THEMES.map(createThemePage);
+        let currentThemeIndex = 0;
+        let isTransitioning = false;
+
+        function createThemePage() {
+          const page = document.createElement("div");
+          page.className = "level-grid-page";
+          const buttons = Array.from({ length: 5 }, () => createLevelButton());
+          buttons.forEach((button) => page.appendChild(button));
+          levelGridTrack.appendChild(page);
+          return buttons;
         }
-      ];
 
-      const levelGridTrack = document.getElementById("levelGridTrack");
-      const backdrop = document.getElementById("levelBackdrop");
-      const prevBtn = document.getElementById("prevTheme");
-      const nextBtn = document.getElementById("nextTheme");
-      const themeNameEl = document.getElementById("themeName");
-      const themeRangeEl = document.getElementById("themeRange");
-      const prevIcon = document.getElementById("prevIcon");
-      const nextIcon = document.getElementById("nextIcon");
-      const backToMenu = document.getElementById("backToMenu");
-
-      const savedState = (() => {
-        try {
-          const raw = localStorage.getItem(SAVE_KEY);
-          if (!raw) return {};
-          const parsed = JSON.parse(raw);
-          return parsed && typeof parsed === "object" ? parsed : {};
-        } catch (error) {
-          console.warn("SpellShot: Unable to parse saved level data", error);
-          return {};
+        function createLevelButton() {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "level-button";
+          const numberImg = document.createElement("img");
+          numberImg.className = "level-number";
+          numberImg.alt = "Level number";
+          const lockOverlay = document.createElement("span");
+          lockOverlay.className = "lock-overlay";
+          lockOverlay.innerHTML = `<img alt="Locked level" />`;
+          button.append(numberImg, lockOverlay);
+          button.addEventListener("click", () => {
+            const level = Number(button.dataset.level);
+            if (!level || button.classList.contains("locked")) return;
+            playClickSfx();
+            sessionStorage.setItem(SELECTED_LEVEL_KEY, String(level));
+            document.body.classList.add("fade-out");
+            setTimeout(() => {
+              window.location.href = "game.html";
+            }, 320);
+          });
+          return button;
         }
-      })();
 
-      const candidate = Number(savedState.maxUnlockedRound ?? savedState.currentRound ?? 1);
-      const highestUnlocked = Math.min(15, Math.max(1, Number.isFinite(candidate) ? candidate : 1));
+        function refreshPageForTheme(themeIndex) {
+          const theme = THEMES[themeIndex];
+          const buttons = levelPages[themeIndex] || [];
+          buttons.forEach((button, index) => {
+            const levelNumber = theme.start + index;
+            const numberImg = button.querySelector(".level-number");
+            const lockImg = button.querySelector(".lock-overlay img");
+            if (numberImg) {
+              numberImg.src = `${theme.levelFolder}/${index + 1}.png`;
+              numberImg.alt = `Level ${levelNumber}`;
+            }
+            if (lockImg) {
+              lockImg.src = `${theme.levelFolder}/lock.png`;
+            }
+            button.dataset.level = String(levelNumber);
+            const locked = levelNumber > highestUnlocked;
+            button.classList.toggle("locked", locked);
+            button.classList.toggle(
+              "highlighted",
+              !locked && levelNumber === highestUnlocked,
+            );
+            if (numberImg) {
+              numberImg.style.display = locked ? "none" : "";
+            }
+          });
+        }
 
-      const levelPages = THEMES.map(createThemePage);
-      let currentThemeIndex = 0;
-      let isTransitioning = false;
+        function refreshAllPages() {
+          THEMES.forEach((_, index) => refreshPageForTheme(index));
+        }
 
-      function createThemePage() {
-        const page = document.createElement("div");
-        page.className = "level-grid-page";
-        const buttons = Array.from({ length: 5 }, () => createLevelButton());
-        buttons.forEach((button) => page.appendChild(button));
-        levelGridTrack.appendChild(page);
-        return buttons;
-      }
+        function updateThemeDisplay(theme) {
+          themeNameEl.textContent = theme.label.toUpperCase();
+          themeRangeEl.textContent = `Levels ${theme.start} - ${theme.end}`;
+          backdrop.style.backgroundImage = `url('${theme.background}')`;
+          prevIcon.src = theme.nav.back;
+          nextIcon.src = theme.nav.next;
+        }
 
-      function createLevelButton() {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "level-button";
-        const numberImg = document.createElement("img");
-        numberImg.className = "level-number";
-        numberImg.alt = "Level number";
-        const lockOverlay = document.createElement("span");
-        lockOverlay.className = "lock-overlay";
-        lockOverlay.innerHTML = `<img alt="Locked level" />`;
-        button.append(numberImg, lockOverlay);
-        button.addEventListener("click", () => {
-          const level = Number(button.dataset.level);
-          if (!level || button.classList.contains("locked")) return;
-          playClickSfx();  
-          sessionStorage.setItem(SELECTED_LEVEL_KEY, String(level));
+        function updateGridPosition() {
+          levelGridTrack.style.transform = `translateX(-${currentThemeIndex * 100}%)`;
+        }
+
+        function applyTheme(index) {
+          const normalized =
+            ((index % THEMES.length) + THEMES.length) % THEMES.length;
+          currentThemeIndex = normalized;
+          updateThemeDisplay(THEMES[currentThemeIndex]);
+          refreshAllPages();
+          updateGridPosition();
+        }
+
+        function transitionTheme(index) {
+          if (isTransitioning) return;
+          const normalized =
+            ((index % THEMES.length) + THEMES.length) % THEMES.length;
+          if (normalized === currentThemeIndex) return;
+          isTransitioning = true;
+          applyTheme(normalized);
+          setTimeout(() => {
+            isTransitioning = false;
+          }, 360);
+        }
+
+        prevBtn.addEventListener("click", () => {
+          playClickSfx();
+          transitionTheme(currentThemeIndex - 1);
+        });
+        nextBtn.addEventListener("click", () => {
+          playClickSfx();
+          transitionTheme(currentThemeIndex + 1);
+        });
+
+        backToMenu.addEventListener("click", () => {
+          playClickSfx();
           document.body.classList.add("fade-out");
           setTimeout(() => {
-            window.location.href = "game.html";
+            window.location.href = "index.html";
           }, 320);
         });
-        return button;
-      }
 
-      function refreshPageForTheme(themeIndex) {
-        const theme = THEMES[themeIndex];
-        const buttons = levelPages[themeIndex] || [];
-        buttons.forEach((button, index) => {
-          const levelNumber = theme.start + index;
-          const numberImg = button.querySelector(".level-number");
-          const lockImg = button.querySelector(".lock-overlay img");
-          if (numberImg) {
-            numberImg.src = `${theme.levelFolder}/${index + 1}.png`;
-            numberImg.alt = `Level ${levelNumber}`;
-          }
-          if (lockImg) {
-            lockImg.src = `${theme.levelFolder}/lock.png`;
-          }
-          button.dataset.level = String(levelNumber);
-          const locked = levelNumber > highestUnlocked;
-          button.classList.toggle("locked", locked);
-          button.classList.toggle("highlighted", !locked && levelNumber === highestUnlocked);
-          if (numberImg) {
-            numberImg.style.display = locked ? "none" : "";
-          }
-        });
-      }
-
-      function refreshAllPages() {
-        THEMES.forEach((_, index) => refreshPageForTheme(index));
-      }
-
-      function updateThemeDisplay(theme) {
-        themeNameEl.textContent = theme.label.toUpperCase();
-        themeRangeEl.textContent = `Levels ${theme.start} - ${theme.end}`;
-        backdrop.style.backgroundImage = `url('${theme.background}')`;
-        prevIcon.src = theme.nav.back;
-        nextIcon.src = theme.nav.next;
-      }
-
-      function updateGridPosition() {
-        levelGridTrack.style.transform = `translateX(-${currentThemeIndex * 100}%)`;
-      }
-
-      function applyTheme(index) {
-        const normalized = ((index % THEMES.length) + THEMES.length) % THEMES.length;
-        currentThemeIndex = normalized;
-        updateThemeDisplay(THEMES[currentThemeIndex]);
-        refreshAllPages();
-        updateGridPosition();
-      }
-
-      function transitionTheme(index) {
-        if (isTransitioning) return;
-        const normalized = ((index % THEMES.length) + THEMES.length) % THEMES.length;
-        if (normalized === currentThemeIndex) return;
-        isTransitioning = true;
-        applyTheme(normalized);
-        setTimeout(() => {
-          isTransitioning = false;
-        }, 360);
-      }
-
-      prevBtn.addEventListener("click", () => { playClickSfx(); transitionTheme(currentThemeIndex - 1); });
-      nextBtn.addEventListener("click", () => { playClickSfx(); transitionTheme(currentThemeIndex + 1); });
-
-      backToMenu.addEventListener("click", () => {
-        playClickSfx();  
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = "index.html";
-        }, 320);
-      });
-
-      applyTheme(0);
-    })();
-  </script>
-  <script src="js/settings.js"></script>
-  <script src="js/sfx.js"></script>
-  <script src="js/music.js"></script>
-</body>
-
+        applyTheme(0);
+      })();
+    </script>
+    <script src="js/settings.js"></script>
+    <script src="js/sfx.js"></script>
+    <script src="js/music.js"></script>
+  </body>
 </html>
