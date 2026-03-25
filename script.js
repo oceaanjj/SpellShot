@@ -9,6 +9,7 @@
     maxLives: 3,
     lives: 3,
     coins: 0,
+    sessionCoins: 0,
     maxAmmo: 6,
     ammo: 6
   };
@@ -103,14 +104,22 @@
   }
 
     function adjustCoins(amount) {
-      if (!amount) return state.coins;
-      state.coins = Math.max(0, state.coins + amount);
-      return state.coins;
+      if (!amount) return state.sessionCoins;
+      state.sessionCoins = Math.max(0, state.sessionCoins + amount);
+      return state.sessionCoins;
     }
 
   function getAccumulatedCoins() {
-    const baseline = typeof state.sessionBaselineCoins === "number" ? state.sessionBaselineCoins : 0;
-    return Math.max(0, state.coins - baseline);
+    return Math.max(0, state.sessionCoins);
+  }
+
+  function bankSessionCoins() {
+    state.coins = Math.max(0, state.coins + state.sessionCoins);
+    state.sessionCoins = 0;
+  }
+
+  function discardSessionCoins() {
+    state.sessionCoins = 0;
   }
 
   function resetDisplayedCoins() {
@@ -285,6 +294,8 @@
     adjustCoins: adjustCoins,
     loadNextWordInTier: loadNextWordInTier,
     resetDisplayedCoins: resetDisplayedCoins,
+    bankSessionCoins: bankSessionCoins,
+    discardSessionCoins: discardSessionCoins,
     state: state,
     // Expose for debugging
     _wordLists: () => wordLists,

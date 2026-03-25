@@ -1591,7 +1591,7 @@ function drawFloatingHearts() {
     function triggerCoinCounterCountUp() {
       if (!window.TargetWord) return;
       const state = window.TargetWord.state;
-      const accumulated = Math.max(0, state.coins - (state.sessionBaselineCoins || 0));
+      const accumulated = Math.max(0, state.sessionCoins);
       CoinAnimator.animateTo(accumulated);
     }
 
@@ -1654,6 +1654,7 @@ function drawFloatingHearts() {
 
       // All words for this level done — show level complete
       wordsCompletedThisLevel = 0;
+      if (window.TargetWord) TargetWord.bankSessionCoins();
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
       currentWord = TargetWord.state.word;
@@ -2322,6 +2323,7 @@ function drawFloatingHearts() {
       comboMessageTimer = 0;
       hidePauseOverlay();
       if (gameOver) return;
+      if (window.TargetWord) TargetWord.discardSessionCoins();
       gameOver = true;
 
       const pauseUI = document.getElementById('pauseUI');
@@ -2497,6 +2499,7 @@ function _cleanupAllCompleteListeners() {
     }
 
     function goToMainMenu() {
+      if (window.TargetWord && !gameOver) TargetWord.discardSessionCoins();
       clearSavedGameState(); 
       clearOverlayBackdrop();
       document.body.style.transition = "opacity 0.35s ease";
@@ -2559,6 +2562,7 @@ function _cleanupAllCompleteListeners() {
       comboCount = 0;
       comboMessageTimer = 0;
       floatingHearts.length = 0;
+      if (window.TargetWord) TargetWord.discardSessionCoins();
       lastHeartSpawnTime = 0;
       if (!window.TargetWord) return;
       stopTickingSfx();
