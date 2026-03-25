@@ -74,6 +74,7 @@
     .selector-top {
       display: flex;
       align-items: center;
+      margin-left: 20px;
       justify-content: space-between;
       gap: 0.5rem;
       height: 80px;
@@ -86,7 +87,7 @@
     }
 
     .selector-title h1 {
-      margin: 0;
+      margin-top: 10px;
       font-size: clamp(24px, 3vw, 12px);
       letter-spacing: 5px;
       text-transform: uppercase;
@@ -126,6 +127,7 @@
       text-align: center;
       line-height: 1;
       height: 50px;
+      color: #ffe86d;
     }
 
     .theme-label span:first-child {
@@ -279,9 +281,9 @@
 
     .level-note {
       text-align: center;
-      font-size: 10px;
+      font-size: 12px;
       letter-spacing: 1px;
-      color: rgba(255, 0, 0, 0.75);
+      color: rgb(255, 26, 26); /* Text color */
       margin: 0;
     }
   </style>
@@ -294,8 +296,8 @@
       <div class="selector-top">
         <div class="selector-title">
           <!-- Titles -->
-          <p class="level-subtitle">Level Select</p>
-          <h1>Choose a Stage</h1>
+          <!-- <p class="level-subtitle">Level Select</p>
+          <h1>Choose a Stage</h1> -->
         </div>
         <button type="button" id="backToMenu" class="icon-button" aria-label="Return to main menu">
           <img src="assets/button/returnHomeButton.png" alt="Return home" />
@@ -322,9 +324,9 @@
           <img id="nextIcon" src="" alt="Next map" />
         </button>
       </div>
-      <p class="level-note">
+      <!-- <p class="level-note">
         Locked stages remain as padlocks until the prior rounds are completed.
-      </p>
+      </p> -->
     </div>
   </div>
   <script>

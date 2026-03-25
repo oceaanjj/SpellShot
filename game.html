@@ -13,6 +13,32 @@
       font-style: normal;
     }
 
+    /* ── All Complete overlay extras ─────────────── */
+    @keyframes pressAnythingBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+    #pressAnythingHint {
+      font-family: "PixelFont", sans-serif;
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      color: rgba(255, 255, 255, 0.90);
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+      animation: pressAnythingBlink 0.85s ease-in-out infinite;
+      margin-top: 8px;
+      text-transform: uppercase;
+      text-align: center;
+      pointer-events: none;
+    }
+    #confettiCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 29;          /* just above allCompleteOverlay (28) */
+      display: none;
+      image-rendering: pixelated;
+    }
+
     #gameShell, #gameShell * {
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -628,6 +654,7 @@
         font-size: 22px; color: #FFD700; letter-spacing: 4px;
         animation: loadPulse 1s ease-in-out infinite;">LOADING...</div>
   </div>
+
   <div id="gameShell">
     <div id="overlayBackdrop"></div>
     <div id="borderOverlay">
@@ -698,20 +725,14 @@
       </div>
     </div>
 
-    <div id="allCompleteOverlay">
-  <div class="overlay-stack" id="allCompleteStack">
-    <img src="assets/congrats.png" alt="All Levels Complete" />
-    <p class="overlay-reason" style="color:#ffe066;">ALL LEVELS COMPLETE!</p>
-    <div class="game-over-actions">
-      <button id="allCompleteHome" class="ui-btn" type="button">
-        <img class="btn overlay-icon" src="assets/home.png" alt="Home" />
-      </button>
-      <button id="allCompleteRetry" class="ui-btn" type="button">
-        <img class="btn overlay-icon" src="assets/button/retryButton.png" alt="Play Again" />
-      </button>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div id="allCompleteOverlay">
+    <div class="overlay-stack" id="allCompleteStack">
+      <img src="assets/congrats.png" alt="All Levels Complete" />
+      <p id="pressAnythingHint">— press anything to return home —</p>
     </div>
   </div>
-</div>
   </div>
 
   <script src="js/cannonSkins.js"></script>
@@ -1099,18 +1120,18 @@
       null,                         
       { words: 1, seconds: 30  },  
       { words: 1, seconds: 30  },   
-      { words: 2, seconds: 60  },  
-      { words: 2, seconds: 60  },   
-      { words: 2, seconds: 60  },  
-      { words: 3, seconds: 90  },   
-      { words: 3, seconds: 90  },  
-      { words: 3, seconds: 90  },   
-      { words: 3, seconds: 90  },   
+      { words: 1, seconds: 60  },  
+      { words: 1, seconds: 60  },   
+      { words: 1, seconds: 60  },  
       { words: 1, seconds: 90  },   
-      { words: 4, seconds: 120 },   
-      { words: 4, seconds: 120 },   
-      { words: 4, seconds: 120 },  
-      { words: 4, seconds: 120 },   
+      { words: 1, seconds: 90  },  
+      { words: 1, seconds: 90  },   
+      { words: 1, seconds: 90  },   
+      { words: 1, seconds: 90  },   
+      { words: 1, seconds: 120 },   
+      { words: 1, seconds: 120 },   
+      { words: 1, seconds: 120 },  
+      { words: 1, seconds: 120 },   
       { words: 1, seconds: 120 },   
     ];
     let wordsRequiredForLevel = 1;
@@ -2417,13 +2438,39 @@ function drawFloatingHearts() {
     }
 
     function showAllLevelsCompleteOverlay() {
-      const el = document.getElementById('allCompleteOverlay');
-      if (!el) return;
-      el.classList.add('active');
-      roundCompleteActive = true;
-      pauseUIButton?.classList.add('hidden');
-      if (typeof setPauseToggleEnabled === 'function') setPauseToggleEnabled(false);
-    }
+  const el = document.getElementById('allCompleteOverlay');
+  if (!el) return;
+  el.classList.add('active');
+  roundCompleteActive = true;
+  pauseUIButton?.classList.add('hidden');
+  if (typeof setPauseToggleEnabled === 'function') setPauseToggleEnabled(false);
+
+  // Play congrats sfx + start confetti
+  if (typeof playCongratusSfx === 'function') playCongratusSfx();
+  startConfetti();
+
+  // "Press anything" shortcut → home
+  setTimeout(() => {
+    document.addEventListener('keydown', _pressAnythingToHome);
+    document.addEventListener('pointerdown', _pressAnythingToHome);
+  }, 600); // short delay so the button-release that triggered this doesn't fire it
+}
+
+function _pressAnythingToHome(e) {
+  // Let the dedicated overlay buttons handle their own clicks
+  if (e.target && typeof e.target.closest === 'function' && e.target.closest('.ui-btn')) return;
+  const el = document.getElementById('allCompleteOverlay');
+  if (!el || !el.classList.contains('active')) return;
+  _cleanupAllCompleteListeners();
+  stopConfetti();
+  playClickSfx();
+  goToMainMenu();
+}
+
+function _cleanupAllCompleteListeners() {
+  document.removeEventListener('keydown',     _pressAnythingToHome);
+  document.removeEventListener('pointerdown', _pressAnythingToHome);
+}
 
 
 
@@ -3244,6 +3291,8 @@ if (allCompleteHome) {
   allCompleteHome.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    _cleanupAllCompleteListeners();
+    stopConfetti();  
     playClickSfx();
     goToMainMenu();
   });
@@ -3254,6 +3303,8 @@ if (allCompleteRetry) {
   allCompleteRetry.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    _cleanupAllCompleteListeners();
+    stopConfetti(); 
     playClickSfx();
 
     const el = document.getElementById('allCompleteOverlay');
@@ -3393,6 +3444,96 @@ if (allCompleteRetry) {
       if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(true);
       lastTimerTimestamp = null; 
     }
+
+    // ─── Confetti system ──────────────────────────────────────────
+let _confettiParticles = [];
+let _confettiCanvas    = null;
+let _confettiCtx       = null;
+let _confettiAnimId    = null;
+const CONFETTI_COLORS  = [
+  '#ff6b6b','#ffd700','#7efc7f',
+  '#64b5f6','#ff9f00','#ff69b4','#c084fc','#ffffff'
+];
+
+function _initConfettiCanvas() {
+  _confettiCanvas = document.getElementById('confettiCanvas');
+  if (!_confettiCanvas) return;
+  _confettiCanvas.width  = GAME_W;
+  _confettiCanvas.height = GAME_H;
+  _confettiCtx = _confettiCanvas.getContext('2d');
+}
+
+function _spawnConfetti() {
+  _confettiParticles = [];
+  for (let i = 0; i < 140; i++) {
+    _confettiParticles.push({
+      x:        Math.random() * GAME_W,
+      y:        -10 - Math.random() * 120,
+      vx:       (Math.random() - 0.5) * 3.2,
+      vy:       1.8 + Math.random() * 2.8,
+      color:    CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      size:     5 + Math.random() * 9,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.14,
+      rect:     Math.random() > 0.45   // rect vs circle
+    });
+  }
+}
+
+function _updateConfetti() {
+  _confettiParticles.forEach(p => {
+    p.x        += p.vx;
+    p.y        += p.vy;
+    p.vy       += 0.04;           // gentle gravity
+    p.rotation += p.rotSpeed;
+    if (p.y > GAME_H + 20) {      // loop back to top
+      p.y  = -10;
+      p.x  = Math.random() * GAME_W;
+      p.vy = 1.8 + Math.random() * 2.8;
+    }
+  });
+}
+
+function _drawConfetti() {
+  if (!_confettiCtx) return;
+  _confettiCtx.clearRect(0, 0, GAME_W, GAME_H);
+  _confettiParticles.forEach(p => {
+    _confettiCtx.save();
+    _confettiCtx.fillStyle = p.color;
+    _confettiCtx.translate(p.x, p.y);
+    _confettiCtx.rotate(p.rotation);
+    if (p.rect) {
+      _confettiCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+    } else {
+      _confettiCtx.beginPath();
+      _confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+      _confettiCtx.fill();
+    }
+    _confettiCtx.restore();
+  });
+}
+
+function startConfetti() {
+  if (!_confettiCanvas) _initConfettiCanvas();
+  if (!_confettiCanvas) return;
+  _confettiCanvas.style.display = 'block';
+  _spawnConfetti();
+  const loop = () => {
+    _updateConfetti();
+    _drawConfetti();
+    _confettiAnimId = requestAnimationFrame(loop);
+  };
+  if (_confettiAnimId) cancelAnimationFrame(_confettiAnimId);
+  _confettiAnimId = requestAnimationFrame(loop);
+}
+
+function stopConfetti() {
+  if (_confettiAnimId) { cancelAnimationFrame(_confettiAnimId); _confettiAnimId = null; }
+  if (_confettiCtx)    _confettiCtx.clearRect(0, 0, GAME_W, GAME_H);
+  if (_confettiCanvas) _confettiCanvas.style.display = 'none';
+  _confettiParticles = [];
+}
+// ──────────────────────────────────────────────────────────────
 
 
     function startGame() {
