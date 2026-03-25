@@ -49,7 +49,7 @@
       id: 1,
       type: "info",
       title: "WELCOME TO SPELL SHOT!",
-      text: "Spell words to earn coins while getting familiar with computer terms. Let's learn how!",
+      text: "Spell words to earn coins while getting familiar with graphics and visual computing terms. Let's learn how!",
       requiresClick: true,
       pauseGame: true,
     },
