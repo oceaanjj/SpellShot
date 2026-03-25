@@ -467,6 +467,10 @@
     const TWORD = "HELLO";
     let tProgress = Array(5).fill(false);
     let tCoins = 0;
+    let displayCoins = 0;
+    let coinCounterAnimTimer = 0;
+    // higher for slower coin animation and lower for faster coin animation
+    const COIN_ANIM_DURATION = 20;
     let tLives = Infinity;
     let tAmmo = Infinity;
     const T_MAX_LIVES = 3;
@@ -1300,6 +1304,8 @@
         // Correct letter
         tProgress[nextIndex] = true;
         tCoins += COIN_HIT_REWARD;
+        displayCoins = tCoins - COIN_HIT_REWARD;
+        coinCounterAnimTimer = COIN_ANIM_DURATION;
         // spawnHitPopup(block, COIN_HIT_REWARD);
         markTargetWordDirty();
         triggerLetterSuccessFlash(block.x + block.width / 2, block.y + block.height / 2);
@@ -1887,7 +1893,7 @@
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(tCoins, pad + coinWidth + 10, pad + coinHeight / 2 + 4);
+      ctx.fillText(displayCoins, pad + coinWidth + 10, pad + coinHeight / 2 + 4);
 
       // Lives
       const heartSize = 40;
@@ -1953,6 +1959,14 @@
       const canProgress = !gameOver && !gamePaused;
       if (canProgress) {
         updateCannonBalls();
+        if (coinCounterAnimTimer > 0) {
+          coinCounterAnimTimer--;
+          if (displayCoins < tCoins) {
+            const increment = Math.ceil((tCoins - displayCoins) / (coinCounterAnimTimer + 1));
+            displayCoins += increment;
+            if (displayCoins > tCoins) displayCoins = tCoins;
+          }
+        }
         updateTimer(ts);
         updateBlockAnimations();
         updateLetterHitEffects();
