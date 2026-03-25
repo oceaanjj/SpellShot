@@ -110,7 +110,11 @@
     }
 
   function getAccumulatedCoins() {
-    return Math.max(0, state.sessionCoins);
+    const baseline = typeof state.sessionBaselineCoins === "number"
+      ? state.sessionBaselineCoins
+      : 0;
+
+    return Math.max(0, (state.coins - baseline) + state.sessionCoins);
   }
 
   function bankSessionCoins() {

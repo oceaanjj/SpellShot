@@ -697,14 +697,14 @@
     </div>
     <div id="gameOverOverlay">
       <div class="overlay-stack">
-        <img src="assets/gameOver.png" alt="Game Over" />
+        <img id="gameOverTitleImage" src="assets/button/gameOver1.png" alt="Game Over" />
         <p id="gameOverReason" class="overlay-reason"></p>
         <div class="game-over-actions">
-          <button id="gameOverRetry" class="ui-btn" type="button" aria-label="Retry level">
-            <img class="btn overlay-icon" src="assets/button/retryButton.png" alt="Retry level" />
+          <button id="gameOverRetry" class="ui-btn" type="button">
+            <img id="gameOverRetryImage" class="btn overlay-icon" src="assets/button/retryButton1.png" alt="Retry level" />
           </button>
-          <button id="gameOverExit" class="ui-btn" type="button" aria-label="Back to levels">
-            <img class="btn overlay-icon" src="assets/button/returnHomeButton.png" alt="Back to levels" />
+          <button id="gameOverExit" class="ui-btn" type="button">
+            <img id="gameOverExitImage" class="btn overlay-icon" src="assets/button/returnHomeButton1.png" alt="Back to levels" />
           </button>
         </div>
       </div>
@@ -963,6 +963,11 @@
           left: "assets/map1/border/leftBorder.png",
           right: "assets/map1/border/rightBorder.png",
           bottom: "assets/map1/border/bottomBorder.png"
+        },
+        gameOverUI: {
+          title: "assets/button/gameOver1.png",
+          retry: "assets/button/retryButton1.png",
+          home: "assets/button/returnHomeButton1.png"
         }
       },
       {
@@ -975,6 +980,11 @@
           left: "assets/map2/border/leftBorder.png",
           right: "assets/map2/border/rightBorder.png",
           bottom: "assets/map2/border/bottomBorder.png"
+        },
+        gameOverUI: {
+          title: "assets/button/gameOver2.png",
+          retry: "assets/button/retryButton2.png",
+          home: "assets/button/returnHomeButton2.png"
         }
       },
       {
@@ -987,6 +997,11 @@
           left: "assets/map3/border/leftBorder.png",
           right: "assets/map3/border/rightBorder.png",
           bottom: "assets/map3/border/bottomBorder.png"
+        },
+        gameOverUI: {
+          title: "assets/button/gameOver3.png",
+          retry: "assets/button/retryButton.png",
+          home: "assets/button/returnHomeButton.png"
         }
       }
     ];
@@ -1064,19 +1079,34 @@
 
     function applyTheme(theme) {
       if (!theme || theme.id === currentThemeId) return;
+
       currentThemeId = theme.id;
+
       setLetterSprites(theme.letterFolder);
       bgImg.src = theme.background;
       mapBridgeImage.src = theme.bridge;
+
       const timerSrc = theme.timerBox || THEMES[0].timerBox;
       timerBoxImage.src = timerSrc;
+
       if (timerOverlayImage) {
         timerOverlayImage.src = timerSrc;
       }
+
+      if (theme.gameOverUI) {
+        gameOverTitleImage.src = theme.gameOverUI.title;
+        gameOverRetryImage.src = theme.gameOverUI.retry;
+        gameOverExitImage.src = theme.gameOverUI.home;
+      }
+
       onImageReady(timerBoxImage, refreshTimerOverlay);
-      setBorderImage(borderLeftElem, theme.borders.left);
-      setBorderImage(borderRightElem, theme.borders.right);
-      setBorderImage(borderBottomElem, theme.borders.bottom);
+
+      if (theme.borders) {
+        setBorderImage(borderLeftElem, theme.borders.left);
+        setBorderImage(borderRightElem, theme.borders.right);
+        setBorderImage(borderBottomElem, theme.borders.bottom);
+      }
+
       markTargetWordDirty();
     }
 
@@ -1591,7 +1621,16 @@ function drawFloatingHearts() {
     function triggerCoinCounterCountUp() {
       if (!window.TargetWord) return;
       const state = window.TargetWord.state;
-      const accumulated = Math.max(0, state.sessionCoins);
+
+      const baseline = typeof state.sessionBaselineCoins === "number"
+        ? state.sessionBaselineCoins
+        : 0;
+
+      const accumulated = Math.max(
+        0,
+        (state.coins - baseline) + state.sessionCoins
+      );
+
       CoinAnimator.animateTo(accumulated);
     }
 
@@ -1655,6 +1694,7 @@ function drawFloatingHearts() {
       // All words for this level done — show level complete
       wordsCompletedThisLevel = 0;
       if (window.TargetWord) TargetWord.bankSessionCoins();
+      triggerCoinCounterCountUp();
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
       currentWord = TargetWord.state.word;
