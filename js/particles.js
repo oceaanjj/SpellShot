@@ -10,11 +10,9 @@
 //  drawParticles()  → draws all particles onto the fxCanvas
 // =============================================
 
-
 // -- Storage for active particles and embers --
-const particles = [];  // button click effects
-const embers    = [];  // background fire bits
-
+const particles = []; // button click effects
+const embers = []; // background fire bits
 
 // -- Burst of coloured dots from a point --
 // Called when the player clicks a button
@@ -29,18 +27,18 @@ function spawnClickBurst(x, y, color) {
     const speed = 2.5 + Math.random() * 8;
 
     particles.push({
-      x, y,
-      vx:     Math.cos(angle) * speed,   // horizontal speed
-      vy:     Math.sin(angle) * speed,   // vertical speed
-      life:   1,                         // 1 = fully visible, 0 = gone
-      decay:  0.020 + Math.random() * 0.022,  // how fast it fades out
-      radius: 2.5   + Math.random() * 5.5,    // dot size
+      x,
+      y,
+      vx: Math.cos(angle) * speed, // horizontal speed
+      vy: Math.sin(angle) * speed, // vertical speed
+      life: 1, // 1 = fully visible, 0 = gone
+      decay: 0.02 + Math.random() * 0.022, // how fast it fades out
+      radius: 2.5 + Math.random() * 5.5, // dot size
       color,
-      star: false,  // this is a dot, not a star shape
+      star: false, // this is a dot, not a star shape
     });
   }
 }
-
 
 // -- White star sparks that drift upward --
 // Also called on button click, layered on top of the dot burst
@@ -50,34 +48,33 @@ function spawnSparkles(x, y) {
     const speed = 2 + Math.random() * 6;
 
     particles.push({
-      x, y,
-      vx:     Math.cos(angle) * speed,
-      vy:     Math.sin(angle) * speed - 1.5,  // -1.5 makes them drift upward
-      life:   1,
-      decay:  0.018 + Math.random() * 0.012,
-      radius: 4    + Math.random() * 4,
-      color: '#ffffff',
-      star: true,  // drawn as a cross/star shape instead of a dot
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5, // -1.5 makes them drift upward
+      life: 1,
+      decay: 0.018 + Math.random() * 0.012,
+      radius: 4 + Math.random() * 4,
+      color: "#ffffff",
+      star: true, // drawn as a cross/star shape instead of a dot
     });
   }
 }
-
 
 // -- One small glowing ember floating upward --
 // Called randomly every frame to keep the background feeling alive
 function spawnEmber() {
   embers.push({
-    x:      55  + Math.random() * 480,   // random spot along the bottom area
-    y:      270 + Math.random() * 20,
-    vx:     (Math.random() - 0.5) * 1.4, // slight sideways drift
-    vy:     -(0.8 + Math.random() * 2.5), // floats upward
-    life:   1,
-    decay:  0.008 + Math.random() * 0.012,
-    radius: 2    + Math.random() * 5,
-    hue:    18   + Math.random() * 32,   // warm orange/yellow colour range
+    x: 55 + Math.random() * 480, // random spot along the bottom area
+    y: 270 + Math.random() * 20,
+    vx: (Math.random() - 0.5) * 1.4, // slight sideways drift
+    vy: -(0.8 + Math.random() * 2.5), // floats upward
+    life: 1,
+    decay: 0.008 + Math.random() * 0.012,
+    radius: 2 + Math.random() * 5,
+    hue: 18 + Math.random() * 32, // warm orange/yellow colour range
   });
 }
-
 
 // -- Move all particles forward by one frame --
 // Called every frame before drawing
@@ -86,10 +83,10 @@ function tickParticles() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
 
-    p.x    += p.vx;
-    p.y    += p.vy;
-    p.vy   += 0.20;   // gravity pulls them down
-    p.vx   *= 0.965;  // slow down sideways over time
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.2; // gravity pulls them down
+    p.vx *= 0.965; // slow down sideways over time
     p.life -= p.decay;
 
     // Remove it once it's fully faded
@@ -100,14 +97,13 @@ function tickParticles() {
   for (let i = embers.length - 1; i >= 0; i--) {
     const e = embers[i];
 
-    e.x    += e.vx + Math.sin(e.life * 8) * 0.3;  // gentle swaying side to side
-    e.y    += e.vy;
+    e.x += e.vx + Math.sin(e.life * 8) * 0.3; // gentle swaying side to side
+    e.y += e.vy;
     e.life -= e.decay;
 
     if (e.life <= 0) embers.splice(i, 1);
   }
 }
-
 
 // -- Draw all particles onto the effects canvas --
 // fxCtx is the canvas context passed in from main
@@ -118,12 +114,12 @@ function drawParticles(fxCtx) {
   // Draw embers (glowing orange fire dots)
   for (const e of embers) {
     fxCtx.save();
-    fxCtx.globalAlpha = e.life * 0.75;                        // fade as it dies
-    fxCtx.shadowColor = `hsl(${e.hue}, 100%, 60%)`;           // glow colour
-    fxCtx.shadowBlur  = 12;
-    fxCtx.fillStyle   = `hsl(${e.hue}, 100%, ${55 + e.life * 30}%)`;
+    fxCtx.globalAlpha = e.life * 0.75; // fade as it dies
+    fxCtx.shadowColor = `hsl(${e.hue}, 100%, 60%)`; // glow colour
+    fxCtx.shadowBlur = 12;
+    fxCtx.fillStyle = `hsl(${e.hue}, 100%, ${55 + e.life * 30}%)`;
     fxCtx.beginPath();
-    fxCtx.arc(e.x, e.y, e.radius * e.life, 0, Math.PI * 2);  // shrinks as it fades
+    fxCtx.arc(e.x, e.y, e.radius * e.life, 0, Math.PI * 2); // shrinks as it fades
     fxCtx.fill();
     fxCtx.restore();
   }
@@ -131,9 +127,9 @@ function drawParticles(fxCtx) {
   // Draw button particles (dots or star sparks)
   for (const p of particles) {
     fxCtx.save();
-    fxCtx.globalAlpha = p.life;      // fade as it dies
+    fxCtx.globalAlpha = p.life; // fade as it dies
     fxCtx.shadowColor = p.color;
-    fxCtx.shadowBlur  = 9;
+    fxCtx.shadowBlur = 9;
 
     if (p.star) {
       // Draw a cross (+) with diagonal lines to make a star shape
@@ -141,8 +137,8 @@ function drawParticles(fxCtx) {
       const diag = size * 0.65;
 
       fxCtx.strokeStyle = p.color;
-      fxCtx.lineWidth   = 2.2;
-      fxCtx.lineCap     = 'round';
+      fxCtx.lineWidth = 2.2;
+      fxCtx.lineCap = "round";
       fxCtx.beginPath();
 
       // Horizontal line

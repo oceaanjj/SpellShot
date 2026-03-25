@@ -70,15 +70,19 @@
   ];
 
   // ── PERSISTENCE ──────────────────────────────────────────────────────────
-  const KEY_EQUIPPED = 'spellshot-cannon-skin';
-  const KEY_OWNED    = 'spellshot-cannon-owned';
+  const KEY_EQUIPPED = "spellshot-cannon-skin";
+  const KEY_OWNED = "spellshot-cannon-owned";
 
-  let equippedId = localStorage.getItem(KEY_EQUIPPED) || 'default';
-  let ownedIds   = JSON.parse(localStorage.getItem(KEY_OWNED) || '["default"]');
+  let equippedId = localStorage.getItem(KEY_EQUIPPED) || "default";
+  let ownedIds = JSON.parse(localStorage.getItem(KEY_OWNED) || '["default"]');
   let selectedId = equippedId;
 
-  function isOwned(id)    { return ownedIds.includes(id); }
-  function isEquipped(id) { return equippedId === id; }
+  function isOwned(id) {
+    return ownedIds.includes(id);
+  }
+  function isEquipped(id) {
+    return equippedId === id;
+  }
 
   function saveState() {
     localStorage.setItem(KEY_EQUIPPED, equippedId);
@@ -86,17 +90,21 @@
   }
 
   function getSkin(id) {
-    return SKINS.find(s => s.id === id) || SKINS[0];
+    return SKINS.find((s) => s.id === id) || SKINS[0];
   }
 
   // ── COINS ────────────────────────────────────────────────────────────────
   function getCoins() {
     const coins = window.TargetWord?.state?.coins;
-    if (typeof coins === 'number') return coins;
+    if (typeof coins === "number") return coins;
     try {
-      const saved = JSON.parse(localStorage.getItem('spellshot-game-state-v1') || '{}');
-      return typeof saved.coins === 'number' ? saved.coins : 0;
-    } catch { return 0; }
+      const saved = JSON.parse(
+        localStorage.getItem("spellshot-game-state-v1") || "{}",
+      );
+      return typeof saved.coins === "number" ? saved.coins : 0;
+    } catch {
+      return 0;
+    }
   }
 
   function spendCoins(amount) {
@@ -104,80 +112,87 @@
       window.TargetWord.adjustCoins(-amount);
     }
     try {
-      const raw   = localStorage.getItem('spellshot-game-state-v1');
+      const raw = localStorage.getItem("spellshot-game-state-v1");
       const saved = raw ? JSON.parse(raw) : {};
-      if (typeof saved.coins === 'number') {
+      if (typeof saved.coins === "number") {
         saved.coins = Math.max(0, saved.coins - amount);
-        localStorage.setItem('spellshot-game-state-v1', JSON.stringify(saved));
+        localStorage.setItem("spellshot-game-state-v1", JSON.stringify(saved));
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   // ── PUBLIC API ───────────────────────────────────────────────────────────
-  window.getEquippedCannonSrc = function () { return getSkin(equippedId).previewSrc; };
-  window.getEquippedCannonId  = function () { return equippedId; };
-  window.openCannonShop       = openShop;
+  window.getEquippedCannonSrc = function () {
+    return getSkin(equippedId).previewSrc;
+  };
+  window.getEquippedCannonId = function () {
+    return equippedId;
+  };
+  window.openCannonShop = openShop;
 
   // ── OPEN MODAL ───────────────────────────────────────────────────────────
   function openShop() {
-    if (document.getElementById('cannonShopBackdrop')) return;
+    if (document.getElementById("cannonShopBackdrop")) return;
     selectedId = equippedId;
 
-    const backdrop = document.createElement('div');
-    backdrop.id = 'cannonShopBackdrop';
+    const backdrop = document.createElement("div");
+    backdrop.id = "cannonShopBackdrop";
     Object.assign(backdrop.style, {
-      position:        'absolute',
-      inset:           '0',
-      zIndex:          '80',
-      display:         'flex',
-      alignItems:      'center',
-      justifyContent:  'center',
-      backgroundColor: 'rgba(0,0,0,0.6)',
+      position: "absolute",
+      inset: "0",
+      zIndex: "80",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(0,0,0,0.6)",
     });
-    backdrop.addEventListener('click', e => {
+    backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) closeShop();
     });
 
-    const modal = document.createElement('div');
-    modal.id = 'cannonShopModal';
+    const modal = document.createElement("div");
+    modal.id = "cannonShopModal";
     Object.assign(modal.style, {
-      position:         'relative',
-      width:            '680px',
-      height:           '460px',
-      backgroundImage:  'url(assets/cannon/modalBg.png)',
-      backgroundSize:   '100% 100%',
-      backgroundRepeat: 'no-repeat',
-      flexShrink:       '0',
-      overflow:         'hidden',
+      position: "relative",
+      width: "680px",
+      height: "460px",
+      backgroundImage: "url(assets/cannon/modalBg.png)",
+      backgroundSize: "100% 100%",
+      backgroundRepeat: "no-repeat",
+      flexShrink: "0",
+      overflow: "hidden",
     });
 
     // ── Close button ──
-    const closeBtn = document.createElement('img');
-    closeBtn.src = 'assets/button/closeButton.png';
+    const closeBtn = document.createElement("img");
+    closeBtn.src = "assets/button/closeButton.png";
     Object.assign(closeBtn.style, {
-      position:       'absolute',
-      top:            '2%',
-      right:          '1%',
-      width:          '10%',
-      height:         'auto',
-      imageRendering: 'pixelated',
-      cursor:         'pointer',
-      zIndex:         '10',
-      userSelect:     'none',
-      transition:     'transform 0.1s ease, filter 0.1s ease',
-      filter:         'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))',
+      position: "absolute",
+      top: "2%",
+      right: "1%",
+      width: "10%",
+      height: "auto",
+      imageRendering: "pixelated",
+      cursor: "pointer",
+      zIndex: "10",
+      userSelect: "none",
+      transition: "transform 0.1s ease, filter 0.1s ease",
+      filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.8))",
     });
-    closeBtn.addEventListener('click', () => {
+    closeBtn.addEventListener("click", () => {
       playClickSfx();
       closeShop();
     });
-    closeBtn.addEventListener('mouseenter', () => {
-      closeBtn.style.transform = 'scale(1.12)';
-      closeBtn.style.filter    = 'brightness(1.3) drop-shadow(0 0 6px rgba(255,80,80,0.9))';
+    closeBtn.addEventListener("mouseenter", () => {
+      closeBtn.style.transform = "scale(1.12)";
+      closeBtn.style.filter =
+        "brightness(1.3) drop-shadow(0 0 6px rgba(255,80,80,0.9))";
     });
-    closeBtn.addEventListener('mouseleave', () => {
-      closeBtn.style.transform = 'scale(1)';
-      closeBtn.style.filter    = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.8))';
+    closeBtn.addEventListener("mouseleave", () => {
+      closeBtn.style.transform = "scale(1)";
+      closeBtn.style.filter = "drop-shadow(1px 1px 2px rgba(0,0,0,0.8))";
     });
 
     // ── Skin name label ──
@@ -211,8 +226,8 @@
     });
 
     // ── Preview image  (left panel, large landscape cannon) ──
-    const previewImg = document.createElement('img');
-    previewImg.id  = 'cannonShopPreview';
+    const previewImg = document.createElement("img");
+    previewImg.id = "cannonShopPreview";
     previewImg.src = getSkin(selectedId).previewSrc;
     Object.assign(previewImg.style, {
       position:       'absolute',
@@ -272,8 +287,8 @@
     descPanel.appendChild(descText);
 
     // ── Action button ──
-    const actionBtn = document.createElement('img');
-    actionBtn.id = 'cannonShopActionBtn';
+    const actionBtn = document.createElement("img");
+    actionBtn.id = "cannonShopActionBtn";
     Object.assign(actionBtn.style, {
       position:       'absolute',
       left:           '15.5%',
@@ -287,33 +302,34 @@
       transition:     'transform 0.1s ease, filter 0.1s ease',
       filter:         'drop-shadow(1px 2px 3px rgba(0,0,0,0.7))',
     });
-    actionBtn.addEventListener('mouseenter', () => {
-      if (actionBtn.dataset.disabled !== 'true') {
-        actionBtn.style.transform = 'scale(1.06) translateY(-2px)';
-        actionBtn.style.filter    = 'brightness(1.2) drop-shadow(0 0 8px rgba(255,200,60,0.8))';
+    actionBtn.addEventListener("mouseenter", () => {
+      if (actionBtn.dataset.disabled !== "true") {
+        actionBtn.style.transform = "scale(1.06) translateY(-2px)";
+        actionBtn.style.filter =
+          "brightness(1.2) drop-shadow(0 0 8px rgba(255,200,60,0.8))";
       }
     });
-    actionBtn.addEventListener('mouseleave', () => {
-      actionBtn.style.transform = 'scale(1)';
-      actionBtn.style.filter    = 'drop-shadow(1px 2px 3px rgba(0,0,0,0.7))';
+    actionBtn.addEventListener("mouseleave", () => {
+      actionBtn.style.transform = "scale(1)";
+      actionBtn.style.filter = "drop-shadow(1px 2px 3px rgba(0,0,0,0.7))";
     });
 
     // ── 2-col × 3-row grid (right panel) ──
-    const grid = document.createElement('div');
+    const grid = document.createElement("div");
     Object.assign(grid.style, {
-      position:            'absolute',
-      left:                '43%',
-      top:                 '15%',
-      width:               '43%',
-      height:              '69%',
-      display:             'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)', 
-      gridTemplateRows:    'repeat(3, 1fr)',
-      gap:                 '1%',
-      boxSizing:           'border-box',
+      position: "absolute",
+      left: "43%",
+      top: "15%",
+      width: "43%",
+      height: "69%",
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gridTemplateRows: "repeat(3, 1fr)",
+      gap: "1%",
+      boxSizing: "border-box",
     });
 
-    SKINS.forEach(skin => buildCard(skin, grid));
+    SKINS.forEach((skin) => buildCard(skin, grid));
 
     modal.appendChild(closeBtn);
     modal.appendChild(skinNameLabel);
@@ -323,7 +339,7 @@
     modal.appendChild(grid);
     backdrop.appendChild(modal);
 
-    const container = document.getElementById('container') || document.body;
+    const container = document.getElementById("container") || document.body;
     container.appendChild(backdrop);
 
     refreshActionBtn();
@@ -331,107 +347,110 @@
 
   // ── BUILD ONE CARD ────────────────────────────────────────────────────────
   function buildCard(skin, grid) {
-    const owned    = isOwned(skin.id);
+    const owned = isOwned(skin.id);
     const equipped = isEquipped(skin.id);
 
-    const card = document.createElement('div');
-    card.id             = 'cannonCard-' + skin.id;
+    const card = document.createElement("div");
+    card.id = "cannonCard-" + skin.id;
     card.dataset.skinId = skin.id;
     Object.assign(card.style, {
-      position:        'relative',
-      width:           '100%',
-      height:          '100%',
-      cursor:          'pointer',
-      userSelect:      'none',
-      lineHeight:      '0',
-      overflow:        'hidden',
-      filter:          'drop-shadow(3px 4px 0px rgba(0,0,0,0.55))',
-      transformOrigin: 'center center',
-      willChange:      'transform, filter',
-      transition:      'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease',
+      position: "relative",
+      width: "100%",
+      height: "100%",
+      cursor: "pointer",
+      userSelect: "none",
+      lineHeight: "0",
+      overflow: "hidden",
+      filter: "drop-shadow(3px 4px 0px rgba(0,0,0,0.55))",
+      transformOrigin: "center center",
+      willChange: "transform, filter",
+      transition:
+        "transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease",
     });
 
     // Slot image
-    const slotImg = document.createElement('img');
-    slotImg.id  = 'cannonSlot-' + skin.id;
+    const slotImg = document.createElement("img");
+    slotImg.id = "cannonSlot-" + skin.id;
     slotImg.src = owned
       ? skin.unlockedSlot
-      : (skin.lockedSlot || skin.unlockedSlot);
+      : skin.lockedSlot || skin.unlockedSlot;
     Object.assign(slotImg.style, {
-      width:          '100%',
-      height:         '100%',
-      display:        'block',
-      imageRendering: 'pixelated',
-      objectFit:      'cover',
-      maxWidth:       '100%',
-      maxHeight:      '100%',
+      width: "100%",
+      height: "100%",
+      display: "block",
+      imageRendering: "pixelated",
+      objectFit: "cover",
+      maxWidth: "100%",
+      maxHeight: "100%",
     });
 
     // Price badge — locked skins only
     if (!owned && skin.price > 0) {
-      const priceBadge = document.createElement('img');
-      priceBadge.id  = 'cannonPrice-' + skin.id;
-      priceBadge.src = 'assets/cannon/price.png';
+      const priceBadge = document.createElement("img");
+      priceBadge.id = "cannonPrice-" + skin.id;
+      priceBadge.src = "assets/cannon/price.png";
       Object.assign(priceBadge.style, {
-        position:       'absolute',
-        bottom:         '2px',
-        left:           '50%',
-        transform:      'translateX(-50%)',
-        width:          '55%',
-        height:         'auto',
-        imageRendering: 'pixelated',
-        pointerEvents:  'none',
-        zIndex:         '4',
+        position: "absolute",
+        bottom: "2px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "55%",
+        height: "auto",
+        imageRendering: "pixelated",
+        pointerEvents: "none",
+        zIndex: "4",
       });
       card.appendChild(priceBadge);
     }
 
     // Equipped checkmark
-    const check = document.createElement('img');
-    check.id  = 'cannonCheck-' + skin.id;
-    check.src = 'assets/balls/check.png';
+    const check = document.createElement("img");
+    check.id = "cannonCheck-" + skin.id;
+    check.src = "assets/balls/check.png";
     Object.assign(check.style, {
-      position:       'absolute',
-      bottom:         '3px',
-      right:          '3px',
-      width:          '35px',
-      height:         '35px',
-      imageRendering: 'pixelated',
-      display:        equipped ? 'block' : 'none',
-      pointerEvents:  'none',
-      zIndex:         '5',
+      position: "absolute",
+      bottom: "3px",
+      right: "3px",
+      width: "35px",
+      height: "35px",
+      imageRendering: "pixelated",
+      display: equipped ? "block" : "none",
+      pointerEvents: "none",
+      zIndex: "5",
     });
 
     card.appendChild(slotImg);
     card.appendChild(check);
 
-    card.addEventListener('mouseenter', () => {
-      card.style.transform = 'scale(1.07) translateY(-3px)';
-      card.style.filter    =
-        'brightness(1.22) drop-shadow(0 0 9px rgba(255,210,60,0.90)) drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
-      card.style.zIndex = '10';
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "scale(1.07) translateY(-3px)";
+      card.style.filter =
+        "brightness(1.22) drop-shadow(0 0 9px rgba(255,210,60,0.90)) drop-shadow(3px 4px 0px rgba(0,0,0,0.55))";
+      card.style.zIndex = "10";
     });
-    card.addEventListener('mousedown', () => {
-      card.style.transform  = 'scale(0.91) translateY(3px)';
-      card.style.filter     =
-        'brightness(1.55) drop-shadow(0 0 16px rgba(255,130,0,1)) drop-shadow(2px 2px 0px rgba(0,0,0,0.55))';
-      card.style.transition = 'transform 0.04s ease, filter 0.04s ease';
+    card.addEventListener("mousedown", () => {
+      card.style.transform = "scale(0.91) translateY(3px)";
+      card.style.filter =
+        "brightness(1.55) drop-shadow(0 0 16px rgba(255,130,0,1)) drop-shadow(2px 2px 0px rgba(0,0,0,0.55))";
+      card.style.transition = "transform 0.04s ease, filter 0.04s ease";
     });
-    card.addEventListener('mouseup', () => {
-      card.style.transition = 'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease';
-      card.style.transform  = 'scale(1.07) translateY(-3px)';
-      card.style.filter     =
-        'brightness(1.22) drop-shadow(0 0 9px rgba(255,210,60,0.90)) drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
+    card.addEventListener("mouseup", () => {
+      card.style.transition =
+        "transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease";
+      card.style.transform = "scale(1.07) translateY(-3px)";
+      card.style.filter =
+        "brightness(1.22) drop-shadow(0 0 9px rgba(255,210,60,0.90)) drop-shadow(3px 4px 0px rgba(0,0,0,0.55))";
     });
-    card.addEventListener('mouseleave', () => {
-      card.style.transition = 'transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease';
-      card.style.transform  = 'scale(1)';
-      card.style.filter     = 'drop-shadow(3px 4px 0px rgba(0,0,0,0.55))';
-      card.style.zIndex     = '';
+    card.addEventListener("mouseleave", () => {
+      card.style.transition =
+        "transform 0.10s cubic-bezier(.22,.61,.36,1), filter 0.10s ease";
+      card.style.transform = "scale(1)";
+      card.style.filter = "drop-shadow(3px 4px 0px rgba(0,0,0,0.55))";
+      card.style.zIndex = "";
     });
 
-    card.addEventListener('click', () => {
-      playClickSfx(); 
+    card.addEventListener("click", () => {
+      playClickSfx();
       onCardClick(skin.id);
     });
     grid.appendChild(card);
@@ -440,9 +459,7 @@
   // ── INTERACTIONS ─────────────────────────────────────────────────────────
   function onCardClick(skinId) {
     selectedId = skinId;
-
-    // Update preview image
-    const preview = document.getElementById('cannonShopPreview');
+    const preview = document.getElementById("cannonShopPreview");
     if (preview) preview.src = getSkin(skinId).previewSrc;
 
     // ── Update skin name label ──
@@ -457,24 +474,30 @@
   }
 
   function refreshActionBtn() {
-    const btn = document.getElementById('cannonShopActionBtn');
+    const btn = document.getElementById("cannonShopActionBtn");
     if (!btn) return;
     btn.onclick = null;
 
     if (isEquipped(selectedId)) {
-      btn.src              = 'assets/button/equippedButton.png';
-      btn.dataset.disabled = 'true';
-      btn.style.cursor     = 'default';
+      btn.src = "assets/button/equippedButton.png";
+      btn.dataset.disabled = "true";
+      btn.style.cursor = "default";
     } else if (isOwned(selectedId)) {
-      btn.src              = 'assets/button/equipButton.png';
-      btn.dataset.disabled = 'false';
-      btn.style.cursor     = 'pointer';
-      btn.onclick = () => { playClickSfx(); equipSkin(selectedId); };
+      btn.src = "assets/button/equipButton.png";
+      btn.dataset.disabled = "false";
+      btn.style.cursor = "pointer";
+      btn.onclick = () => {
+        playClickSfx();
+        equipSkin(selectedId);
+      };
     } else {
-      btn.src              = 'assets/button/buyButton.png';
-      btn.dataset.disabled = 'false';
-      btn.style.cursor     = 'pointer';
-      btn.onclick = () => { playClickSfx(); buySkin(selectedId); }; // coin purchase
+      btn.src = "assets/button/buyButton.png";
+      btn.dataset.disabled = "false";
+      btn.style.cursor = "pointer";
+      btn.onclick = () => {
+        playClickSfx();
+        buySkin(selectedId);
+      }; // coin purchase
     }
   }
 
@@ -486,39 +509,43 @@
   }
 
   function buySkin(skinId) {
-    const skin  = getSkin(skinId);
+    const skin = getSkin(skinId);
     const coins = getCoins();
-    if (coins < skin.price) { flashBtn(); return; }
+    if (coins < skin.price) {
+      flashBtn();
+      return;
+    }
 
     spendCoins(skin.price);
     ownedIds.push(skinId);
     saveState();
     // if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
-    
+
     CoinAnimator.animateTo(getCoins());
 
-    const slotImg = document.getElementById('cannonSlot-' + skinId);
+    const slotImg = document.getElementById("cannonSlot-" + skinId);
     if (slotImg) slotImg.src = skin.unlockedSlot;
 
-    const priceBadge = document.getElementById('cannonPrice-' + skinId);
+    const priceBadge = document.getElementById("cannonPrice-" + skinId);
     if (priceBadge) priceBadge.remove();
 
     equipSkin(skinId);
   }
 
   function flashBtn() {
-    const btn = document.getElementById('cannonShopActionBtn');
+    const btn = document.getElementById("cannonShopActionBtn");
     if (!btn) return;
-    const shakes = ['-6px', '6px', '-4px', '4px', '0px'];
+    const shakes = ["-6px", "6px", "-4px", "4px", "0px"];
     let i = 0;
     const shake = () => {
       if (i >= shakes.length) {
-        btn.style.transform = 'scale(1)';
-        btn.style.filter    = 'drop-shadow(1px 2px 3px rgba(0,0,0,0.7))';
+        btn.style.transform = "scale(1)";
+        btn.style.filter = "drop-shadow(1px 2px 3px rgba(0,0,0,0.7))";
         return;
       }
       btn.style.transform = `translateX(${shakes[i]})`;
-      btn.style.filter    = 'drop-shadow(0 0 8px rgba(255,60,60,0.9)) brightness(0.85)';
+      btn.style.filter =
+        "drop-shadow(0 0 8px rgba(255,60,60,0.9)) brightness(0.85)";
       i++;
       setTimeout(shake, 80);
     };
@@ -526,16 +553,15 @@
   }
 
   function updateAllChecks() {
-    SKINS.forEach(s => {
-      const c = document.getElementById('cannonCheck-' + s.id);
-      if (c) c.style.display = isEquipped(s.id) ? 'block' : 'none';
+    SKINS.forEach((s) => {
+      const c = document.getElementById("cannonCheck-" + s.id);
+      if (c) c.style.display = isEquipped(s.id) ? "block" : "none";
     });
   }
 
   // ── CLOSE ────────────────────────────────────────────────────────────────
   function closeShop() {
-    const el = document.getElementById('cannonShopBackdrop');
+    const el = document.getElementById("cannonShopBackdrop");
     if (el) el.remove();
   }
-
 })();
