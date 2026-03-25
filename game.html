@@ -1591,7 +1591,16 @@ function drawFloatingHearts() {
     function triggerCoinCounterCountUp() {
       if (!window.TargetWord) return;
       const state = window.TargetWord.state;
-      const accumulated = Math.max(0, state.sessionCoins);
+
+      const baseline = typeof state.sessionBaselineCoins === "number"
+        ? state.sessionBaselineCoins
+        : 0;
+
+      const accumulated = Math.max(
+        0,
+        (state.coins - baseline) + state.sessionCoins
+      );
+
       CoinAnimator.animateTo(accumulated);
     }
 
@@ -1655,6 +1664,7 @@ function drawFloatingHearts() {
       // All words for this level done — show level complete
       wordsCompletedThisLevel = 0;
       if (window.TargetWord) TargetWord.bankSessionCoins();
+      triggerCoinCounterCountUp();
       updateThemeForRound(currentRound);
       const tierComplete = TargetWord.completeWord();
       currentWord = TargetWord.state.word;
