@@ -510,7 +510,9 @@
     spendCoins(skin.price);
     ownedIds.push(skinId);
     saveState();
-    if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
+    // if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
+
+    CoinAnimator.animateTo(getCoins());
 
     const slotImg = document.getElementById('ballSlot-' + skinId);
     if (slotImg) slotImg.src = skin.unlockedSlot;

@@ -475,7 +475,9 @@
     spendCoins(skin.price);
     ownedIds.push(skinId);
     saveState();
-    if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
+    // if (typeof refreshCoinDisplay === 'function') refreshCoinDisplay();
+    
+    CoinAnimator.animateTo(getCoins());
 
     const slotImg = document.getElementById('cannonSlot-' + skinId);
     if (slotImg) slotImg.src = skin.unlockedSlot;

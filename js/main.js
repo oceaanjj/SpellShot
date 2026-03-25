@@ -117,8 +117,12 @@ function refreshCoinDisplay() {
     const parsed = raw ? JSON.parse(raw) : null;
     const coins  = parsed?.coins ?? 0;
     const el     = document.getElementById('coinCount');
-    if (el) el.textContent = coins.toLocaleString(); // e.g. 2000 → "2,000"
-  } catch (e) {
+    if (el) {
+      CoinAnimator.setElement(el);       
+      CoinAnimator.jumpTo(coins);  
+    }
+  }
+     catch (e) {
     console.warn('SpellShot: Could not read coin count', e);
   }
 }
