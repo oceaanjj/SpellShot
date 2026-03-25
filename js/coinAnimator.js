@@ -25,7 +25,7 @@ window.CoinAnimator = (() => {
       ? _target
       : Math.round(_startValue + delta * easeOut(Math.min((now - _startTime) / duration, 1)));
     _displayed = current;
-    if (_element) _element.textContent = _displayed;
+    if (_element) _element.textContent = _displayed.toLocaleString();
     if (current !== _target) { _rafId = requestAnimationFrame(_tick); }
     else { _rafId = null; }
   }
@@ -34,12 +34,12 @@ window.CoinAnimator = (() => {
     if (_rafId !== null) { cancelAnimationFrame(_rafId); _rafId = null; }
   }
 
-  function setElement(el) { _element = el; if (_element) _element.textContent = _displayed; }
+  function setElement(el) { _element = el; if (_element) _element.textContent = _displayed.toLocaleString(); }
 
   function jumpTo(value) {
     _cancel();
     _displayed = _target = Math.max(0, Math.round(value));
-    if (_element) _element.textContent = _displayed;
+    if (_element) _element.textContent = _displayed.toLocaleString();
   }
 
   function animateTo(value) {
@@ -53,7 +53,7 @@ window.CoinAnimator = (() => {
   }
 
   function getCurrent() { return _displayed; }
-  function finish() { _cancel(); _displayed = _target; if (_element) _element.textContent = _displayed; }
+  function finish() { _cancel(); _displayed = _target; if (_element) _element.textContent = _displayed.toLocaleString(); }
 
   return { setElement, jumpTo, animateTo, getCurrent, finish };
 })();

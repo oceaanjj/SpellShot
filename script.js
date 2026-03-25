@@ -229,7 +229,7 @@
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${CoinAnimator.getCurrent()}`, padding + coinWidth + 10, padding + coinHeight / 2 + 4);
+      ctx.fillText(Number(CoinAnimator.getCurrent()).toLocaleString(), padding + coinWidth + 10, padding + coinHeight / 2 + 4);
     } else {
       ctx.fillStyle = '#ffd207ff';
       ctx.font = 'bold 10px PixelFont';

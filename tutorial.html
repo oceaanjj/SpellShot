@@ -1893,7 +1893,7 @@
       ctx.font = 'bold 30px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(displayCoins, pad + coinWidth + 10, pad + coinHeight / 2 + 4);
+      ctx.fillText(Number(displayCoins).toLocaleString(), pad + coinWidth + 10, pad + coinHeight / 2 + 4);
 
       // Lives
       const heartSize = 40;
