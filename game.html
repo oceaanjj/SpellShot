@@ -302,7 +302,7 @@
       position: absolute;
       top: var(--hud-padding);
       right: 60px;
-      z-index: 16;
+      z-index: 52;
       pointer-events: auto;
     }
 
@@ -328,7 +328,7 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 16;
+      z-index: 50;
     }
 
     #borderOverlay img {
@@ -351,6 +351,12 @@
       align-items: center;
       justify-content: center;
       pointer-events: none;
+    }
+
+    #timerOverlay.overlay-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
     }
 
     #timerOverlay img {
@@ -455,7 +461,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease;
-      z-index: 8;
+      z-index: 20;
     }
 
     #overlayBackdrop.active {
@@ -2394,6 +2400,7 @@ function drawFloatingHearts() {
       if (!gameOverOverlay) return;
       setOverlayBackdrop("game");
       gameOverOverlay.classList.add("active");
+      timerOverlay?.classList.add("overlay-hidden");  
       pauseUIButton?.classList.add("hidden");
       if (typeof setPauseToggleEnabled === "function") {
         setPauseToggleEnabled(false);
@@ -2404,6 +2411,7 @@ function drawFloatingHearts() {
       if (!gameOverOverlay) return;
       clearOverlayBackdrop();
       gameOverOverlay.classList.remove("active");
+      timerOverlay?.classList.remove("overlay-hidden");
       pauseUIButton?.classList.remove("hidden");
       if (typeof setPauseToggleEnabled === "function") {
         setPauseToggleEnabled(!gameOver);
@@ -2428,6 +2436,7 @@ function drawFloatingHearts() {
       updateRoundCompleteOverlay();
       setOverlayBackdrop("round");
       roundCompleteOverlay.classList.add("active");
+      timerOverlay?.classList.add("overlay-hidden");
       roundCompleteActive = true;
       pauseUIButton?.classList.add("hidden");
       if (typeof setPauseToggleEnabled === "function") {
@@ -2445,6 +2454,7 @@ function drawFloatingHearts() {
       if (!roundCompleteOverlay) return;
       clearOverlayBackdrop();
       roundCompleteOverlay.classList.remove("active");
+      timerOverlay?.classList.remove("overlay-hidden"); 
       roundCompleteActive = false;
       pauseUIButton?.classList.remove("hidden");
       if (typeof setPauseToggleEnabled === "function") {
@@ -3443,6 +3453,7 @@ if (allCompleteRetry) {
       setOverlayBackdrop("round");
       roundCompleteOverlay.classList.add("active");
       roundCompleteActive = true;
+      timerOverlay?.classList.add("overlay-hidden"); 
       pauseUIButton?.classList.add("hidden");
       if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(false);
 
@@ -3458,6 +3469,7 @@ if (allCompleteRetry) {
       clearOverlayBackdrop();
       roundCompleteOverlay?.classList.remove("active");
       roundCompleteActive = false;
+      timerOverlay?.classList.remove("overlay-hidden"); 
       pauseUIButton?.classList.remove("hidden");
       if (typeof setPauseToggleEnabled === "function") setPauseToggleEnabled(true);
       lastTimerTimestamp = null; 

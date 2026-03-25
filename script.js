@@ -239,7 +239,7 @@
       ctx.globalAlpha = 1;
       ctx.drawImage(coinImage, padding, padding, coinWidth, coinHeight);
       ctx.fillStyle = '#ffd207ff';
-      ctx.font = 'bold 30px PixelFont';
+      ctx.font = 'bold 20px PixelFont';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(Number(CoinAnimator.getCurrent()).toLocaleString(), padding + coinWidth + 10, padding + coinHeight / 2 + 4);
