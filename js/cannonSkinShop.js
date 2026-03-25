@@ -187,7 +187,7 @@
     skinNameLabel.textContent = getSkin(selectedId).name.toUpperCase();
     Object.assign(skinNameLabel.style, {
       position:      'absolute',
-      left:          '7%',
+      left:          '8%',
       top:           '20%',
       width:         '40%',
       margin:        '0',
