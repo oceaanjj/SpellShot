@@ -1,6 +1,3 @@
-# 🎯 Spell Shot
-
-> A fun pixel-art spelling game where you fire cannonballs to spell words before time runs out!
 
 ---
 
