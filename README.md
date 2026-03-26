@@ -5,7 +5,7 @@
 ---
 
 <!-- Replace the path below with your actual screenshot -->
-![Spell Shot Banner](assets/logo.png)
+<img src="assets/logo.png" width="400" />
 
 ---
 
