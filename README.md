@@ -135,30 +135,6 @@ spell-shot/
 └── script.js           ← TargetWord system
 ```
 
----
-
-## 🖼️ Adding Images to This README
-
-Yes, you can add images! Use this format:
-
-```markdown
-<!-- From your assets folder (relative path): -->
-![Screenshot](assets/logo.png)
-
-<!-- From the web (URL): -->
-![Screenshot](https://yourwebsite.com/screenshot.png)
-
-<!-- With a fixed width (HTML inside markdown): -->
-<img src="assets/logo.png" width="400" />
-```
-
-**Tips for screenshots:**
-- Take them with `F12` → Device toolbar in Chrome for a clean 1035×596 crop
-- Save them in an `assets/screenshots/` folder
-- Reference them like: `![Gameplay](assets/screenshots/gameplay.png)`
-
----
-
 ## 🛠️ Built With
 
 - **HTML5 Canvas** — Game rendering
