@@ -1,12 +1,10 @@
 
----
 
 <!-- Replace the path below with your actual screenshot -->
 <div align="center">
   <img src="assets/logo.png" width="400" alt="Spell Shot logo" />
 </div>
 
----
 
 ## 📖 About the Game
 
