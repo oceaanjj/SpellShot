@@ -146,6 +146,4 @@ spell-shot/
 
 This project was made for educational purposes. All game assets are original or used with permission.
 
----
 
-<p align="center">Made with ❤️ by the Spell Shot Team</p>
