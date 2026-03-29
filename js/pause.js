@@ -60,6 +60,7 @@ function showPauseOverlay() {
   if (typeof bgMusic !== "undefined") bgMusic.pause();
   document.getElementById("pauseOverlay")?.classList.add("active");
   document.getElementById("pauseBackdrop")?.classList.add("active");
+  document.getElementById("timerOverlay")?.classList.add("overlay-hidden"); 
   setPauseToggleEnabled(false);
 }
 
@@ -68,6 +69,7 @@ function hidePauseOverlay() {
   gamePaused = false;
   document.getElementById("pauseOverlay")?.classList.remove("active");
   document.getElementById("pauseBackdrop")?.classList.remove("active");
+  document.getElementById("timerOverlay")?.classList.remove("overlay-hidden");
   if (wasPaused) {
     lastTimerTimestamp = null;
     if (typeof bgMusic !== "undefined") bgMusic.play().catch(() => {});

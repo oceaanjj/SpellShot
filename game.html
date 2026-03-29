@@ -1302,7 +1302,7 @@
         { words: 4, seconds: 120 },
         { words: 4, seconds: 120 },
         { words: 4, seconds: 120 },
-        { words: 4, seconds: 120 },
+        { words: 1, seconds: 120 },
       ];
       let wordsRequiredForLevel = 1;
       let wordsCompletedThisLevel = 0;
@@ -2712,6 +2712,7 @@
         pauseUIButton?.classList.add("hidden");
         if (typeof setPauseToggleEnabled === "function")
           setPauseToggleEnabled(false);
+          document.getElementById('timerOverlay')?.classList.add('overlay-hidden'); 
 
         // Play congrats sfx + start confetti
         if (typeof playCongratusSfx === "function") playCongratusSfx();
