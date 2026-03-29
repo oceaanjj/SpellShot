@@ -931,23 +931,25 @@
           playGoodSfx();
           floatingPopups.push({
             x: block ? block.x + block.width / 2 : GAME_W / 2,
-            y: block ? block.y - 12 : GAME_H / 2,
+            y: block ? block.y - 38 : GAME_H / 2, // sits above the +coins
             text: "GREAT!",
             color: "#7efc7f",
             life: 60,
-            vy: -0.6,
+            vy: -0.45,
             alpha: 1,
+            fontSize: 12,
           });
         } else if (comboCount >= 3) {
           playUnbelievableSfx();
           floatingPopups.push({
             x: block ? block.x + block.width / 2 : GAME_W / 2,
-            y: block ? block.y - 12 : GAME_H / 2,
+            y: block ? block.y - 38 : GAME_H / 2, // sits above the +coins
             text: "UNBELIEVABLE!",
             color: "#ff9f00",
             life: 60,
-            vy: -0.6,
+            vy: -0.45,
             alpha: 1,
+            fontSize: 12, // smaller to fit the word
           });
         }
       }
@@ -1324,7 +1326,12 @@
         const parsed = parseInt(computed, 10);
         return Number.isFinite(parsed) ? parsed : 60;
       })();
-      const COIN_HIT_REWARD = 100;
+
+      function getCoinHitReward() {
+        if (currentRound <= 5) return 25;
+        if (currentRound <= 10) return 50;
+        return 75;
+      }
 
       const BORDER_SCALE_MIN = 0.8;
       const BORDER_SCALE_MAX = 1.2;
@@ -1841,10 +1848,10 @@
       function drawFloatingPopups() {
         if (!floatingPopups.length) return;
         ctx.save();
-        ctx.font = "bold 15px PixelFont";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         floatingPopups.forEach((popup) => {
+          ctx.font = `bold ${popup.fontSize ?? 15}px PixelFont`;
           ctx.globalAlpha = popup.alpha;
           ctx.fillStyle = popup.color;
           ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
@@ -2528,8 +2535,9 @@
         if (nextLetter && block.letter === nextLetter) {
           playHitSfx();
           triggerComboEffect(performance.now(), block);
+
           const wordFinished = TargetWord.onLetterHit(block.letter, true);
-          spawnHitPopup(block, COIN_HIT_REWARD);
+          spawnHitPopup(block, getCoinHitReward());
           triggerCoinCounterCountUp();
           markTargetWordDirty();
           triggerLetterSuccessFlash(
@@ -2712,7 +2720,9 @@
         pauseUIButton?.classList.add("hidden");
         if (typeof setPauseToggleEnabled === "function")
           setPauseToggleEnabled(false);
-          document.getElementById('timerOverlay')?.classList.add('overlay-hidden'); 
+        document
+          .getElementById("timerOverlay")
+          ?.classList.add("overlay-hidden");
 
         // Play congrats sfx + start confetti
         if (typeof playCongratusSfx === "function") playCongratusSfx();

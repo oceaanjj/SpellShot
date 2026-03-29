@@ -191,7 +191,12 @@
       return false;
     }
     state.progress[matchedIndex] = true;
-    adjustCoins(100);
+    adjustCoins(
+      typeof window._pendingCoinReward === "number"
+        ? window._pendingCoinReward
+        : 25,
+    );
+    window._pendingCoinReward = null;
     return state.progress.every(Boolean);
   }
 
