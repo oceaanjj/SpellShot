@@ -15,7 +15,7 @@
     {
       id:           'gold',
       name:         'Gold',
-      price:        1000,
+      price:        1500,
       unlockedSlot: 'assets/cannon/unlocked/gold.png',
       lockedSlot:   'assets/cannon/locked/gold.png',
       previewSrc:   'assets/cannon/themes/gold.png',
@@ -26,7 +26,7 @@
     {
       id:           'ice',
       name:         'Ice',
-      price:        1000,
+      price:        1500,
       unlockedSlot: 'assets/cannon/unlocked/ice.png',
       lockedSlot:   'assets/cannon/locked/ice.png',
       previewSrc:   'assets/cannon/themes/ice.png',
@@ -37,7 +37,7 @@
     {
       id:           'lava',
       name:         'Lava',
-      price:        1000,
+      price:        1500,
       unlockedSlot: 'assets/cannon/unlocked/lava.png',
       lockedSlot:   'assets/cannon/locked/lava.png',
       previewSrc:   'assets/cannon/themes/lava.png',
@@ -48,7 +48,7 @@
     {
       id:           'punk',
       name:         'Punk',
-      price:        1000,
+      price:        1500,
       unlockedSlot: 'assets/cannon/unlocked/punk.png',
       lockedSlot:   'assets/cannon/locked/punk.png',
       previewSrc:   'assets/cannon/themes/punk.png',
@@ -59,7 +59,7 @@
     {
       id:           'stone',
       name:         'Stone',
-      price:        1000,
+      price:        1500,
       unlockedSlot: 'assets/cannon/unlocked/stone.png',
       lockedSlot:   'assets/cannon/locked/stone.png',
       previewSrc:   'assets/cannon/themes/stone.png',
