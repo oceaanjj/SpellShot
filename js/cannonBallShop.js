@@ -13,7 +13,7 @@
     {
       id:           'fire',
       name:         'Fire',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/fire.png',
       lockedSlot:   'assets/balls/locked/fire.png',
       previewSrc:   'assets/balls/themes/fire.png',
@@ -22,7 +22,7 @@
     {
       id:           'spike',
       name:         'Spike',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/spike.png',
       lockedSlot:   'assets/balls/locked/spike.png',
       previewSrc:   'assets/balls/themes/spike.png',
@@ -31,7 +31,7 @@
     {
       id:           'skull',
       name:         'Skull',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/skull.png',
       lockedSlot:   'assets/balls/locked/skull.png',
       previewSrc:   'assets/balls/themes/skull.png',
@@ -40,7 +40,7 @@
     {
       id:           'toxic',
       name:         'Toxic',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/toxic.png',
       lockedSlot:   'assets/balls/locked/toxic.png',
       previewSrc:   'assets/balls/themes/toxic.png',
@@ -49,7 +49,7 @@
     {
       id:           'shadow',
       name:         'Shadow',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/shadow.png',
       lockedSlot:   'assets/balls/locked/shadow.png',
       previewSrc:   'assets/balls/themes/shadow.png',
@@ -58,7 +58,7 @@
     {
       id:           'pink',
       name:         'Pink',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/pink.png',
       lockedSlot:   'assets/balls/locked/pink.png',
       previewSrc:   'assets/balls/themes/pink.png',
@@ -67,7 +67,7 @@
     {
       id:           'star',
       name:         'Star',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/star.png',
       lockedSlot:   'assets/balls/locked/star.png',
       previewSrc:   'assets/balls/themes/star.png',
@@ -76,7 +76,7 @@
     {
       id:           'void',
       name:         'Void',
-      price:        750,
+      price:        850,
       unlockedSlot: 'assets/balls/unlocked/void.png',
       lockedSlot:   'assets/balls/locked/void.png',
       previewSrc:   'assets/balls/themes/void.png',
